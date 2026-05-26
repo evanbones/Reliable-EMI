@@ -5,11 +5,11 @@
   "minVersion": "0.8",
   "plugin": "concerrox.emixx.neoforge.mixinplugin.EmiPlusPlusNeoForgeMixinPlugin",
   "client": [
-    "mekanism.GuiElementHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
+    "mekanism.GuiElementHandlerMixin"
   ]
 }
