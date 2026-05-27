@@ -1,3 +1,3 @@
-### Fixed
+### Added
 
-- Fixed GUI issues with Mekanism.
+- Added support for arbitrary `ResourceLocation`s in the creative tabs when using Recreative.

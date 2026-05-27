@@ -11,6 +11,8 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.TabButton
 import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.CreativeModeTab
 
 class ItemTabButton(
     private val tabManager: ItemTabManager,
@@ -33,6 +35,16 @@ class ItemTabButton(
         private val TEXTURE_DEFAULT = res("textures/gui/buttons.png")
         private val TEXTURE_LEFT = res("textures/gui/tab_button.png")
         private val TEXTURE_RIGHT = res("textures/gui/tab_button_right.png")
+
+        private fun getRecreativeIcon(tab: CreativeModeTab?): ResourceLocation? {
+            if (tab == null) return null
+            return try {
+                val method = tab.javaClass.getMethod("recreative\$getCustomIcon")
+                method.invoke(tab) as? ResourceLocation
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
@@ -47,6 +59,8 @@ class ItemTabButton(
         val context = EmiDrawContext.wrap(raw)
 
         if (isVisible) {
+            val customIcon = getRecreativeIcon(tab.creativeModeTab)
+
             if (style == ButtonStyle.TOP) {
                 val yOff: Float
                 if (isSelected) {
@@ -56,7 +70,16 @@ class ItemTabButton(
                     context.drawTexture(TEXTURE_DEFAULT, x, y + 2, 32, if (isHoveredOrFocused) 16 else 0, width, 16)
                     yOff = 5F
                 }
-                GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab?.iconItem, x + 4F, y + yOff, 10F)
+
+                if (customIcon != null) {
+                    raw.pose().pushPose()
+                    raw.pose().translate(x + 4.0, y + yOff.toDouble(), 150.0)
+                    raw.pose().scale(10f / 16f, 10f / 16f, 1f)
+                    raw.blit(customIcon, 0, 0, 0f, 0f, 16, 16, 16, 16)
+                    raw.pose().popPose()
+                } else {
+                    GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab?.iconItem, x + 4F, y + yOff, 10F)
+                }
             } else {
                 val u = if (isSelected) 188 else 152
                 val v = if (isSelected && isFirst) 29 else 2
@@ -67,9 +90,16 @@ class ItemTabButton(
                 context.drawTexture(texture, x, y, u, v, width, height)
                 raw.pose().popPose()
 
-                tab.creativeModeTab?.iconItem?.let { stack ->
-                    val iconX = if (style == ButtonStyle.RIGHT) x + 6F else x + 8F
-                    GuiGraphicsUtils.renderItem(raw, stack, iconX, y + 5F, 16F)
+                val iconX = if (style == ButtonStyle.RIGHT) x + 6F else x + 8F
+                if (customIcon != null) {
+                    raw.pose().pushPose()
+                    raw.pose().translate(iconX.toDouble(), y + 5.0, 150.0)
+                    raw.blit(customIcon, 0, 0, 0f, 0f, 16, 16, 16, 16)
+                    raw.pose().popPose()
+                } else {
+                    tab.creativeModeTab?.iconItem?.let { stack ->
+                        GuiGraphicsUtils.renderItem(raw, stack, iconX, y + 5F, 16F)
+                    }
                 }
             }
 
