@@ -9,7 +9,6 @@ import dev.emi.emi.runtime.EmiDrawContext
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.TabButton
-import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.CreativeModeTab
@@ -120,10 +119,9 @@ class ItemTabButton(
                     ScreenManager.customIndexTitle = displayTitle
                 }
 
-                this.tooltip = Tooltip.create(title)
+                raw.renderTooltip(font, title, mouseX, mouseY)
 
             } else {
-                this.tooltip = null
                 ScreenManager.removeCustomIndexTitle(lastDisplayTitle ?: title)
             }
         } else if (style == ButtonStyle.TOP) {
