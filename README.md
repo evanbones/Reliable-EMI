@@ -23,15 +23,13 @@ EMI++ provides the following enhancements:
 
 **Fabric:**
 
-* Minecraft `~1.20.1`
-* Fabric Loader `>=0.14.25`
-* Fabric Language Kotlin `>=1.13.3+kotlin.2.1.21`
+* Fabric Loader
+* Fabric Language Kotlin
 * [EMI](https://github.com/emilyploszaj/emi)
 
-**Forge:**
+**(Neo)Forge:**
 
-* Minecraft `1.20.1` - `1.21`
-* Kotlin for Forge `[4.10,)`
+* Kotlin for Forge
 * [EMI](https://github.com/emilyploszaj/emi)
 
 ## Configuration
@@ -70,12 +68,11 @@ Controls the item grouping behavior.
 
 ## Customizing Stack Groups
 
-You can define new custom stack groups or modify existing ones using **JSON files** (via Resource Packs) or **KubeJS**.
+You can define new custom stack groups or modify existing ones using **JSON files** (via Resource Packs).
 
-### Method 1: JSON Configuration (Resource Packs)
+### JSON Configuration (Resource Packs)
 
-EMI++ loads stack groups from the `stack_groups` directory within the assets of the game (loaded via Resource Packs or
-the config folder if configured).
+EMI++ loads stack groups from the `stack_groups` directory within the assets of the game (loaded via Resource Packs).
 
 To create a custom group, create a JSON file in `assets/<namespace>/stack_groups/my_group.json`.
 
@@ -142,25 +139,6 @@ File: `assets/emixx/stack_groups/spawn_eggs.json`
   "enabled": false
 }
 
-```
-
-### Method 2: KubeJS
-
-If you have KubeJS installed, you can register groups programmatically using the `EmiPlusPlusEvents` event group.
-
-1. **Create a Script:** Place a script in your `kubejs/client_scripts/` folder.
-2. **Register the Event:** Use `EmiPlusPlusEvents.registerGroups`.
-
-**Example `kubejs/client_scripts/emi_groups.js`:**
-
-```javascript
-EmiPlusPlusEvents.registerGroups(event => {
-    // Create a group from a Tag
-    event.register("mypack:all_logs", "#minecraft:logs")
-
-    // Create a group for a specific item
-    event.register("mypack:command_blocks", "minecraft:command_block")
-})
 ```
 
 ## License
