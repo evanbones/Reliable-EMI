@@ -48,9 +48,8 @@ class GroupedEmiStack<T : EmiStack>(val realStack: T, val stackGroup: StackGroup
     override fun getEmiStacks(): MutableList<EmiStack> = realStack.emiStacks
     override fun isEmpty() = realStack.isEmpty
 
-    @Suppress("UNCHECKED_CAST")
     override fun copy(): EmiStack {
-        val copy = GroupedEmiStack(realStack.copy() as T, stackGroup)
+        val copy = realStack.copy()
         copy.amount = this.amount
         copy.chance = this.chance
         copy.remainder = this.remainder

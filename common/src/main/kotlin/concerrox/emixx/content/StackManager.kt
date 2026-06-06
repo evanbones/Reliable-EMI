@@ -107,7 +107,7 @@ object StackManager {
                     newDisplayedStacks.add(emiStack.items[0].realStack)
                 } else if (emiStack.isExpanded) {
                     newDisplayedStacks.add(emiStack)
-                    newDisplayedStacks.addAll(emiStack.items)
+                    newDisplayedStacks.addAll(emiStack.items.map { it.realStack })
                 } else {
                     newDisplayedStacks.add(emiStack)
                 }
@@ -130,7 +130,7 @@ object StackManager {
                     }
                     expandedStackGroups -= ingredient.group.id
                 } else {
-                    stacks.addAll(stacks.indexOf(ingredient) + 1, ingredient.items)
+                    stacks.addAll(stacks.indexOf(ingredient) + 1, ingredient.items.map { it.realStack })
                     expandedStackGroups += ingredient.group.id
                 }
                 // TODO: fix this
