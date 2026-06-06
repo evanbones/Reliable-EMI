@@ -29,7 +29,7 @@ object StackGroupManager {
     internal val groupedEmiStacks = mutableListOf<EmiStack>()
     internal var groupToGroupStacks = mapOf<StackGroup, EmiGroupStack>()
     private val itemToGroupedStacks = mutableMapOf<ResourceLocation, MutableList<GroupedEmiStack<EmiStack>>>()
-    private val stackToGroupedStacks = IdentityHashMap<EmiStack, MutableList<GroupedEmiStack<EmiStack>>>()
+    internal val stackToGroupedStacks = IdentityHashMap<EmiStack, MutableList<GroupedEmiStack<EmiStack>>>()
 
     init {
         registerType("emixx:group") { id, json -> EmiStackGroup.parse(json, id) }

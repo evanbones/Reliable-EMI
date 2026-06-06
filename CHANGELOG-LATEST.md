@@ -1,3 +1,3 @@
-### Added
+### Fixed
 
-- Added support for defining groups using regex.
+- Ported fixes from 1.21.

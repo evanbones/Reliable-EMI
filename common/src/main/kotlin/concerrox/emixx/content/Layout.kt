@@ -1,7 +1,9 @@
 package concerrox.emixx.content
 
 import concerrox.emixx.content.ScreenManager.ENTRY_SIZE
-import concerrox.emixx.content.stackgroup.GroupedEmiStack
+import concerrox.emixx.content.stackgroup.StackGroupManager
+import concerrox.emixx.content.stackgroup.data.StackGroup
+import dev.emi.emi.api.stack.EmiStack
 import dev.emi.emi.runtime.EmiDrawContext
 import dev.emi.emi.screen.EmiScreenManager
 
@@ -35,40 +37,45 @@ object Layout {
             for (y in 0 until screenSpace.th) {
                 for (x in 0 until screenSpace.tw) {
                     val emiStack = StackManager.stackGrid.getOrNull(y)?.getOrNull(x)
-                    if (emiStack == null || emiStack !is GroupedEmiStack<*>) continue
+                    val currentGroup = getGroup(emiStack)
+                    if (emiStack == null || currentGroup == null) continue
 
                     val tile = Tile(x, y, 0)
-                    if (y == 0 || at(y - 1, x)?.stackGroup != emiStack.stackGroup) {
+                    if (y == 0 || groupAt(y - 1, x) != currentGroup) {
                         tile.type = tile.type or TileType.TOP.bit
                     }
-                    if (x == 0 || at(y, x - 1)?.stackGroup != emiStack.stackGroup) {
+                    if (x == 0 || groupAt(y, x - 1) != currentGroup) {
                         tile.type = tile.type or TileType.LEFT.bit
                     }
-                    if (y == screenSpace.th - 1 || at(y + 1, x)?.stackGroup != emiStack.stackGroup) {
+                    if (y == screenSpace.th - 1 || groupAt(y + 1, x) != currentGroup) {
                         tile.type = tile.type or TileType.BOTTOM.bit
                     }
-                    if (x == screenSpace.tw - 1 || at(y, x + 1)?.stackGroup != emiStack.stackGroup) {
+                    if (x == screenSpace.tw - 1 || groupAt(y, x + 1) != currentGroup) {
                         tile.type = tile.type or TileType.RIGHT.bit
                     }
 
-                    if (at(y - 1, x - 1)?.stackGroup != emiStack.stackGroup
-                        && at(y - 1, x)?.stackGroup == emiStack.stackGroup
-                        && at(y, x - 1)?.stackGroup == emiStack.stackGroup) {
+                    if (groupAt(y - 1, x - 1) != currentGroup
+                        && groupAt(y - 1, x) == currentGroup
+                        && groupAt(y, x - 1) == currentGroup
+                    ) {
                         tile.type = tile.type or TileType.TOP_LEFT.bit
                     }
-                    if (at(y - 1, x + 1)?.stackGroup != emiStack.stackGroup
-                        && at(y - 1, x)?.stackGroup == emiStack.stackGroup
-                        && at(y, x + 1)?.stackGroup == emiStack.stackGroup) {
+                    if (groupAt(y - 1, x + 1) != currentGroup
+                        && groupAt(y - 1, x) == currentGroup
+                        && groupAt(y, x + 1) == currentGroup
+                    ) {
                         tile.type = tile.type or TileType.TOP_RIGHT.bit
                     }
-                    if (at(y + 1, x - 1)?.stackGroup != emiStack.stackGroup
-                        && at(y + 1, x)?.stackGroup == emiStack.stackGroup
-                        && at(y, x - 1)?.stackGroup == emiStack.stackGroup) {
+                    if (groupAt(y + 1, x - 1) != currentGroup
+                        && groupAt(y + 1, x) == currentGroup
+                        && groupAt(y, x - 1) == currentGroup
+                    ) {
                         tile.type = tile.type or TileType.BOTTOM_LEFT.bit
                     }
-                    if (at(y + 1, x + 1)?.stackGroup != emiStack.stackGroup
-                        && at(y + 1, x)?.stackGroup == emiStack.stackGroup
-                        && at(y, x + 1)?.stackGroup == emiStack.stackGroup) {
+                    if (groupAt(y + 1, x + 1) != currentGroup
+                        && groupAt(y + 1, x) == currentGroup
+                        && groupAt(y, x + 1) == currentGroup
+                    ) {
                         tile.type = tile.type or TileType.BOTTOM_RIGHT.bit
                     }
                     if (tile.type != 0) StackManager.stackTextureGrid.add(tile)
@@ -116,8 +123,14 @@ object Layout {
         }
     }
 
-    private fun at(y: Int, x: Int): GroupedEmiStack<*>? {
-        return StackManager.stackGrid.getOrNull(y)?.getOrNull(x) as? GroupedEmiStack<*>
+    private fun getGroup(emiStack: EmiStack?): StackGroup? {
+        if (emiStack == null) return null
+        val groupedStacks = StackGroupManager.stackToGroupedStacks[emiStack] ?: return null
+        return groupedStacks.firstOrNull { StackManager.expandedStackGroups.contains(it.stackGroup.id) }?.stackGroup
+    }
+
+    private fun groupAt(y: Int, x: Int): StackGroup? {
+        return getGroup(StackManager.stackGrid.getOrNull(y)?.getOrNull(x))
     }
 
 }
