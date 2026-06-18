@@ -1,7 +1,6 @@
 # EMI++
 
-<a href='https://files.minecraftforge.net'><img alt="forge" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg"></a>
-<a href='https://fabricmc.net'><img alt="fabric" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg"></a>
+[![neoforge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/neoforge_vector.svg)](https://neoforged.net/) [![forge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg)](https://files.minecraftforge.net/) [![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg)](https://fabricmc.net/)
 
 **EMI++** is a Minecraft mod that acts as an extension to [EMI](https://github.com/emilyploszaj/emi), adding a variety
 of useful features, improvements, and customization options to enhance the EMI experience.
@@ -12,8 +11,10 @@ EMI++ provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
-    * *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
-      Plates, Spawn Eggs, and more.
+* *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
+  Plates, Spawn Eggs, and more.
+
+
 * **Creative Mode Tabs:** Displays vanilla and modded Creative Mode tabs directly within the EMI interface for easy
   browsing.
 * **Item Tabs:** Improved navigation with Creative Mode-style item tabs.
@@ -53,7 +54,7 @@ The configuration file is located at `config/emixx/emixx-common.toml`.
 Controls the display and behavior of the creative tabs sidebar.
 
 | Option                        | Type    | Default                   | Description                                                                                                          |
-|:------------------------------|:--------|:--------------------------|:---------------------------------------------------------------------------------------------------------------------|
+|-------------------------------|---------|---------------------------|----------------------------------------------------------------------------------------------------------------------|
 | `enableCreativeModeTabs`      | Boolean | `true`                    | Master switch to enable or disable the creative mode tab sidebar entirely.                                           |
 | `syncSelectedCreativeModeTab` | Boolean | `true`                    | If enabled, clicking a tab in EMI++ will attempt to open that tab in the actual Creative Inventory screen (if open). |
 | `disabledCreativeModeTabs`    | List    | `["minecraft:op_blocks"]` | A list of tabs that should be hidden from the EMI++ interface.                                                       |
@@ -63,7 +64,7 @@ Controls the display and behavior of the creative tabs sidebar.
 Controls the item grouping behavior.
 
 | Option              | Type    | Default | Description                                                                                                     |
-|:--------------------|:--------|:--------|:----------------------------------------------------------------------------------------------------------------|
+|---------------------|---------|---------|-----------------------------------------------------------------------------------------------------------------|
 | `enableStackGroups` | Boolean | `true`  | Master switch to enable or disable stack grouping. If disabled, all items will appear individually in the list. |
 
 ## Customizing Stack Groups
@@ -78,16 +79,17 @@ To create a custom group, create a JSON file in `assets/<namespace>/stack_groups
 
 **JSON Structure:**
 
-| Field        | Type              | Description                                                                            |
-|:-------------|:------------------|:---------------------------------------------------------------------------------------|
-| `id`         | String            | A unique identifier (e.g., `"mypack:currency"`).                                       |
-| `name`       | String (Optional) | A translatable translation key for the group's name (e.g., `"mypack.group.currency"`). |
-| `type`       | String            | Usually `"emixx:group"` for standard item lists. Can also be `emixx:tag`.              |
-| `enabled`    | Boolean           | Set to `false` to disable this group.                                                  |
-| `contents`   | List              | A list of items or tags to include.                                                    |
-| `exclusions` | List              | *(Optional)* Items to remove from the group (useful when using broad tags).            |
+| Field        | Type              | Description                                                                                   |
+|--------------|-------------------|-----------------------------------------------------------------------------------------------|
+| `id`         | String            | A unique identifier (e.g., `"mypack:currency"`).                                              |
+| `name`       | String (Optional) | A translatable translation key for the group's name (e.g., `"mypack.group.currency"`).        |
+| `type`       | String            | Determines how the group is built. Can be `"emixx:group"`, `"emixx:tag"`, or `"emixx:regex"`. |
+| `enabled`    | Boolean           | Set to `false` to disable this group.                                                         |
+| `contents`   | List              | *(For `emixx:group`)* A list of items or tags to include.                                     |
+| `exclusions` | List              | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).          |
+| `regex`      | String            | *(For `emixx:regex`)* A regular expression pattern used to match item IDs dynamically.        |
 
-**Example: Creating a shiny things group**
+**Example 1: Creating a shiny things group (standard list)**
 
 ```json
 {
@@ -102,6 +104,21 @@ To create a custom group, create a JSON file in `assets/<namespace>/stack_groups
   "exclusions": [
     "minecraft:purple_stained_glass"
   ]
+}
+
+```
+
+**Example 2: Creating a group using Regex (Dynamic Matching)**
+
+You can use the `"emixx:regex"` type to dynamically group items based on their naming patterns. The example below groups
+all items that end in _sword (from any namespace):
+
+```json
+{
+  "id": "mypack:swords",
+  "type": "emixx:regex",
+  "regex": ".*:.*_sword",
+  "name": "Swords"
 }
 
 ```
@@ -124,6 +141,7 @@ prefix the entry with its EMI registry type using the format `<type>:<namespace>
     "jeed:effect:minecraft:speed"
   ]
 }
+
 ```
 
 **Disabling Default Groups:**

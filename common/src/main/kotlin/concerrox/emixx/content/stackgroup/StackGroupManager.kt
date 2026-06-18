@@ -54,6 +54,19 @@ object StackGroupManager {
         registerType("emixx:copper_blocks") { _, _ -> CopperBlockItemGroup() }
         registerType("emixx:banner_patterns") { _, _ -> BannerPatternItemGroup() }
         registerType("emixx:animal_armors") { _, _ -> AnimalArmorItemGroup() }
+        registerType("emixx:regex") { id, json ->
+            val regexString = GsonHelper.getAsString(json, "regex")
+            val nameKey = if (json.has("name")) GsonHelper.getAsString(json, "name") else null
+            val customName = nameKey?.let { Component.translatable(it) }
+
+            try {
+                val regex = Regex(regexString)
+                RegexStackGroup(id, regex, customName)
+            } catch (e: Exception) {
+                EmiPlusPlus.LOGGER.error("Invalid regex in stack group $id: $regexString", e)
+                null
+            }
+        }
     }
 
     fun registerType(type: String, factory: (ResourceLocation, JsonObject) -> StackGroup?) {

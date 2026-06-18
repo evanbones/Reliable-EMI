@@ -5,6 +5,82 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-06-18
+
+### Added
+
+- Added support for defining groups using regex.
+
+## [2.2.0] - 2026-06-06
+
+### Fixed
+
+- Fixed items inside EMI++ stack groups not being able to be favourited.
+
+## [2.1.3] - 2026-05-30
+
+### Changed
+
+- Updated Chinese translations (@LLLCYL).
+
+### Fixed
+
+- Fixed strange tooltip rendering while using the Vanilla theme.
+
+## [2.1.2] - 2026-05-26
+
+### Added
+
+- Added support for arbitrary `ResourceLocation`s in the creative tabs when using Recreative.
+
+## [2.1.1] - 2026-05-25
+
+### Fixed
+
+- Fixed GUI issues with Mekanism.
+
+## [2.1.0] - 2026-05-04
+
+### Added
+
+- Added a config option to only have EMI open when the recipe book is open.
+
+### Changed
+
+- Slightly tweaked vanilla-style Creative tabs.
+
+### Fixed
+
+- Fixed top Creative tab missing a single pixel (literally unplayable).
+
+## [2.0.3] - 2026-05-04
+
+### Fixed
+
+- Fixed missing lang entries for new config option.
+- Fixed missing chiseled copper blocks in the copper block stackgroup.
+
+## [2.0.2] - 2026-05-04
+
+### Added
+
+- Added config option to disable the creative tab display.
+
+### Fixed
+
+- Fixed missing copper blocks in the `copper_blocks` stackgroup.
+
+## [2.0.1] - 2026-05-03
+
+### Fixed
+
+- Fixed incompatibility with Shadow Drop.
+- Fixed slightly cramped Creative tabs when in Vanilla theme.
+
+## [2.0.0] - 2026-05-03
+
+- Ported to 1.21.1.
+
 ## [1.4.0] - 2026-04-16
 
 ### Added
