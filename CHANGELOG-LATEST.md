@@ -1,3 +1,3 @@
-### Fixed
+### Added
 
-- Fixed items inside EMI++ stack groups not being able to be favourited.
+- Added support for defining groups using regex.
