@@ -2,7 +2,10 @@ package com.evandev.emixx.feature.stackgroup;
 
 import com.evandev.EmiPlusPlus;
 import com.evandev.emixx.config.EmiPlusPlusConfig;
-import com.evandev.emixx.feature.stackgroup.data.*;
+import com.evandev.emixx.feature.stackgroup.data.EmiStackGroup;
+import com.evandev.emixx.feature.stackgroup.data.RegexStackGroup;
+import com.evandev.emixx.feature.stackgroup.data.StackGroup;
+import com.evandev.emixx.feature.stackgroup.data.groups.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.emi.emi.api.stack.Comparison;
@@ -43,7 +46,11 @@ public class StackGroupManager {
             Component customName = nameKey != null ? Component.translatable(nameKey) : null;
             @SuppressWarnings("unchecked")
             EmiIngredient ingredient = EmiIngredient.of(tagKey);
-            return new EmiStackGroup(id, Set.of(ingredient), Set.of(), customName);
+
+            int priority = json.has("priority") ? GsonHelper.getAsInt(json, "priority", 0) : 0;
+            EmiStackGroup group = new EmiStackGroup(id, Set.of(ingredient), Set.of(), List.of(), customName);
+            group.priority = priority;
+            return group;
         });
 
         registerType("emixx:spawn_eggs", (id, json) -> new SpawnEggItemGroup());
@@ -110,14 +117,25 @@ public class StackGroupManager {
     }
 
     public static void appendStacksForMatchingGroups(String query, List<EmiStack> results) {
-        String lower = query.toLowerCase();
+        String lower = query.toLowerCase(Locale.ROOT);
         Set<EmiStack> existing = new HashSet<>(results);
+
         for (StackGroup group : stackGroups) {
-            if (!group.getId().getPath().replace('/', ' ').replace('_', ' ').contains(lower)) continue;
             EmiGroupStack gs = groupToGroupStacks.get(group);
             if (gs == null) continue;
-            for (var item : gs.itemsNew) {
-                if (existing.add(item.realStack)) results.add(item.realStack);
+
+            boolean match = false;
+
+            if (group.getId().toString().toLowerCase(Locale.ROOT).contains(lower)) {
+                match = true;
+            } else if (gs.getName().getString().toLowerCase(Locale.ROOT).contains(lower)) {
+                match = true;
+            }
+
+            if (match) {
+                for (var item : gs.itemsNew) {
+                    if (existing.add(item.realStack)) results.add(item.realStack);
+                }
             }
         }
     }
@@ -165,7 +183,8 @@ public class StackGroupManager {
         }
 
         List<StackGroup> sorted = new ArrayList<>(loaded.values());
-        sorted.sort(Comparator.comparing(g -> g.getId().toString()));
+        sorted.sort(Comparator.<StackGroup>comparingInt(g -> -g.priority)
+                .thenComparing(g -> g.getId().toString()));
         stackGroups.addAll(sorted);
     }
 
@@ -265,28 +284,19 @@ public class StackGroupManager {
         Map<StackGroup, EmiGroupStack> localGroupMap = new IdentityHashMap<>();
         for (StackGroup g : stackGroups) localGroupMap.put(g, new EmiGroupStack(g, new ArrayList<>()));
 
-        Map<ResourceLocation, List<StackGroup>> indexedGroups = new HashMap<>();
-        List<StackGroup> globalGroups = new ArrayList<>();
-
-        for (StackGroup group : stackGroups) {
-            Set<ResourceLocation> ids = group.getOptimizedIds();
-            if (ids != null && !ids.isEmpty()) {
-                for (ResourceLocation id : ids) indexedGroups.computeIfAbsent(id, k -> new ArrayList<>()).add(group);
-            } else {
-                globalGroups.add(group);
-            }
-        }
-
         for (EmiStack stack : source) {
             ResourceLocation stackId = stack.getId();
-            List<StackGroup> indexed = indexedGroups.get(stackId);
-            if (indexed != null) {
-                for (StackGroup group : indexed) {
-                    if (group.match(stack)) registerMatch(group, stack, localGroupMap);
+
+            for (StackGroup group : stackGroups) {
+                Set<ResourceLocation> optimizedIds = group.getOptimizedIds();
+                if (optimizedIds != null && !optimizedIds.isEmpty()) {
+                    if (!optimizedIds.contains(stackId)) continue;
                 }
-            }
-            for (StackGroup group : globalGroups) {
-                if (group.match(stack)) registerMatch(group, stack, localGroupMap);
+
+                if (group.match(stack)) {
+                    registerMatch(group, stack, localGroupMap);
+                    break;
+                }
             }
         }
 

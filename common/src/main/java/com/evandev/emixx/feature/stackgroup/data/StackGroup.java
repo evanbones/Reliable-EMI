@@ -10,6 +10,7 @@ public abstract class StackGroup {
     private final ResourceLocation id;
     public final Component name;
     public boolean isEnabled = true;
+    public int priority = 0;
 
     protected StackGroup(ResourceLocation id, Component name) {
         this.id = id;

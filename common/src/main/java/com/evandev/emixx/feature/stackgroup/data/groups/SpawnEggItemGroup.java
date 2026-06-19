@@ -1,5 +1,6 @@
-package com.evandev.emixx.feature.stackgroup.data;
+package com.evandev.emixx.feature.stackgroup.data.groups;
 
+import com.evandev.emixx.feature.stackgroup.data.StackGroup;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.resources.ResourceLocation;

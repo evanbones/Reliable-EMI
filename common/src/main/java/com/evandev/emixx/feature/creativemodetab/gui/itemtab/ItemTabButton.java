@@ -1,7 +1,7 @@
 package com.evandev.emixx.feature.creativemodetab.gui.itemtab;
 
-import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.EmiPlusPlus;
+import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.integration.emi.ScreenManager;
 import com.evandev.emixx.util.GuiGraphicsUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,17 +14,22 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Method;
+
 public class ItemTabButton extends TabButton {
     private static final ResourceLocation TEXTURE_DEFAULT = EmiPlusPlus.res("textures/gui/buttons.png");
     private static final ResourceLocation TEXTURE_LEFT = EmiPlusPlus.res("textures/gui/tab_button.png");
     private static final ResourceLocation TEXTURE_RIGHT = EmiPlusPlus.res("textures/gui/tab_button_right.png");
+
+    private static Method recreativeIconMethod = null;
+    private static boolean checkedRecreativeMethod = false;
 
     private final ItemTabManager tabManager;
     private final ItemTab tab;
     private final ButtonStyle style;
     private final boolean isFirst;
     private final Component title;
-    private final ResourceLocation customIcon;
+    private ResourceLocation customIcon;
     private Component lastDisplayTitle;
 
     public ItemTabButton(ItemTabManager tabManager, ItemTab tab, int width, int height,
@@ -40,12 +45,29 @@ public class ItemTabButton extends TabButton {
 
     private static ResourceLocation fetchRecreativeIcon(CreativeModeTab tab) {
         if (tab == null) return null;
-        try {
-            var method = tab.getClass().getMethod("recreative$getCustomIcon");
-            return (ResourceLocation) method.invoke(tab);
-        } catch (Exception e) {
-            return null;
+        if (!checkedRecreativeMethod) {
+            try {
+                recreativeIconMethod = CreativeModeTab.class.getMethod("recreative$getCustomIcon");
+            } catch (Exception e) {
+                // Ignore
+            }
+            checkedRecreativeMethod = true;
         }
+        if (recreativeIconMethod != null) {
+            try {
+                return (ResourceLocation) recreativeIconMethod.invoke(tab);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private ResourceLocation getCustomIcon() {
+        if (this.customIcon == null && this.tab.creativeModeTab() != null) {
+            this.customIcon = fetchRecreativeIcon(this.tab.creativeModeTab());
+        }
+        return this.customIcon;
     }
 
     private boolean isVisible() {
@@ -66,6 +88,8 @@ public class ItemTabButton extends TabButton {
         EmiDrawContext context = EmiDrawContext.wrap(raw);
 
         if (isVisible()) {
+            ResourceLocation icon = getCustomIcon();
+
             if (style == ButtonStyle.TOP) {
                 float yOff;
                 if (isSelected()) {
@@ -76,11 +100,11 @@ public class ItemTabButton extends TabButton {
                     yOff = 5F;
                 }
 
-                if (this.customIcon != null) {
+                if (icon != null) {
                     raw.pose().pushPose();
                     raw.pose().translate(getX() + 4.0, getY() + yOff, 150.0);
                     raw.pose().scale(10f / 16f, 10f / 16f, 1f);
-                    raw.blit(this.customIcon, 0, 0, 0f, 0f, 16, 16, 16, 16);
+                    raw.blit(icon, 0, 0, 0f, 0f, 16, 16, 16, 16);
                     raw.pose().popPose();
                 } else if (tab.creativeModeTab() != null) {
                     GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab().getIconItem(), getX() + 4F, getY() + yOff, 10F);
@@ -95,10 +119,10 @@ public class ItemTabButton extends TabButton {
                 raw.pose().popPose();
 
                 float iconX = (style == ButtonStyle.RIGHT) ? getX() + 6F : getX() + 8F;
-                if (this.customIcon != null) {
+                if (icon != null) {
                     raw.pose().pushPose();
                     raw.pose().translate(iconX, getY() + 5.0, 150.0);
-                    raw.blit(this.customIcon, 0, 0, 0f, 0f, 16, 16, 16, 16);
+                    raw.blit(icon, 0, 0, 0f, 0f, 16, 16, 16, 16);
                     raw.pose().popPose();
                 } else if (tab.creativeModeTab() != null) {
                     GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab().getIconItem(), iconX, getY() + 5F, 16F);

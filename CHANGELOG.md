@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-06-19
+
+### Added
+
+- Added an optional `"priority"` field to stack group configurations (default: 0).
+- Exclusions, tags, regex, and content rules can now be combined.
+- You can now search for stack groups by name/ID directly in EMI.
+    - The previous method of using `%` still works.
+
+### Fixed
+
+- Fixed issues with custom Recreative icons.
+
 ## [3.0.0] - 2026-06-18
 
 ### Added

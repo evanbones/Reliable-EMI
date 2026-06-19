@@ -1,7 +1,7 @@
 package com.evandev.emixx.mixin;
 
-import com.evandev.emixx.integration.emi.StackManager;
 import com.evandev.emixx.feature.stackgroup.StackGroupManager;
+import com.evandev.emixx.integration.emi.StackManager;
 import com.evandev.emixx.util.SearchWorkerBridge;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -42,10 +42,10 @@ public class EmiSearchSearchWorkerMixin implements SearchWorkerBridge {
                 }
 
                 String query = ((SearchWorkerBridge) worker).emixx$getQuery();
-                if (query != null && query.startsWith("%")) {
-                    String groupQuery = query.substring(1);
-                    if (!groupQuery.isEmpty()) {
-                        StackGroupManager.appendStacksForMatchingGroups(groupQuery, combinedStacks);
+                if (query != null && !query.isEmpty()) {
+                    String cleanQuery = query.startsWith("%") ? query.substring(1) : query;
+                    if (!cleanQuery.isEmpty()) {
+                        StackGroupManager.appendStacksForMatchingGroups(cleanQuery, combinedStacks);
                     }
                 }
 

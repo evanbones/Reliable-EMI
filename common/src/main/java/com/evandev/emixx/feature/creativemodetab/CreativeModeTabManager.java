@@ -30,6 +30,8 @@ public class CreativeModeTabManager {
     private static boolean isSelectingEmiPlusPlusByVanilla = false;
 
     private static CreativeModeTab indexCreativeModeTab;
+    private static java.lang.reflect.Method recreativeIconMethod = null;
+    private static boolean checkedRecreativeMethod = false;
 
     static {
         List<CreativeModeTab> hidden = new ArrayList<>();
@@ -91,8 +93,27 @@ public class CreativeModeTabManager {
         scrollOffset = Math.min(scrollOffset, getMaxScroll());
     }
 
+    private static boolean hasRecreativeIcon(CreativeModeTab tab) {
+        if (!checkedRecreativeMethod) {
+            try {
+                recreativeIconMethod = CreativeModeTab.class.getMethod("recreative$getCustomIcon");
+            } catch (Exception e) {
+                // Ignore
+            }
+            checkedRecreativeMethod = true;
+        }
+        if (recreativeIconMethod != null) {
+            try {
+                return recreativeIconMethod.invoke(tab) != null;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     public static boolean shouldHideTab(CreativeModeTab tab) {
-        return tab.getDisplayItems().isEmpty()
+        return (tab.getDisplayItems().isEmpty() && !hasRecreativeIcon(tab))
                 || HIDDEN_CREATIVE_MODE_TABS.contains(tab)
                 || disabledCreativeModeTabs.contains(tab);
     }

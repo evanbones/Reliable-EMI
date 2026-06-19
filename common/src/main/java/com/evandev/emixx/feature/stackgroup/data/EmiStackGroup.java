@@ -1,9 +1,9 @@
 package com.evandev.emixx.feature.stackgroup.data;
 
+import com.evandev.EmiPlusPlus;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.evandev.EmiPlusPlus;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
@@ -12,15 +12,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class EmiStackGroup extends StackGroup {
     private final Map<ResourceLocation, List<EmiIngredient>> targetMap;
     private final Set<ResourceLocation> allTargetIds;
     private final Set<ResourceLocation> excludedIds;
+    private final List<Pattern> regexes;
 
-    public EmiStackGroup(ResourceLocation id, Set<EmiIngredient> targets, Set<ResourceLocation> excludedIds, Component name) {
+    public EmiStackGroup(ResourceLocation id, Set<EmiIngredient> targets, Set<ResourceLocation> excludedIds, List<Pattern> regexes, Component name) {
         super(id, name);
         this.excludedIds = excludedIds;
+        this.regexes = regexes != null ? regexes : List.of();
 
         Map<ResourceLocation, List<EmiIngredient>> tempMap = new HashMap<>();
         Set<ResourceLocation> tempIds = new HashSet<>();
@@ -35,26 +38,6 @@ public class EmiStackGroup extends StackGroup {
         this.allTargetIds = tempIds;
     }
 
-    @Override
-    public Set<ResourceLocation> getOptimizedIds() {
-        return allTargetIds;
-    }
-
-    @Override
-    public boolean match(EmiIngredient stack) {
-        if (!(stack instanceof EmiStack emiStack)) return false;
-        ResourceLocation stackId = emiStack.getId();
-        if (excludedIds.contains(stackId)) return false;
-        List<EmiIngredient> relevant = targetMap.get(stackId);
-        if (relevant == null) return false;
-        for (EmiIngredient target : relevant) {
-            for (EmiStack ts : target.getEmiStacks()) {
-                if (ts.getId().equals(stackId) && ts.getClass() == emiStack.getClass()) return true;
-            }
-        }
-        return false;
-    }
-
     private static JsonElement normalizeIngredientJson(JsonElement element) {
         if (!element.isJsonPrimitive()) return element;
         String str = element.getAsString();
@@ -63,19 +46,17 @@ public class EmiStackGroup extends StackGroup {
         if (colonCount == 2) {
             String type = str.substring(0, str.indexOf(':'));
             String id = str.substring(str.indexOf(':') + 1);
+            JsonObject obj = new JsonObject();
             if (str.startsWith("#")) {
-                JsonObject obj = new JsonObject();
                 obj.addProperty("type", "tag");
                 obj.addProperty("registry", type.substring(1));
                 obj.addProperty("id", id);
                 obj.addProperty("tag", id);
-                return obj;
             } else {
-                JsonObject obj = new JsonObject();
                 obj.addProperty("type", type);
                 obj.addProperty("id", id);
-                return obj;
             }
+            return obj;
         }
 
         if (str.startsWith("#")) {
@@ -109,12 +90,27 @@ public class EmiStackGroup extends StackGroup {
             String nameKey = obj.has("name") ? GsonHelper.getAsString(obj, "name") : null;
             Component customName = nameKey != null ? Component.translatable(nameKey) : null;
 
-            if (!GsonHelper.isArrayNode(obj, "contents"))
-                throw new IllegalArgumentException("Contents are either not present or not a list");
+            int priority = obj.has("priority") ? GsonHelper.getAsInt(obj, "priority", 0) : 0;
 
             Set<EmiIngredient> targets = Sets.newHashSet();
-            for (JsonElement e : obj.getAsJsonArray("contents")) {
-                targets.add(deserialize(e));
+            if (GsonHelper.isArrayNode(obj, "contents")) {
+                for (JsonElement e : obj.getAsJsonArray("contents")) {
+                    targets.add(deserialize(e));
+                }
+            }
+
+            List<Pattern> regexes = new ArrayList<>();
+            if (obj.has("regex")) {
+                regexes.add(Pattern.compile(GsonHelper.getAsString(obj, "regex")));
+            }
+            if (GsonHelper.isArrayNode(obj, "regexes")) {
+                for (JsonElement e : obj.getAsJsonArray("regexes")) {
+                    regexes.add(Pattern.compile(e.getAsString()));
+                }
+            }
+
+            if (targets.isEmpty() && regexes.isEmpty()) {
+                throw new IllegalArgumentException("Contents or regex(es) must be present in group configuration.");
             }
 
             Set<ResourceLocation> excluded = new HashSet<>();
@@ -126,10 +122,44 @@ public class EmiStackGroup extends StackGroup {
                 }
             }
 
-            return new EmiStackGroup(finalId, targets, excluded, customName);
+            EmiStackGroup group = new EmiStackGroup(finalId, targets, excluded, regexes, customName);
+            group.priority = priority;
+            return group;
         } catch (Exception e) {
             EmiPlusPlus.LOGGER.error("[EMI++] Failed to parse stack group {}: {}", filenameId, e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public Set<ResourceLocation> getOptimizedIds() {
+        if (regexes != null && !regexes.isEmpty()) {
+            return null;
+        }
+        return allTargetIds;
+    }
+
+    @Override
+    public boolean match(EmiIngredient stack) {
+        if (!(stack instanceof EmiStack emiStack)) return false;
+        ResourceLocation stackId = emiStack.getId();
+
+        if (excludedIds.contains(stackId)) return false;
+
+        String idStr = stackId.toString();
+        for (Pattern pattern : regexes) {
+            if (pattern.matcher(idStr).matches()) return true;
+        }
+
+        List<EmiIngredient> relevant = targetMap.get(stackId);
+        if (relevant != null) {
+            for (EmiIngredient target : relevant) {
+                for (EmiStack ts : target.getEmiStacks()) {
+                    if (ts.getId().equals(stackId) && ts.getClass() == emiStack.getClass()) return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
