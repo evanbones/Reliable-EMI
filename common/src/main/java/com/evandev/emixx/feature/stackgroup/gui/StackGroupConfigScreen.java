@@ -4,6 +4,8 @@ import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.feature.stackgroup.StackGroupManager;
 import com.evandev.emixx.gui.GridList;
 import com.evandev.emixx.gui.GridListConfigScreen;
+import com.evandev.emixx.integration.emi.StackManager;
+import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -38,5 +40,7 @@ public class StackGroupConfigScreen extends GridListConfigScreen {
     @Override
     protected void reload() {
         StackGroupManager.reload();
+        StackManager.reload();
+        EmiScreenManager.recalculate();
     }
 }

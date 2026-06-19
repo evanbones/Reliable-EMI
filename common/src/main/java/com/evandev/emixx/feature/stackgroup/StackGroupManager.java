@@ -67,7 +67,6 @@ public class StackGroupManager {
         });
     }
 
-
     public static void registerType(String type, BiFunction<ResourceLocation, JsonObject, StackGroup> factory) {
         typeRegistry.put(type, factory);
     }
@@ -292,6 +291,21 @@ public class StackGroupManager {
         }
 
         groupToGroupStacks = localGroupMap;
+
+        for (var entry : localGroupMap.entrySet()) {
+            String groupId = entry.getKey().getId().toString();
+            List<String> savedOrder = EmiPlusPlusConfig.stackGroupItemOrder.get(groupId);
+            if (savedOrder != null && !savedOrder.isEmpty()) {
+                entry.getValue().itemsNew.sort((a, b) -> {
+                    int idxA = savedOrder.indexOf(a.realStack.getId().toString());
+                    int idxB = savedOrder.indexOf(b.realStack.getId().toString());
+                    if (idxA == -1 && idxB == -1) return 0;
+                    if (idxA == -1) return 1;
+                    if (idxB == -1) return -1;
+                    return Integer.compare(idxA, idxB);
+                });
+            }
+        }
     }
 
     private static void registerMatch(StackGroup group, EmiStack stack, Map<StackGroup, EmiGroupStack> groupStacksMap) {

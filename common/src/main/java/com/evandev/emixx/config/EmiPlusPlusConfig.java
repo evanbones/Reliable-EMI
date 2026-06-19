@@ -12,7 +12,9 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EmiPlusPlusConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -21,6 +23,7 @@ public class EmiPlusPlusConfig {
     public static boolean syncSelectedCreativeModeTab = true;
     public static boolean showCreativeTabNameInSearchbar = true;
     public static List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
+    public static Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
 
     public static boolean enableStackGroups = true;
     public static boolean enableCreateStackGroupButton = true;
@@ -45,14 +48,21 @@ public class EmiPlusPlusConfig {
                     enableCreativeModeTabs = data.enableCreativeModeTabs;
                     syncSelectedCreativeModeTab = data.syncSelectedCreativeModeTab;
                     showCreativeTabNameInSearchbar = data.showCreativeTabNameInSearchbar;
-                    if (data.disabledCreativeModeTabs != null)
+
+                    if (data.disabledCreativeModeTabs != null) {
                         disabledCreativeModeTabs = new ArrayList<>(data.disabledCreativeModeTabs);
+                    }
 
                     enableStackGroups = data.enableStackGroups;
                     enableCreateStackGroupButton = data.enableCreateStackGroupButton;
 
-                    if (data.disabledStackGroups != null)
+                    if (data.disabledStackGroups != null) {
                         disabledStackGroups = new ArrayList<>(data.disabledStackGroups);
+                    }
+
+                    if (data.stackGroupItemOrder != null) {
+                        stackGroupItemOrder = new HashMap<>(data.stackGroupItemOrder);
+                    }
 
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
                 }
@@ -85,6 +95,7 @@ public class EmiPlusPlusConfig {
         data.enableCreateStackGroupButton = enableCreateStackGroupButton;
         data.disabledStackGroups = new ArrayList<>(disabledStackGroups);
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
+        data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
         return data;
     }
 
@@ -96,6 +107,7 @@ public class EmiPlusPlusConfig {
         boolean enableStackGroups = true;
         boolean enableCreateStackGroupButton = true;
         List<String> disabledStackGroups = new ArrayList<>();
+        Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
         boolean emiOnlyInRecipeBook = false;
     }
 }

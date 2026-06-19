@@ -19,8 +19,8 @@ import java.util.List;
 
 public abstract class ListEntry extends AbstractContainerWidget {
     private static final ResourceLocation BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
-    private static final int PADDING = 8;
-    private static final int BORDER_WIDTH = 1;
+    protected static final int PADDING = 8;
+    protected static final int BORDER_WIDTH = 1;
     public static final int WIDTH = ScreenManager.ENTRY_SIZE * 8 + PADDING * 2 + BORDER_WIDTH * 2;
     public static final int HEIGHT = ScreenManager.ENTRY_SIZE * 2 + PADDING * 2 + BORDER_WIDTH * 2;
 
