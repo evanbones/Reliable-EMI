@@ -8,6 +8,8 @@ import com.evandev.emixx.integration.emi.StackManager;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +40,8 @@ public class StackGroupConfigScreen extends GridListConfigScreen {
 
     @Override
     protected void buildLayout() {
-        layout.addTitleHeader(title, font);
+        LinearLayout headerContent = LinearLayout.vertical().spacing(4);
+        headerContent.addChild(new StringWidget(title, font).alignCenter());
 
         EditBox searchBox = new EditBox(font, 0, 0, 200, 20, Component.translatable("emixx.configuration.search"));
         searchBox.setResponder(s -> {
@@ -48,7 +51,9 @@ public class StackGroupConfigScreen extends GridListConfigScreen {
                 sgList.refreshList();
             }
         });
-        layout.addToHeader(searchBox);
+        headerContent.addChild(searchBox);
+        layout.addToHeader(headerContent);
+        layout.setHeaderHeight(50);
 
         layout.addToContents(list);
         layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, b -> {
