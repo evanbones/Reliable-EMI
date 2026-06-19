@@ -1,46 +1,38 @@
 {
   "schemaVersion": 1,
-  "id": "emixx",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "EMI++",
-  "description": "Adds many useful features to EMI!",
+  "name": "${mod_name}",
+  "description": "${description}",
   "authors": [
-    "ConcerroX",
-    "evanbones"
+    "${mod_author}"
   ],
   "contact": {
     "homepage": "https://github.com/evanbones/emi-plus-plus/",
     "sources": "https://github.com/evanbones/emi-plus-plus/"
   },
-  "license": "MIT",
-  "icon": "icon.png",
+  "license": "${license}",
+  "icon": "${mod_id}.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      {
-        "adapter": "kotlin",
-        "value": "concerrox.emixx.fabric.EmiPlusPlusFabric"
-      }
+      "com.evandev.emixx.EmiPlusPlusFabric"
     ],
     "client": [
-      {
-        "adapter": "kotlin",
-        "value": "concerrox.emixx.fabric.EmiPlusPlusClientFabric"
-      }
+      "com.evandev.emixx.EmiPlusPlusClientFabric"
     ],
-    "kubejs": [
-      "concerrox.emixx.integration.kubejs.EmiPlusPlusKubeJSPlugin"
+    "modmenu": [
+      "com.evandev.emixx.integration.modmenu.ModMenuIntegration"
     ]
   },
   "mixins": [
-    "emixx-common.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": "~1.21.1",
     "java": ">=21",
-    "fabric-language-kotlin": ">=1.13.3+kotlin.2.1.21",
-    "forgeconfigapiport": ">=21.0.0"
+    "emi": ">=1.1.0"
   },
-  "accessWidener": "emixx-common.accesswidener"
+  "accessWidener": "${mod_id}.accesswidener"
 }

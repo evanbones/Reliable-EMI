@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-06-18
+
+### Added
+
+- Added a config page to quickly disable any built-in (or added) stack groups.
+- Items inside stack groups can now be rearranged in the config screen, or through the `stackGroupItemOrder` config
+  option.
+
+### Changed
+
+- Rewrote the mod using Java instead of Kotlin.
+- Fabric Language Kotlin and Kotlin for Forge are no longer dependencies.
+
+### Fixed
+
+- Fixed issues with Create Simulated tabs.
+- Performance improvements.
+
 ## [2.3.0] - 2026-06-18
 
 ### Added
