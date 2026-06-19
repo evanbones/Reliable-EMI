@@ -20,6 +20,9 @@
     ],
     "client": [
       "com.evandev.emixx.EmiPlusPlusClientFabric"
+    ],
+    "modmenu": [
+      "com.evandev.emixx.integration.modmenu.ModMenuIntegration"
     ]
   },
   "mixins": [

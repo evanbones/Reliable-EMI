@@ -15,6 +15,9 @@ dependencies {
 
     // EMI
     modImplementation "dev.emi:emi-fabric:${emi_version}"
+
+    // Mod Menu
+    modImplementation "maven.modrinth:modmenu:${modmenu_version}"
 }
 
 loom {
