@@ -11,25 +11,23 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 
 public abstract class GridListConfigScreen extends Screen {
-    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-    private GridList<?> list;
+    protected final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     private final TabManager tabManager = new TabManager(this::addRenderableWidget, this::removeWidget);
     private final TabNavigationBar tabNavigationBar;
-    private final String name;
+    protected GridList<?> list;
 
     protected GridListConfigScreen(String name) {
         super(EmiPlusPlus.text("gui", name));
-        this.name = name;
         this.tabNavigationBar = TabNavigationBar.builder(tabManager, 0).addTabs(new PrebuiltTab(name)).build();
     }
 
     protected abstract GridList<?> createList();
+
     protected abstract void save();
+
     protected abstract void reload();
 
-    @Override
-    protected void init() {
-        list = createList();
+    protected void buildLayout() {
         layout.addTitleHeader(title, font);
         layout.addToContents(list);
         layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, b -> {
@@ -37,6 +35,12 @@ public abstract class GridListConfigScreen extends Screen {
             onClose();
             reload();
         }).width(200).build());
+    }
+
+    @Override
+    protected void init() {
+        list = createList();
+        buildLayout();
         layout.visitWidgets(this::addRenderableWidget);
         repositionElements();
         list.add();

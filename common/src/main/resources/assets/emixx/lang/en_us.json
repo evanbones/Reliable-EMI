@@ -83,6 +83,7 @@
   "stackgroup.emixx.copper_blocks": "Copper Blocks",
 
   "emixx.configuration.stackGroups": "Stack Groups",
+  "emixx.configuration.search": "Search",
   "emixx.configuration.showCreativeTabNameInSearchbar": "Show Tab Name in Search Bar",
   "emixx.configuration.showCreativeTabNameInSearchbar.tooltip": "Displays the name of the currently selected creative mode tab in the EMI search bar when hovered.",
   "emixx.configuration.enableCreativeModeTabs.tooltip": "Enable or disable the Creative Mode Tabs sidebar entirely.",

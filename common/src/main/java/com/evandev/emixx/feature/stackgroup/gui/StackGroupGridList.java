@@ -16,22 +16,36 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class StackGroupGridList extends GridList<StackGroup> {
     private final Set<ResourceLocation> disabledStackGroups;
+    private String searchQuery = "";
 
     public StackGroupGridList(StackGroupConfigScreen screen, Set<ResourceLocation> disabledStackGroups) {
         super(screen);
         this.disabledStackGroups = disabledStackGroups;
     }
 
+    public void setSearchQuery(String query) {
+        this.searchQuery = query;
+    }
+
     @Override
     public Collection<StackGroup> getContents() {
-        return StackGroupManager.stackGroups;
+        if (searchQuery == null || searchQuery.isEmpty()) {
+            return StackGroupManager.stackGroups;
+        }
+
+        List<StackGroup> filtered = new ArrayList<>();
+        for (StackGroup group : StackGroupManager.stackGroups) {
+            String name = group.name != null ? group.name.getString().toLowerCase(Locale.ROOT) : "";
+            String id = group.getId().toString().toLowerCase(Locale.ROOT);
+            if (name.contains(searchQuery) || id.contains(searchQuery)) {
+                filtered.add(group);
+            }
+        }
+        return filtered;
     }
 
     @Override
@@ -42,7 +56,7 @@ public class StackGroupGridList extends GridList<StackGroup> {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (StackGroupEntry.activeExpandedEntry != null) {
-            if (StackGroupEntry.activeExpandedEntry.handleDropdownClick(mouseX, mouseY, button)) {
+            if (StackGroupEntry.activeExpandedEntry.handleDropdownClick(mouseX, mouseY)) {
                 return true;
             }
         }
@@ -130,7 +144,7 @@ public class StackGroupGridList extends GridList<StackGroup> {
             return false;
         }
 
-        public boolean handleDropdownClick(double mouseX, double mouseY, int button) {
+        public boolean handleDropdownClick(double mouseX, double mouseY) {
             if (!isExpanded || group == null) return false;
             EmiGroupStack cachedStack = StackGroupManager.groupToGroupStacks.get(group);
             if (cachedStack == null || cachedStack.itemsNew == null) return false;

@@ -4,7 +4,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,10 +24,14 @@ public abstract class GridList<Contents> extends ContainerObjectSelectionList<Gr
     }
 
     @Override
-    public int getRowWidth() { return TripleEntry.WIDTH; }
+    public int getRowWidth() {
+        return TripleEntry.WIDTH;
+    }
 
     @Override
-    public int getScrollbarPosition() { return this.width - 6; }
+    public int getScrollbarPosition() {
+        return this.width - 6;
+    }
 
     public abstract Collection<Contents> getContents();
 
@@ -37,6 +43,12 @@ public abstract class GridList<Contents> extends ContainerObjectSelectionList<Gr
             List<Contents> chunk = contents.subList(i, Math.min(i + 3, contents.size()));
             addEntry(new TripleEntry<>(this, chunk));
         }
+    }
+
+    public void refreshList() {
+        this.clearEntries();
+        this.add();
+        this.setScrollAmount(0);
     }
 
     public static class TripleEntry<Contents> extends Entry<TripleEntry<Contents>> {
@@ -57,7 +69,7 @@ public abstract class GridList<Contents> extends ContainerObjectSelectionList<Gr
         }
 
         @Override
-        public void render(GuiGraphics guiGraphics, int index, int top, int left, int width, int height,
+        public void render(@NotNull GuiGraphics guiGraphics, int index, int top, int left, int width, int height,
                            int mouseX, int mouseY, boolean isHovered, float partialTick) {
             int xOffset = 0;
             int startX = (listWidget.screen.width - WIDTH) / 2;
@@ -69,9 +81,13 @@ public abstract class GridList<Contents> extends ContainerObjectSelectionList<Gr
         }
 
         @Override
-        public List<? extends GuiEventListener> children() { return children; }
+        public @NotNull List<? extends GuiEventListener> children() {
+            return children;
+        }
 
         @Override
-        public List<? extends net.minecraft.client.gui.narration.NarratableEntry> narratables() { return children; }
+        public @NotNull List<? extends NarratableEntry> narratables() {
+            return children;
+        }
     }
 }
