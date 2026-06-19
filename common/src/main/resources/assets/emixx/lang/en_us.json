@@ -14,12 +14,11 @@
   "emixx.configuration.enableCreativeModeTabs": "Enable Creative Mode Tabs",
   "emixx.configuration.syncSelectedCreativeModeTab": "Sync Selected Creative Mode Tab",
   "emixx.configuration.disabledCreativeModeTabs": "Disabled Creative Mode Tabs",
-  "emixx.emixx.configuration.disabledCreativeModeTabs.manage": "Configure...",
-  "emixx.configuration.stackGroups": "Stack Groups",
+  "emixx.configuration.disabledCreativeModeTabs.manage": "Configure...",
+  "emixx.configuration.disabledStackGroups.manage": "Configure...",
   "emixx.configuration.enableStackGroups": "Enable Stack Groups",
   "emixx.configuration.enableCreateStackGroupButton": "Enable Create Stack Group Button",
   "emixx.configuration.disabledStackGroups": "Disabled Stack Groups",
-  "emixx.emixx.configuration.disabledStackGroups.manage": "Configure...",
 
   "stackgroup.emixx.enchanted_books": "Enchanted Books",
   "stackgroup.emixx.potions": "Potions",
@@ -83,6 +82,7 @@
   "stackgroup.emixx.spawn_eggs": "Spawn Eggs",
   "stackgroup.emixx.copper_blocks": "Copper Blocks",
 
+  "emixx.configuration.stackGroups": "Stack Groups",
   "emixx.configuration.showCreativeTabNameInSearchbar": "Show Tab Name in Search Bar",
   "emixx.configuration.showCreativeTabNameInSearchbar.tooltip": "Displays the name of the currently selected creative mode tab in the EMI search bar when hovered.",
   "emixx.configuration.enableCreativeModeTabs.tooltip": "Enable or disable the Creative Mode Tabs sidebar entirely.",

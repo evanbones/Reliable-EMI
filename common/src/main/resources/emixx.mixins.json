@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "com.evandev.emixx.mixin",
+  "compatibilityLevel": "JAVA_18",
+  "minVersion": "0.8",
+  "client": [
+    "BoMScreenMixin",
+    "ConfigScreenMixin",
+    "CreativeModeInventoryScreenMixin",
+    "EmiReloadManagerReloadWorkerMixin",
+    "EmiScreenManagerMixin",
+    "EmiScreenManagerScreenSpaceMixin",
+    "EmiScreenManagerSidebarPanelMixin",
+    "EmiSearchSearchWorkerMixin",
+    "NameQueryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "EmiIngredientRecipeMixin"
+  ]
+}

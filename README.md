@@ -11,27 +11,13 @@ EMI++ provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
-* *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
-  Plates, Spawn Eggs, and more.
-
+  * *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
+    Plates, Spawn Eggs, and more.
 
 * **Creative Mode Tabs:** Displays vanilla and modded Creative Mode tabs directly within the EMI interface for easy
   browsing.
 * **Item Tabs:** Improved navigation with Creative Mode-style item tabs.
 * **Vanilla/Modern Theme:** A unique visual theme for the sidebar, depending on the EMI theme.
-
-### Dependencies
-
-**Fabric:**
-
-* Fabric Loader
-* Fabric Language Kotlin
-* [EMI](https://github.com/emilyploszaj/emi)
-
-**(Neo)Forge:**
-
-* Kotlin for Forge
-* [EMI](https://github.com/emilyploszaj/emi)
 
 ## Configuration
 
@@ -89,7 +75,7 @@ To create a custom group, create a JSON file in `assets/<namespace>/stack_groups
 | `exclusions` | List              | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).          |
 | `regex`      | String            | *(For `emixx:regex`)* A regular expression pattern used to match item IDs dynamically.        |
 
-**Example 1: Creating a shiny things group (standard list)**
+**Example: Creating a shiny things group (standard list)**
 
 ```json
 {
@@ -108,7 +94,7 @@ To create a custom group, create a JSON file in `assets/<namespace>/stack_groups
 
 ```
 
-**Example 2: Creating a group using Regex (Dynamic Matching)**
+**Example: Creating a group using Regex**
 
 You can use the `"emixx:regex"` type to dynamically group items based on their naming patterns. The example below groups
 all items that end in _sword (from any namespace):
