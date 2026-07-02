@@ -147,8 +147,13 @@ public class EmiGroupStack extends EmiStack {
     @Override
     public MutableComponent getName() {
         if (group.name != null) return (MutableComponent) group.name;
+
         String key = "stackgroup." + EmiPlusPlus.MOD_ID + "." + group.getId().getPath();
         if (Language.getInstance().has(key)) return Component.translatable(key);
+
+        String tagKey = "tag.item." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
+        if (Language.getInstance().has(tagKey)) return Component.translatable(tagKey);
+
         String[] parts = group.getId().getPath().split("_");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
