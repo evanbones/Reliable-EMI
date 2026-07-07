@@ -28,6 +28,7 @@ public class CreativeModeTabGui {
     private static final int MAX_TAB_COUNT_VANILLA = 11;
 
     private static final ImageButton buttonScrollDown;
+    private static final ImageButton buttonScrollUp;
     public static int tabCount = 0;
     private static Screen screen;
     private static final ItemTabManager tabManager = new ItemTabManager(
@@ -53,6 +54,10 @@ public class CreativeModeTabGui {
                 b -> CreativeModeTabManager.nextPage());
         buttonScrollDown.matchScreenManagerVisibility();
         buttonScrollDown.withTexture(EmiPlusPlus.res("textures/gui/scroll_down.png"), 8, 8);
+        buttonScrollUp = new ImageButton(8, 4, 0, 0, () -> CreativeModeTabManager.scrollOffset > 0,
+                b -> CreativeModeTabManager.previousPage());
+        buttonScrollUp.matchScreenManagerVisibility();
+        buttonScrollUp.withTexture(EmiPlusPlus.res("textures/gui/scroll_up.png"), 8, 8);
     }
 
     public static TabTheme currentTheme() {
@@ -70,6 +75,7 @@ public class CreativeModeTabGui {
         buttonPrevious.visible = false;
         buttonNext.visible = false;
         buttonScrollDown.visible = false;
+        buttonScrollUp.visible = false;
         topTabNavigationBar.visible = false;
         leftTabNavigationBar.visible = false;
         rightTabNavigationBar.visible = false;
@@ -101,6 +107,9 @@ public class CreativeModeTabGui {
                 tabCount = Math.max(1, availableHeight / VANILLA_TAB_HEIGHT);
                 leftTabNavigationBar.visible = true;
                 leftTabNavigationBar.pos(leftX, startY);
+                buttonScrollUp.visible = true;
+                buttonScrollUp.setX(leftX + BUTTON_SCROLL_OFFSET_X);
+                buttonScrollUp.setY(startY - BUTTON_SCROLL_OFFSET_Y - 4);
                 buttonScrollDown.visible = true;
                 buttonScrollDown.setX(leftX + BUTTON_SCROLL_OFFSET_X);
                 buttonScrollDown.setY(startY + (tabCount * VANILLA_TAB_HEIGHT) + BUTTON_SCROLL_OFFSET_Y);
@@ -117,6 +126,7 @@ public class CreativeModeTabGui {
         screen.removeWidget(buttonPrevious);
         screen.removeWidget(buttonNext);
         screen.removeWidget(buttonScrollDown);
+        screen.removeWidget(buttonScrollUp);
         screen.removeWidget(topTabNavigationBar);
         screen.removeWidget(leftTabNavigationBar);
         screen.removeWidget(rightTabNavigationBar);
@@ -124,6 +134,7 @@ public class CreativeModeTabGui {
         screen.addRenderableWidget(buttonPrevious);
         screen.addRenderableWidget(buttonNext);
         screen.addRenderableWidget(buttonScrollDown);
+        screen.addRenderableWidget(buttonScrollUp);
         screen.addRenderableWidget(topTabNavigationBar);
         screen.addRenderableWidget(leftTabNavigationBar);
         screen.addRenderableWidget(rightTabNavigationBar);
