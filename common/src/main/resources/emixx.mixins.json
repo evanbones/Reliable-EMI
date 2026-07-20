@@ -12,6 +12,7 @@
     "EmiScreenManagerScreenSpaceMixin",
     "EmiScreenManagerSidebarPanelMixin",
     "EmiSearchSearchWorkerMixin",
+    "EmiStackListMixin",
     "NameQueryMixin"
   ],
   "injectors": {

@@ -1,8 +1,9 @@
 package com.evandev.emixx.feature.stackgroup;
 
 import com.evandev.EmiPlusPlus;
-import com.evandev.emixx.integration.emi.ScreenManager;
 import com.evandev.emixx.feature.stackgroup.data.StackGroup;
+import com.evandev.emixx.integration.emi.ScreenManager;
+import com.evandev.emixx.integration.sodium.SodiumCompat;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.stack.Comparison;
@@ -10,28 +11,69 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiHidden;
+import dev.emi.emi.screen.StackBatcher;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
-public class EmiGroupStack extends EmiStack {
+public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
+    private static final Component EXPANDED_INDICATOR = EmiPort.literal("-");
+    private static final Component COLLAPSED_INDICATOR = EmiPort.literal("+");
+    private static int visibilityVersion = 0;
+
     public final StackGroup group;
     public boolean isExpanded = false;
     public List<GroupedEmiStack<EmiStack>> itemsNew;
     private HashSet<StackWrapper> contentLookup;
 
+    private List<GroupedEmiStack<EmiStack>> visibleItems;
+    private int visibleItemsVersion = -1;
+
+    private boolean unbatchable;
+    private boolean batchStateDirty = true;
+    private boolean batchEditMode;
+    private int batchStateVersion = -1;
+    private boolean batchable;
+    private boolean sideLit;
+    private List<TextureAtlasSprite> batchedSprites;
+
     public EmiGroupStack(StackGroup group, List<GroupedEmiStack<EmiStack>> items) {
         this.group = group;
         this.itemsNew = items;
+    }
+
+    public static void onStackFilterChanged() {
+        visibilityVersion++;
+    }
+
+    private static void collectSprites(EmiStack stack, Set<TextureAtlasSprite> out) {
+        ItemStack is = stack.getItemStack();
+        if (is.isEmpty()) return;
+        BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(is, null, null, 0);
+        for (BakedQuad quad : EmiPort.getQuads(model)) {
+            if (quad != null) out.add(quad.getSprite());
+        }
+    }
+
+    /**
+     * Must be called after any direct mutation of {@link #itemsNew}.
+     */
+    public void invalidateCaches() {
+        visibleItems = null;
+        batchStateDirty = true;
     }
 
     public boolean append(GroupedEmiStack<EmiStack> stack) {
@@ -41,18 +83,26 @@ public class EmiGroupStack extends EmiStack {
         }
         if (contentLookup.add(new StackWrapper(stack.realStack))) {
             itemsNew.add(stack);
+            invalidateCaches();
             return true;
         }
         return false;
     }
 
+    /**
+     * Returns the non-hidden items. Callers must not mutate the returned list
+     */
     public List<GroupedEmiStack<EmiStack>> getItems() {
         if (EmiConfig.editMode) return itemsNew;
-        List<GroupedEmiStack<EmiStack>> result = new ArrayList<>();
-        for (var item : itemsNew) {
-            if (!EmiHidden.isHidden(item.realStack)) result.add(item);
+        if (visibleItems == null || visibleItemsVersion != visibilityVersion) {
+            List<GroupedEmiStack<EmiStack>> result = new ArrayList<>(itemsNew.size());
+            for (var item : itemsNew) {
+                if (!EmiHidden.isHidden(item.realStack)) result.add(item);
+            }
+            visibleItems = result;
+            visibleItemsVersion = visibilityVersion;
         }
-        return result;
+        return visibleItems;
     }
 
     @Override
@@ -100,10 +150,8 @@ public class EmiGroupStack extends EmiStack {
 
     @Override
     public void render(GuiGraphics raw, int x, int y, float delta, int flags) {
-        List<GroupedEmiStack<EmiStack>> items = getItems();
         EmiDrawContext context = EmiDrawContext.wrap(raw);
         int es = ScreenManager.ENTRY_SIZE;
-        context.push();
 
         if (isExpanded) {
             context.fill(x - 1, y - 1, 1, es, 0xFFFFFFFF);
@@ -113,28 +161,106 @@ public class EmiGroupStack extends EmiStack {
             context.fill(x, y, es - 2, es - 2, 0x30FFFFFF);
         }
 
-        context.matrices().pushPose();
+        if ((flags & RENDER_ICON) != 0) {
+            List<GroupedEmiStack<EmiStack>> items = getItems();
+            context.push();
+            context.matrices().translate(x + 1.6F, y + 1.6F, 0F);
+            context.matrices().scale(0.8F, 0.8F, 0.8F);
+
+            if (items.size() == 1) {
+                items.getFirst().render(raw, 0, 0, delta, flags);
+            } else if (items.size() == 2) {
+                context.matrices().translate(0.5F, 0F, 0F);
+                items.get(1).render(raw, 1, -1, delta, flags);
+                context.matrices().translate(0F, 0F, 10F);
+                items.getFirst().render(raw, -2, 1, delta, flags);
+            } else if (items.size() >= 3) {
+                items.get(2).render(raw, 3, -2, delta, flags);
+                context.matrices().translate(0F, 0F, 10F);
+                items.get(1).render(raw, 0, 0, delta, flags);
+                context.matrices().translate(0F, 0F, 10F);
+                items.get(0).render(raw, -3, 2, delta, flags);
+            }
+            context.pop();
+        } else if (batchedSprites != null) {
+            for (TextureAtlasSprite sprite : batchedSprites) {
+                SodiumCompat.markSpriteActive(sprite);
+            }
+        }
+
+        EmiRenderHelper.renderAmount(context, x, y, isExpanded ? EXPANDED_INDICATOR : COLLAPSED_INDICATOR);
+    }
+
+    @Override
+    public boolean isSideLit() {
+        refreshBatchState();
+        return sideLit;
+    }
+
+    @Override
+    public boolean isUnbatchable() {
+        if (unbatchable) return true;
+        refreshBatchState();
+        return !batchable;
+    }
+
+    @Override
+    public void setUnbatchable() {
+        unbatchable = true;
+    }
+
+    @Override
+    public void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta) {
+        List<GroupedEmiStack<EmiStack>> items = getItems();
+        if (items.isEmpty()) return;
+        EmiDrawContext context = EmiDrawContext.wrap(draw);
+        context.push();
         context.matrices().translate(x + 1.6F, y + 1.6F, 0F);
         context.matrices().scale(0.8F, 0.8F, 0.8F);
 
         if (items.size() == 1) {
-            items.getFirst().render(raw, 0, 0, delta, flags);
+            items.getFirst().renderForBatch(vcp, draw, 0, 0, z, delta);
         } else if (items.size() == 2) {
             context.matrices().translate(0.5F, 0F, 0F);
-            items.get(1).render(raw, 1, -1, delta, flags);
-            context.matrices().translate(0F, 0F, 10F);
-            items.getFirst().render(raw, -2, 1, delta, flags);
-        } else if (items.size() >= 3) {
-            items.get(2).render(raw, 3, -2, delta, flags);
-            context.matrices().translate(0F, 0F, 10F);
-            items.get(1).render(raw, 0, 0, delta, flags);
-            context.matrices().translate(0F, 0F, 10F);
-            items.get(0).render(raw, -3, 2, delta, flags);
+            items.get(1).renderForBatch(vcp, draw, 1, -1, z, delta);
+            items.getFirst().renderForBatch(vcp, draw, -2, 1, z + 10, delta);
+        } else {
+            items.get(2).renderForBatch(vcp, draw, 3, -2, z, delta);
+            items.get(1).renderForBatch(vcp, draw, 0, 0, z + 10, delta);
+            items.get(0).renderForBatch(vcp, draw, -3, 2, z + 20, delta);
         }
-        context.matrices().popPose();
-
-        EmiRenderHelper.renderAmount(context, x, y, EmiPort.literal(isExpanded ? "-" : "+"));
         context.pop();
+
+        if (SodiumCompat.isLoaded()) {
+            Set<TextureAtlasSprite> sprites = new LinkedHashSet<>();
+            int count = Math.min(3, items.size());
+            for (int i = 0; i < count; i++) {
+                collectSprites(items.get(i).realStack, sprites);
+            }
+            batchedSprites = new ArrayList<>(sprites);
+        }
+    }
+
+    private void refreshBatchState() {
+        if (!batchStateDirty && batchStateVersion == visibilityVersion && batchEditMode == EmiConfig.editMode) return;
+        batchStateDirty = false;
+        batchStateVersion = visibilityVersion;
+        batchEditMode = EmiConfig.editMode;
+        batchable = false;
+        sideLit = false;
+
+        List<GroupedEmiStack<EmiStack>> items = getItems();
+        int count = Math.min(3, items.size());
+        for (int i = 0; i < count; i++) {
+            GroupedEmiStack<EmiStack> item = items.get(i);
+            if (item.isUnbatchable()) return;
+            if (i == 0) {
+                sideLit = item.isSideLit();
+            } else if (item.isSideLit() != sideLit) {
+                return;
+            }
+        }
+        batchable = count > 0;
     }
 
     @Override

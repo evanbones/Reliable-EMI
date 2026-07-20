@@ -90,8 +90,6 @@ public class EmiStackGroup extends StackGroup {
             String nameKey = obj.has("name") ? GsonHelper.getAsString(obj, "name") : null;
             Component customName = nameKey != null ? Component.translatable(nameKey) : null;
 
-            int priority = obj.has("priority") ? GsonHelper.getAsInt(obj, "priority", 0) : 0;
-
             Set<EmiIngredient> targets = Sets.newHashSet();
             if (GsonHelper.isArrayNode(obj, "contents")) {
                 for (JsonElement e : obj.getAsJsonArray("contents")) {
@@ -122,11 +120,9 @@ public class EmiStackGroup extends StackGroup {
                 }
             }
 
-            EmiStackGroup group = new EmiStackGroup(finalId, targets, excluded, regexes, customName);
-            group.priority = priority;
-            return group;
+            return new EmiStackGroup(finalId, targets, excluded, regexes, customName);
         } catch (Exception e) {
-            EmiPlusPlus.LOGGER.error("[EMI++] Failed to parse stack group {}: {}", filenameId, e.getMessage());
+            EmiPlusPlus.LOGGER.error("Failed to parse stack group {}: {}", filenameId, e.getMessage());
             return null;
         }
     }

@@ -81,11 +81,12 @@ public class StackManager {
         List<EmiStack> result = new ArrayList<>(groupedStacks.size());
         for (EmiStack s : groupedStacks) {
             if (s instanceof EmiGroupStack gs) {
-                if (gs.getItems().size() == 1) {
-                    result.add(gs.getItems().getFirst().realStack);
+                var items = gs.getItems();
+                if (items.size() == 1) {
+                    result.add(items.getFirst().realStack);
                 } else if (gs.isExpanded) {
                     result.add(gs);
-                    for (var item : gs.getItems()) result.add(item.realStack);
+                    for (var item : items) result.add(item.realStack);
                 } else {
                     result.add(gs);
                 }

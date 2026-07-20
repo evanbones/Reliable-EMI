@@ -11,8 +11,8 @@ EMI++ provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
-  * *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
-    Plates, Spawn Eggs, and more.
+    * *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
+      Plates, Spawn Eggs, and more.
 
 * **Creative Mode Tabs:** Displays vanilla and modded Creative Mode tabs directly within the EMI interface for easy
   browsing.
@@ -65,15 +65,17 @@ To create a custom group, create a JSON file in `assets/<namespace>/stack_groups
 
 **JSON Structure:**
 
-| Field        | Type              | Description                                                                                   |
-|--------------|-------------------|-----------------------------------------------------------------------------------------------|
-| `id`         | String            | A unique identifier (e.g., `"mypack:currency"`).                                              |
-| `name`       | String (Optional) | A translatable translation key for the group's name (e.g., `"mypack.group.currency"`).        |
-| `type`       | String            | Determines how the group is built. Can be `"emixx:group"`, `"emixx:tag"`, or `"emixx:regex"`. |
-| `enabled`    | Boolean           | Set to `false` to disable this group.                                                         |
-| `contents`   | List              | *(For `emixx:group`)* A list of items or tags to include.                                     |
-| `exclusions` | List              | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).          |
-| `regex`      | String            | *(For `emixx:regex`)* A regular expression pattern used to match item IDs dynamically.        |
+| Field        | Type               | Description                                                                                                       |
+|--------------|--------------------|-------------------------------------------------------------------------------------------------------------------|
+| `id`         | String             | A unique identifier (e.g., `"mypack:currency"`).                                                                  |
+| `name`       | String (Optional)  | A translatable translation key for the group's name (e.g., `"mypack.group.currency"`).                            |
+| `type`       | String             | Determines how the group is built. Can be `"emixx:group"`, `"emixx:tag"`, or `"emixx:regex"`.                     |
+| `enabled`    | Boolean            | Set to `false` to disable this group.                                                                             |
+| `priority`   | Integer (Optional) | Controls match order when an item could belong to multiple groups. Higher values are checked first (default `0`). |
+| `contents`   | List               | *(For `emixx:group`)* A list of items or tags to include.                                                         |
+| `exclusions` | List               | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).                              |
+| `regex`      | String             | *(For `emixx:group`/`emixx:regex`)* A regular expression pattern used to match item IDs dynamically.              |
+| `regexes`    | List (Optional)    | *(For `emixx:group`)* Like `regex`, but accepts a list of multiple patterns.                                      |
 
 **Example: Creating a shiny things group (standard list)**
 

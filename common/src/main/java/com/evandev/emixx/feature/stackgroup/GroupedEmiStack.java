@@ -3,8 +3,10 @@ package com.evandev.emixx.feature.stackgroup;
 import com.evandev.emixx.feature.stackgroup.data.StackGroup;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.screen.StackBatcher;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-public class GroupedEmiStack<T extends EmiStack> extends EmiStack {
+public class GroupedEmiStack<T extends EmiStack> extends EmiStack implements StackBatcher.Batchable {
     public final T realStack;
     public final StackGroup stackGroup;
 
@@ -30,8 +32,29 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack {
     }
 
     @Override
+    public boolean isSideLit() {
+        return realStack instanceof StackBatcher.Batchable b && b.isSideLit();
+    }
+
+    @Override
+    public boolean isUnbatchable() {
+        return !(realStack instanceof StackBatcher.Batchable b) || b.isUnbatchable();
+    }
+
+    @Override
+    public void setUnbatchable() {
+        if (realStack instanceof StackBatcher.Batchable b) b.setUnbatchable();
+    }
+
+    @Override
+    public void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta) {
+        if (realStack instanceof StackBatcher.Batchable b) b.renderForBatch(vcp, draw, x, y, z, delta);
+    }
+
+    @Override
     public boolean isEqual(EmiStack stack) {
-        if (stack instanceof GroupedEmiStack<?> gs) return realStack.isEqual(gs.realStack, Comparison.compareComponents());
+        if (stack instanceof GroupedEmiStack<?> gs)
+            return realStack.isEqual(gs.realStack, Comparison.compareComponents());
         return realStack.isEqual(stack, Comparison.compareComponents());
     }
 
@@ -44,18 +67,25 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack {
     @Override
     public boolean equals(Object other) {
         if (this == other) return true;
-        if (other instanceof GroupedEmiStack<?> gs) return realStack.isEqual(gs.realStack, Comparison.compareComponents());
+        if (other instanceof GroupedEmiStack<?> gs)
+            return realStack.isEqual(gs.realStack, Comparison.compareComponents());
         return realStack.equals(other);
     }
 
     @Override
-    public int hashCode() { return realStack.hashCode(); }
+    public int hashCode() {
+        return realStack.hashCode();
+    }
 
     @Override
-    public List<EmiStack> getEmiStacks() { return realStack.getEmiStacks(); }
+    public List<EmiStack> getEmiStacks() {
+        return realStack.getEmiStacks();
+    }
 
     @Override
-    public boolean isEmpty() { return realStack.isEmpty(); }
+    public boolean isEmpty() {
+        return realStack.isEmpty();
+    }
 
     @Override
     public EmiStack copy() {
@@ -67,29 +97,47 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack {
     }
 
     @Override
-    public DataComponentPatch getComponentChanges() { return realStack.getComponentChanges(); }
+    public DataComponentPatch getComponentChanges() {
+        return realStack.getComponentChanges();
+    }
 
     @Override
-    public Object getKey() { return realStack.getKey(); }
+    public Object getKey() {
+        return realStack.getKey();
+    }
 
     @Override
-    public ResourceLocation getId() { return realStack.getId(); }
+    public ResourceLocation getId() {
+        return realStack.getId();
+    }
 
     @Override
-    public List<Component> getTooltipText() { return realStack.getTooltipText(); }
+    public List<Component> getTooltipText() {
+        return realStack.getTooltipText();
+    }
 
     @Override
-    public Component getName() { return realStack.getName(); }
+    public Component getName() {
+        return realStack.getName();
+    }
 
     @Override
-    public <V> V getKeyOfType(Class<V> clazz) { return realStack.getKeyOfType(clazz); }
+    public <V> V getKeyOfType(Class<V> clazz) {
+        return realStack.getKeyOfType(clazz);
+    }
 
     @Override
-    public ItemStack getItemStack() { return realStack.getItemStack(); }
+    public ItemStack getItemStack() {
+        return realStack.getItemStack();
+    }
 
     @Override
-    public List<ClientTooltipComponent> getTooltip() { return realStack.getTooltip(); }
+    public List<ClientTooltipComponent> getTooltip() {
+        return realStack.getTooltip();
+    }
 
     @Override
-    public String toString() { return realStack.toString(); }
+    public String toString() {
+        return realStack.toString();
+    }
 }

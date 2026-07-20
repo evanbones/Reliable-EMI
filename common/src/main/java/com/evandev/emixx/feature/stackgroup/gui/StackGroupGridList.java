@@ -224,6 +224,7 @@ public class StackGroupGridList extends GridList<StackGroup> {
             if (dropIndex != draggedIndex) {
                 var item = cachedStack.itemsNew.remove(draggedIndex);
                 cachedStack.itemsNew.add(dropIndex, item);
+                cachedStack.invalidateCaches();
 
                 List<String> newOrder = cachedStack.itemsNew.stream()
                         .map(i -> i.realStack.getId().toString())

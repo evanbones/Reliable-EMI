@@ -47,10 +47,7 @@ public class StackGroupManager {
             @SuppressWarnings("unchecked")
             EmiIngredient ingredient = EmiIngredient.of(tagKey);
 
-            int priority = json.has("priority") ? GsonHelper.getAsInt(json, "priority", 0) : 0;
-            EmiStackGroup group = new EmiStackGroup(id, Set.of(ingredient), Set.of(), List.of(), customName);
-            group.priority = priority;
-            return group;
+            return new EmiStackGroup(id, Set.of(ingredient), Set.of(), List.of(), customName);
         });
 
         registerType("emixx:spawn_eggs", (id, json) -> new SpawnEggItemGroup());
@@ -68,7 +65,7 @@ public class StackGroupManager {
             try {
                 return new RegexStackGroup(id, Pattern.compile(regexString), customName);
             } catch (Exception e) {
-                EmiPlusPlus.LOGGER.error("[EMI++] Invalid regex in stack group {}: {}", id, regexString, e);
+                EmiPlusPlus.LOGGER.error("Invalid regex in stack group {}: {}", id, regexString, e);
                 return null;
             }
         });
@@ -112,7 +109,7 @@ public class StackGroupManager {
                 new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
             }
         } catch (Exception e) {
-            EmiPlusPlus.LOGGER.error("[EMI++] Failed to save stack group", e);
+            EmiPlusPlus.LOGGER.error("Failed to save stack group", e);
         }
     }
 
@@ -161,7 +158,7 @@ public class StackGroupManager {
                 }
             }
         } catch (Exception e) {
-            EmiPlusPlus.LOGGER.error("[EMI++] Failed to list stack groups", e);
+            EmiPlusPlus.LOGGER.error("Failed to list stack groups", e);
         }
 
         Path configDir = EmiPlusPlusConfig.getConfigDir().resolve("stack_groups");
@@ -174,11 +171,11 @@ public class StackGroupManager {
                                 : json.has("tag") ? json.get("tag").getAsString() : null;
                         if (idString != null) loadGroup(ResourceLocation.parse(idString), json, loaded);
                     } catch (Exception e) {
-                        EmiPlusPlus.LOGGER.error("[EMI++] Failed to load user stack group {}", path, e);
+                        EmiPlusPlus.LOGGER.error("Failed to load user stack group {}", path, e);
                     }
                 });
             } catch (Exception e) {
-                EmiPlusPlus.LOGGER.error("[EMI++] Failed to list user stack groups", e);
+                EmiPlusPlus.LOGGER.error("Failed to list user stack groups", e);
             }
         }
 
@@ -202,16 +199,19 @@ public class StackGroupManager {
             if (factory != null) {
                 StackGroup group = factory.apply(id, json);
                 if (group != null) {
+                    if (json.has("priority")) {
+                        group.priority = GsonHelper.getAsInt(json, "priority", group.priority);
+                    }
                     if (EmiPlusPlusConfig.disabledStackGroups.contains(id.toString())) {
                         group.isEnabled = false;
                     }
                     loaded.put(id, group);
                 }
             } else {
-                EmiPlusPlus.LOGGER.error("[EMI++] Unknown stack group type '{}' for {}", type, id);
+                EmiPlusPlus.LOGGER.error("Unknown stack group type '{}' for {}", type, id);
             }
         } catch (Exception e) {
-            EmiPlusPlus.LOGGER.error("[EMI++] Failed to parse stack group {}", id, e);
+            EmiPlusPlus.LOGGER.error("Failed to parse stack group {}", id, e);
         }
     }
 

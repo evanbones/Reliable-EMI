@@ -1,3 +1,4 @@
-### Changed
+### Fixed
 
-- Added an up arrow to the creative tabs list when using vanilla mode.
+- Fixed `priority` field only applying to `emixx:group` types.
+- Performance improvements.
