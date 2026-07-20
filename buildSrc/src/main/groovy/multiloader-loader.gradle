@@ -44,6 +44,8 @@ publishMods {
         projectId = "1411826"
         minecraftVersions.add("${minecraft_version}")
 
+        client = true
+        server = false
         requires("emi")
     }
 
