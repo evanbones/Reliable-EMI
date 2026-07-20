@@ -9,6 +9,7 @@ import dev.emi.emi.runtime.EmiDrawContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.TabButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -48,8 +49,7 @@ public class ItemTabButton extends TabButton {
         if (!checkedRecreativeMethod) {
             try {
                 recreativeIconMethod = CreativeModeTab.class.getMethod("recreative$getCustomIcon");
-            } catch (Exception e) {
-                // Ignore
+            } catch (Exception ignored) {
             }
             checkedRecreativeMethod = true;
         }
@@ -142,7 +142,10 @@ public class ItemTabButton extends TabButton {
                     lastDisplayTitle = displayTitle;
                     ScreenManager.customIndexTitle = displayTitle;
                 }
-                raw.renderTooltip(font, title, mouseX, mouseY);
+                
+                if (Minecraft.getInstance().screen != null) {
+                    Minecraft.getInstance().screen.setTooltipForNextRenderPass(title);
+                }
             } else {
                 ScreenManager.removeCustomIndexTitle(lastDisplayTitle != null ? lastDisplayTitle : title);
             }

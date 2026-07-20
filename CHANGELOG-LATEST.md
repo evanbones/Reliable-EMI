@@ -1,4 +1,3 @@
 ### Fixed
 
-- Fixed `priority` field only applying to `emixx:group` types.
-- Performance improvements.
+- Fixed tooltip issues with Shadows Redropped.
