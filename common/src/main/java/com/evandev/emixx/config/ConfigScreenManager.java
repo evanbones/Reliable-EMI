@@ -49,7 +49,7 @@ public class ConfigScreenManager {
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "scrollInsteadOfPagination",
                 () -> EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.scrollInsteadOfPagination = v, false);
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "showTitleInsteadOfPageNumbers",
-                () -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers, v -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers = v, false);
+                () -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers || EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers = v || EmiPlusPlusConfig.scrollInsteadOfPagination, false);
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "hidePageButtonWhenOnePage",
                 () -> EmiPlusPlusConfig.hidePageButtonWhenOnePage, v -> EmiPlusPlusConfig.hidePageButtonWhenOnePage = v, true);
     }

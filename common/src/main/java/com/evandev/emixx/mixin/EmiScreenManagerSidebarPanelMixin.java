@@ -174,15 +174,25 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @WrapOperation(method="<init>", at = @At(value="NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 0))
     private SizedButtonWidget pageLeftButton(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, Button.OnPress action, Operation<SizedButtonWidget> original) {
-        BooleanSupplier hasPrevPage = () -> isActive.getAsBoolean() && this.page > 0;
+        BooleanSupplier hasPrevPage = () -> {
+            if (EmiPlusPlusConfig.disablePaginationWrapping) {
+                return isActive.getAsBoolean() && this.page > 0;
+            } else {
+                return isActive.getAsBoolean();
+            }
+        };
         return original.call(x, y, width, height, u, v, hasPrevPage, action);
     }
 
     @WrapOperation(method="<init>", at = @At(value="NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 1))
     private SizedButtonWidget pageRightButton(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, Button.OnPress action, Operation<SizedButtonWidget> original) {
         BooleanSupplier hasNextPage = () -> {
-            int totalPages = (this.space.getStacks().size() - 1) / this.space.pageSize;
-            return isActive.getAsBoolean() && this.page < totalPages;
+            if (EmiPlusPlusConfig.disablePaginationWrapping) {
+                int totalPages = (this.space.getStacks().size() - 1) / this.space.pageSize;
+                return isActive.getAsBoolean() && this.page < totalPages;
+            } else {
+                return isActive.getAsBoolean();
+            }
         };
         return original.call(x, y, width, height, u, v, hasNextPage, action);
     }
