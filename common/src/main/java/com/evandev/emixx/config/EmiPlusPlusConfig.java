@@ -31,6 +31,11 @@ public class EmiPlusPlusConfig {
 
     public static boolean emiOnlyInRecipeBook = false;
 
+    public static boolean disablePaginationWrapping = false;
+    public static boolean scrollInsteadOfPagination = false;
+    public static boolean showTitleInsteadOfPageNumbers = false;
+    public static boolean hidePageButtonWhenOnePage = false;
+
     public static Path getConfigDir() {
         return Services.PLATFORM.getConfigDirectory().resolve(EmiPlusPlus.MOD_ID);
     }
@@ -96,6 +101,10 @@ public class EmiPlusPlusConfig {
         data.disabledStackGroups = new ArrayList<>(disabledStackGroups);
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
         data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
+        data.disablePaginationWrapping = disablePaginationWrapping;
+        data.scrollInsteadOfPagination = scrollInsteadOfPagination;
+        data.showTitleInsteadOfPageNumbers = showTitleInsteadOfPageNumbers;
+        data.hidePageButtonWhenOnePage = hidePageButtonWhenOnePage;
         return data;
     }
 
@@ -109,5 +118,9 @@ public class EmiPlusPlusConfig {
         List<String> disabledStackGroups = new ArrayList<>();
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
         boolean emiOnlyInRecipeBook = false;
+        boolean disablePaginationWrapping = false;
+        boolean scrollInsteadOfPagination = false;
+        boolean showTitleInsteadOfPageNumbers = false;
+        boolean hidePageButtonWhenOnePage = false;
     }
 }

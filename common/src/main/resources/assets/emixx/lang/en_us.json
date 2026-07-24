@@ -93,5 +93,13 @@
   "emixx.configuration.enableCreateStackGroupButton.tooltip": "Enable or disable the button in tag recipes to quickly create a stack group.",
   "emixx.configuration.disabledStackGroups.tooltip": "Configure specific Stack Groups.",
   "emixx.configuration.emiOnlyInRecipeBook": "EMI Only In Recipe Book",
-  "emixx.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open."
+  "emixx.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open.",
+  "emixx.configuration.disablePaginationWrapping": "Disable Pagination Wrapping",
+  "emixx.configuration.disablePaginationWrapping.tooltip": "Don't wrap around to the first/last page",
+  "emixx.configuration.scrollInsteadOfPagination": "Enable Scroll Mode",
+  "emixx.configuration.scrollInsteadOfPagination.tooltip": "Disable pages and scroll through items one row at a time instead.",
+  "emixx.configuration.showTitleInsteadOfPageNumbers": "Show Page Title in Headers",
+  "emixx.configuration.showTitleInsteadOfPageNumbers.tooltip": "Hide page numbers and show the title of the page instead. If using creative tabs, the active creative tab title is used for the Index page",
+  "emixx.configuration.hidePageButtonWhenOnePage": "Hide Single Sidebar Switch Button",
+  "emixx.configuration.hidePageButtonWhenOnePage.tooltip": "Hide the sidebar page switching button if there's only one page in the sidebar"
 }

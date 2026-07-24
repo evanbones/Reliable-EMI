@@ -4,6 +4,7 @@ import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.emixx.feature.creativemodetab.gui.CreativeModeTabGui;
 import dev.emi.emi.screen.EmiScreenManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -38,6 +39,16 @@ public class ScreenManager {
             return CreativeModeTabGui.onMouseScrolled(amount);
         }
         return false;
+    }
+
+    public static void setCustomIndexTitle(Component title) {
+        var font = Minecraft.getInstance().font;
+        int spaceWidth = ScreenManager.indexScreenSpace != null ? ScreenManager.indexScreenSpace.tw : 0;
+        int maxWidth = spaceWidth * ScreenManager.ENTRY_SIZE - 20;
+
+        ScreenManager.customIndexTitle = (maxWidth > 0 && font.width(title) > maxWidth)
+                ? Component.literal(font.plainSubstrByWidth(title.getString(), maxWidth - font.width("...")) + "...")
+                : title;
     }
 
     public static void removeCustomIndexTitle(Component component) {

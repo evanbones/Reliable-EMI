@@ -6,9 +6,11 @@ import com.evandev.emixx.feature.stackgroup.EmiGroupStack;
 import com.evandev.emixx.integration.emi.Layout;
 import com.evandev.emixx.integration.emi.ScreenManager;
 import com.evandev.emixx.integration.emi.StackManager;
+import com.evandev.emixx.util.SidebarPanelWithScrollOffset;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.SidebarType;
@@ -111,5 +113,14 @@ public abstract class EmiScreenManagerMixin {
             }
         }
         return bounds;
+    }
+
+    @ModifyVariable(method = "getHoveredStack(IIZZ)Ldev/emi/emi/api/stack/EmiStackInteraction;", at = @At(value = "STORE", ordinal = 1), name = "n")
+    private static int addOffsetToHoveredStack(int n, @Local(name = "panel") EmiScreenManager.SidebarPanel panel) {
+        if (EmiPlusPlusConfig.scrollInsteadOfPagination) {
+            return n + ((SidebarPanelWithScrollOffset) panel).emixx$getScrollOffset();
+        } else {
+            return n;
+        }
     }
 }
