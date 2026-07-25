@@ -47,6 +47,7 @@ publishMods {
         client = true
         server = false
         requires("emi")
+        requires("yacl")
     }
 
     modrinth {
@@ -55,5 +56,6 @@ publishMods {
         minecraftVersions.add("${minecraft_version}")
 
         requires("emi")
+        requires("yacl")
     }
 }

@@ -8,8 +8,14 @@
     - **Hide Single Sidebar Switch Button**: Hides the sidebar page switching button if there's only one page in the
       sidebar.
     - **Incremental Scrollbar Fill**: Fills the sidebar scrollbar from left to right as you scroll or page through,
-      instead of showing a discrete chunk.
+      instead of showing a discrete chunk (RRV fans wya?).
+- Added a warning that stack group modification is only possible while inside a world.
+
+### Changed
+
+- Switched to YACL instead of modifying EMI's config screen.
 
 ### Fixed
 
 - Fixed tabs not displaying under certain conditions.
+- Fixed desync between enabled/disabled stack groups in the config screen and the tag button.

@@ -14,10 +14,12 @@ public abstract class GridListConfigScreen extends Screen {
     protected final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     private final TabManager tabManager = new TabManager(this::addRenderableWidget, this::removeWidget);
     private final TabNavigationBar tabNavigationBar;
+    private final Screen parent;
     protected GridList<?> list;
 
-    protected GridListConfigScreen(String name) {
+    protected GridListConfigScreen(String name, Screen parent) {
         super(EmiPlusPlus.text("gui", name));
+        this.parent = parent;
         this.tabNavigationBar = TabNavigationBar.builder(tabManager, 0).addTabs(new PrebuiltTab(name)).build();
     }
 
@@ -35,6 +37,11 @@ public abstract class GridListConfigScreen extends Screen {
             onClose();
             reload();
         }).width(200).build());
+    }
+
+    @Override
+    public void onClose() {
+        minecraft.setScreen(parent);
     }
 
     @Override

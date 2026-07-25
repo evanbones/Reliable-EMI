@@ -1,7 +1,7 @@
 package com.evandev.emixx;
 
 import com.evandev.emixx.config.EmiPlusPlusConfig;
-import com.evandev.emixx.feature.stackgroup.gui.StackGroupConfigScreen;
+import com.evandev.emixx.config.EmiPlusPlusConfigScreen;
 import dev.emi.emi.config.EmiConfig;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -15,7 +15,7 @@ public class EmiPlusPlusClientNeoForge {
         NeoForge.EVENT_BUS.addListener(EmiPlusPlusClientNeoForge::onScreenOpening);
 
         container.registerExtensionPoint(IConfigScreenFactory.class,
-                (minecraft, parent) -> new StackGroupConfigScreen());
+                (minecraft, parent) -> EmiPlusPlusConfigScreen.createScreen(parent));
     }
 
     private static void onScreenOpening(ScreenEvent.Opening event) {

@@ -92,6 +92,7 @@
   "emixx.configuration.enableStackGroups.tooltip": "Enable or disable collapsing item groups (like enchanted books or potions) into single entries.",
   "emixx.configuration.enableCreateStackGroupButton.tooltip": "Enable or disable the button in tag recipes to quickly create a stack group.",
   "emixx.configuration.disabledStackGroups.tooltip": "Configure specific Stack Groups.",
+  "emixx.configuration.disabledStackGroups.tooltip.unavailable": "You must be in a world to manage Stack Groups.",
   "emixx.configuration.emiOnlyInRecipeBook": "EMI Only In Recipe Book",
   "emixx.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open.",
   "emixx.configuration.disablePaginationWrapping": "Disable Pagination Wrapping",

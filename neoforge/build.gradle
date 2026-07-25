@@ -42,6 +42,9 @@ dependencies {
     // EMI
     implementation "dev.emi:emi-neoforge:${emi_version}"
 
+    // YACL
+    implementation "maven.modrinth:yacl:${yacl_version}-neoforge"
+
     // Mekanism
     compileOnly "maven.modrinth:mekanism:5KzzycBT"
 }

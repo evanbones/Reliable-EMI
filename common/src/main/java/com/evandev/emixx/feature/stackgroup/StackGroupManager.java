@@ -86,8 +86,34 @@ public class StackGroupManager {
         return false;
     }
 
+    public static boolean isGroupEnabled(ResourceLocation tag) {
+        for (StackGroup g : stackGroups) {
+            if (g.getId().equals(tag)) {
+                return g.isEnabled;
+            }
+        }
+        return false;
+    }
+
     public static void toggleTagGroup(ResourceLocation tag) {
-        saveGroupConfig(tag, !hasGroup(tag));
+        boolean currentlyEnabled = isGroupEnabled(tag);
+        String idStr = tag.toString();
+        if (currentlyEnabled) {
+            if (!EmiPlusPlusConfig.disabledStackGroups.contains(idStr)) {
+                EmiPlusPlusConfig.disabledStackGroups.add(idStr);
+            }
+        } else {
+            EmiPlusPlusConfig.disabledStackGroups.remove(idStr);
+            if (!hasGroup(tag)) {
+                saveGroupConfig(tag, true);
+            } else {
+                Path file = getGroupPath(tag);
+                if (Files.exists(file)) {
+                    saveGroupConfig(tag, true);
+                }
+            }
+        }
+        EmiPlusPlusConfig.save();
         reload();
     }
 
@@ -96,15 +122,10 @@ public class StackGroupManager {
         try {
             Files.createDirectories(file.getParent());
             JsonObject json = new JsonObject();
-            if (enabled) {
-                json.addProperty("type", "emixx:tag");
-                json.addProperty("id", tag.toString());
-                json.addProperty("tag", tag.toString());
-                json.addProperty("enabled", true);
-            } else {
-                json.addProperty("id", tag.toString());
-                json.addProperty("enabled", false);
-            }
+            json.addProperty("type", "emixx:tag");
+            json.addProperty("id", tag.toString());
+            json.addProperty("tag", tag.toString());
+            json.addProperty("enabled", enabled);
             try (var writer = Files.newBufferedWriter(file)) {
                 new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
             }
@@ -118,6 +139,7 @@ public class StackGroupManager {
         Set<EmiStack> existing = new HashSet<>(results);
 
         for (StackGroup group : stackGroups) {
+            if (!group.isEnabled) continue;
             EmiGroupStack gs = groupToGroupStacks.get(group);
             if (gs == null) continue;
 
@@ -187,12 +209,7 @@ public class StackGroupManager {
 
     private static void loadGroup(ResourceLocation id, JsonObject json, Map<ResourceLocation, StackGroup> loaded) {
         try {
-            boolean enabled = GsonHelper.getAsBoolean(json, "enabled", true);
-            if (!enabled) {
-                loaded.remove(id);
-                return;
-            }
-
+            boolean jsonEnabled = GsonHelper.getAsBoolean(json, "enabled", true);
             String type = GsonHelper.getAsString(json, "type", "emixx:group");
             BiFunction<ResourceLocation, JsonObject, StackGroup> factory = typeRegistry.get(type);
 
@@ -202,10 +219,14 @@ public class StackGroupManager {
                     if (json.has("priority")) {
                         group.priority = GsonHelper.getAsInt(json, "priority", group.priority);
                     }
-                    if (EmiPlusPlusConfig.disabledStackGroups.contains(id.toString())) {
+                    if (!jsonEnabled || EmiPlusPlusConfig.disabledStackGroups.contains(id.toString())) {
                         group.isEnabled = false;
                     }
                     loaded.put(id, group);
+                }
+            } else if (!jsonEnabled) {
+                if (loaded.containsKey(id)) {
+                    loaded.get(id).isEnabled = false;
                 }
             } else {
                 EmiPlusPlus.LOGGER.error("Unknown stack group type '{}' for {}", type, id);

@@ -1,9 +1,11 @@
 # EMI++
 
-[![neoforge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/neoforge_vector.svg)](https://neoforged.net/) [![forge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg)](https://files.minecraftforge.net/) [![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg)](https://fabricmc.net/)
+[![neoforge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/neoforge_vector.svg)](https://neoforged.net/)
+[![forge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg)](https://files.minecraftforge.net/)
+[![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg)](https://fabricmc.net/)
 
-**EMI++** is a Minecraft mod that acts as an extension to [EMI](https://github.com/emilyploszaj/emi), adding a variety
-of useful features, improvements, and customization options to enhance the EMI experience.
+**EMI++** is an addon for [EMI](https://github.com/emilyploszaj/emi), adding a variety of useful features, improvements,
+and customization options to enhance your recipe viewing experience!
 
 ## Features
 
@@ -11,66 +13,31 @@ EMI++ provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
-    * *Includes built-in groups for:* Animal Armor, Banner Patterns, Copper Blocks, Infested Blocks, Minecarts, Pressure
-      Plates, Spawn Eggs, and more.
-
 * **Creative Mode Tabs:** Displays vanilla and modded Creative Mode tabs directly within the EMI interface for easy
   browsing.
-* **Item Tabs:** Improved navigation with Creative Mode-style item tabs.
-* **Vanilla/Modern Theme:** A unique visual theme for the sidebar, depending on the EMI theme.
+* **Vanilla/Modern Theme:** A unique visual theme for the sidebar, dependent on the EMI theme.
 
 ## Configuration
 
-EMI++ offers extensive configuration options to tailor the interface to your needs. You can configure the mod via the
-**in-game config screen** or by editing the configuration file directly.
-
-### In-Game Config
-
-1. Open the EMI overlay.
-2. Click the **Config** (gear) icon.
-3. Scroll down to the **EMI++** section.
-4. From here you can toggle features and access sub-menus (such as the "Manage" button for Creative Mode Tabs).
-
-### File Config
-
-The configuration file is located at `config/emixx/emixx-common.toml`.
-
-#### Creative Mode Tabs Settings
-
-Controls the display and behavior of the creative tabs sidebar.
-
-| Option                        | Type    | Default                   | Description                                                                                                          |
-|-------------------------------|---------|---------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `enableCreativeModeTabs`      | Boolean | `true`                    | Master switch to enable or disable the creative mode tab sidebar entirely.                                           |
-| `syncSelectedCreativeModeTab` | Boolean | `true`                    | If enabled, clicking a tab in EMI++ will attempt to open that tab in the actual Creative Inventory screen (if open). |
-| `disabledCreativeModeTabs`    | List    | `["minecraft:op_blocks"]` | A list of tabs that should be hidden from the EMI++ interface.                                                       |
-
-#### Stack Groups Settings
-
-Controls the item grouping behavior.
-
-| Option              | Type    | Default | Description                                                                                                     |
-|---------------------|---------|---------|-----------------------------------------------------------------------------------------------------------------|
-| `enableStackGroups` | Boolean | `true`  | Master switch to enable or disable stack grouping. If disabled, all items will appear individually in the list. |
+EMI++ offers extensive configuration options to tweak the interface to your needs. You can configure the mod via the
+**in-game config screen** with [YACL](https://modrinth.com/mod/yacl) installed or by editing the configuration file
+directly.
 
 ## Customizing Stack Groups
 
-You can define new custom stack groups or modify existing ones using **JSON files** (via Resource Packs).
+You can define new custom stack groups or modify existing ones using standard **JSON files**.
 
-### JSON Configuration (Resource Packs)
-
-EMI++ loads stack groups from the `stack_groups` directory within the assets of the game (loaded via Resource Packs).
-
-To create a custom group, create a JSON file in `assets/<namespace>/stack_groups/my_group.json`.
+EMI++ loads stack groups from the `config/emixx/stack_groups` directory. For example, to create a custom group, create a
+JSON file in `config/emixx/stack_groups/my_group.json`.
 
 **JSON Structure:**
 
 | Field        | Type               | Description                                                                                                       |
 |--------------|--------------------|-------------------------------------------------------------------------------------------------------------------|
 | `id`         | String             | A unique identifier (e.g., `"mypack:currency"`).                                                                  |
-| `name`       | String (Optional)  | A translatable translation key for the group's name (e.g., `"mypack.group.currency"`).                            |
+| `name`       | String (Optional)  | A translation key or string for the group's name (e.g., `"mypack.group.currency"` or `"Currency"`).               |
 | `type`       | String             | Determines how the group is built. Can be `"emixx:group"`, `"emixx:tag"`, or `"emixx:regex"`.                     |
-| `enabled`    | Boolean            | Set to `false` to disable this group.                                                                             |
+| `enabled`    | Boolean (Optional) | Set to `false` to disable this group.                                                                             |
 | `priority`   | Integer (Optional) | Controls match order when an item could belong to multiple groups. Higher values are checked first (default `0`). |
 | `contents`   | List               | *(For `emixx:group`)* A list of items or tags to include.                                                         |
 | `exclusions` | List               | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).                              |
@@ -113,7 +80,7 @@ all items that end in _sword (from any namespace):
 
 **Virtual Objects (Fluids, Modifiers, etc.):**
 
-EMI++ supports grouping non-item objects such as Fluids, Tinkers' Construct Modifiers, or JEED effects. To do this,
+EMI++ also supports grouping non-item objects such as Fluids, JEED effects, etc. To do this,
 prefix the entry with its EMI registry type using the format `<type>:<namespace>:<path>`.
 
 *Example: Creating a special group*
@@ -132,13 +99,18 @@ prefix the entry with its EMI registry type using the format `<type>:<namespace>
 
 ```
 
-**Disabling Default Groups:**
-To disable a default stack group (e.g., spawn eggs), you must override its definition using a Resource Pack. Create a
-file with the same path/ID as the default group and set `"enabled": false`.
+## Disabling Default Groups
+
+All stack groups are easily togglable using the in-game config screen, in the Stack Groups category.
+
+![I-game stack group config](https://cdn.modrinth.com/data/N9WucjHL/images/a036cab2869e48759d73f3a72ad015d16bef821d.png)
+
+To disable a default stack group, you can also override its definition. Create a file with the same
+path/ID as the default group and set `"enabled": false`.
 
 *Example: Disabling the spawn eggs group*
 
-File: `assets/emixx/stack_groups/spawn_eggs.json`
+File: `config/emixx/stack_groups/spawn_eggs.json`
 
 ```json
 {

@@ -4,6 +4,7 @@ import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.emixx.gui.GridList;
 import com.evandev.emixx.gui.GridListConfigScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
@@ -13,8 +14,8 @@ import java.util.Set;
 public class CreativeModeTabConfigScreen extends GridListConfigScreen {
     private final Set<ResourceLocation> disabledCreativeModeTabs;
 
-    public CreativeModeTabConfigScreen() {
-        super("creative_mode_tab_config");
+    public CreativeModeTabConfigScreen(Screen parent) {
+        super("creative_mode_tab_config", parent);
         this.disabledCreativeModeTabs = new HashSet<>();
         for (String s : EmiPlusPlusConfig.disabledCreativeModeTabs) {
             disabledCreativeModeTabs.add(ResourceLocation.parse(s));

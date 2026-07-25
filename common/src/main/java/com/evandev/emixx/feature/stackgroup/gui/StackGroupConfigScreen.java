@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,8 +24,8 @@ public class StackGroupConfigScreen extends GridListConfigScreen {
     private final Set<ResourceLocation> disabledStackGroups;
     private String searchQuery = "";
 
-    public StackGroupConfigScreen() {
-        super("stack_group_config");
+    public StackGroupConfigScreen(Screen parent) {
+        super("stack_group_config", parent);
         this.disabledStackGroups = new HashSet<>();
         for (String s : EmiPlusPlusConfig.disabledStackGroups) {
             disabledStackGroups.add(ResourceLocation.parse(s));

@@ -41,9 +41,9 @@ public class EmiIngredientRecipeMixin {
             @Override
             public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
                 EmiDrawContext context = EmiDrawContext.wrap(draw);
-                boolean exists = StackGroupManager.hasGroup(tagId);
+                boolean groupEnabled = StackGroupManager.isGroupEnabled(tagId);
                 boolean hovered = getBounds().contains(mouseX, mouseY);
-                int currentV = exists ? 24 : 0;
+                int currentV = groupEnabled ? 24 : 0;
                 if (hovered && this.isActive.getAsBoolean()) currentV += 12;
                 RenderSystem.enableDepthTest();
                 context.drawTexture(texture, this.x, this.y, this.u, currentV, this.width, this.height);
