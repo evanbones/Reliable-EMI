@@ -95,11 +95,13 @@
   "emixx.configuration.emiOnlyInRecipeBook": "EMI Only In Recipe Book",
   "emixx.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open.",
   "emixx.configuration.disablePaginationWrapping": "Disable Pagination Wrapping",
-  "emixx.configuration.disablePaginationWrapping.tooltip": "Don't wrap around to the first/last page",
+  "emixx.configuration.disablePaginationWrapping.tooltip": "Don't wrap around to the first/last page.",
   "emixx.configuration.scrollInsteadOfPagination": "Enable Scroll Mode",
   "emixx.configuration.scrollInsteadOfPagination.tooltip": "Disable pages and scroll through items one row at a time instead.",
   "emixx.configuration.showTitleInsteadOfPageNumbers": "Show Page Title in Headers",
   "emixx.configuration.showTitleInsteadOfPageNumbers.tooltip": "(Always enabled in Scroll Mode) Hide page numbers and show the title of the page instead. If using creative tabs, the active creative tab title is used for the Index page.",
   "emixx.configuration.hidePageButtonWhenOnePage": "Hide Single Sidebar Switch Button",
-  "emixx.configuration.hidePageButtonWhenOnePage.tooltip": "Hide the sidebar page switching button if there's only one page in the sidebar."
+  "emixx.configuration.hidePageButtonWhenOnePage.tooltip": "Hide the sidebar page switching button if there's only one page in the sidebar.",
+  "emixx.configuration.incrementalScrollbarFill": "Incremental Scrollbar Fill",
+  "emixx.configuration.incrementalScrollbarFill.tooltip": "Fill the sidebar scrollbar from left to right as you scroll or page through, instead of showing a discrete chunk."
 }

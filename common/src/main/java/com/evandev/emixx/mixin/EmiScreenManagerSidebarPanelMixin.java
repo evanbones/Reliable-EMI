@@ -32,7 +32,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     public abstract SidebarType getType();
 
     @Shadow
-    public abstract List<EmiScreenManager.ScreenSpace> getSpaces();
+    public abstract boolean supportsType(SidebarType type);
 
     @Shadow
     public EmiScreenManager.ScreenSpace space;
@@ -83,10 +83,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @Inject(at = @At("TAIL"), method = "setSpaces")
     private void addEmiPlusPlusWidgets(EmiScreenManager.ScreenSpace main, List<EmiScreenManager.ScreenSpace> subpanels, CallbackInfo ci) {
-        getSpaces().stream()
-                .filter(space -> space.getType() == SidebarType.INDEX)
-                .findFirst()
-                .ifPresent(ScreenManager::onIndexScreenSpaceCreated);
+        if (supportsType(SidebarType.INDEX)) {
+            ScreenManager.onIndexScreenSpaceCreated(main);
+        }
     }
 
     @WrapOperation(method="render", at = @At(value = "INVOKE", target="dev/emi/emi/screen/EmiScreenManager$ScreenSpace.render (Ldev/emi/emi/runtime/EmiDrawContext;IIFI)V", ordinal = 0, remap = true))
@@ -102,21 +101,40 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     private void drawScrollBar(EmiDrawContext context, int x, int y, int width, int height, int progress, int total, int color, Operation<Void> original) {
         if (EmiPlusPlusConfig.scrollInsteadOfPagination) {
             progress = this.emixx$getScrollOffsetRows();
-            total = this.emixx$getTotalScrollRows() + this.space.th;
+            int totalScrollRows = this.emixx$getTotalScrollRows();
+            total = totalScrollRows + this.space.th;
 
-            double segment = (double) width / total;
-            int start = (int) (x + segment * progress);
-            int end = (int) (start + segment * this.space.th);
+            if (EmiPlusPlusConfig.incrementalScrollbarFill) {
+                emixx$drawIncrementalScrollBar(context, x, y, width, height, progress + 1, totalScrollRows + 1, color);
+            } else {
+                double segment = (double) width / total;
+                int start = (int) (x + segment * progress);
+                int end = (int) (start + segment * this.space.th);
 
-            if (progress == this.emixx$getTotalScrollRows()) {
-                end = x + width;
-                start = (int) (end - Math.max(segment * this.space.th, 1));
+                if (progress == this.emixx$getTotalScrollRows()) {
+                    end = x + width;
+                    start = (int) (end - Math.max(segment * this.space.th, 1));
+                }
+
+                context.fill(start, y, end - start, height, color);
             }
-
-            context.fill(start, y, end - start, height, color);
+        } else if (EmiPlusPlusConfig.incrementalScrollbarFill) {
+            emixx$drawIncrementalScrollBar(context, x, y, width, height, progress + 1, total, color);
         } else {
             original.call(context, x, y, width, height, progress, total, color);
         }
+    }
+
+    @Unique
+    private static void emixx$drawIncrementalScrollBar(EmiDrawContext context, int x, int y, int width, int height, int filled, int total, int color) {
+        if (total <= 1) {
+            return;
+        }
+
+        int fillWidth = (int) Math.round((double) width * Math.min(filled, total) / total);
+        fillWidth = Math.max(fillWidth, Math.min(width, height));
+
+        context.fill(x, y, fillWidth, height, color);
     }
 
     @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollLeft")
@@ -135,6 +153,11 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         } else {
             return scrollWidth;
         }
+    }
+
+    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "maxLeft")
+    private int modifyMaxLeft(int maxLeft) {
+        return maxLeft + cycle.getWidth();
     }
 
     @Inject(method = "wrapPage", at = @At("HEAD"), cancellable = true)

@@ -47,11 +47,16 @@ public class ConfigScreenManager {
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "disablePaginationWrapping",
                 () -> EmiPlusPlusConfig.disablePaginationWrapping, v -> EmiPlusPlusConfig.disablePaginationWrapping = v, false);
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "scrollInsteadOfPagination",
-                () -> EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.scrollInsteadOfPagination = v, false);
+                () -> EmiPlusPlusConfig.scrollInsteadOfPagination, v -> {
+                    EmiPlusPlusConfig.scrollInsteadOfPagination = v;
+                    configScreen.init(Minecraft.getInstance(), configScreen.width, configScreen.height);
+                }, false);
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "showTitleInsteadOfPageNumbers",
                 () -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers || EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers = v || EmiPlusPlusConfig.scrollInsteadOfPagination, false);
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "hidePageButtonWhenOnePage",
-                () -> EmiPlusPlusConfig.hidePageButtonWhenOnePage, v -> EmiPlusPlusConfig.hidePageButtonWhenOnePage = v, true);
+                () -> EmiPlusPlusConfig.hidePageButtonWhenOnePage, v -> EmiPlusPlusConfig.hidePageButtonWhenOnePage = v, false);
+        addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "incrementalScrollbarFill",
+                () -> EmiPlusPlusConfig.incrementalScrollbarFill, v -> EmiPlusPlusConfig.incrementalScrollbarFill = v, true);
     }
 
     private static SubGroupNameWidget addSubGroup(GroupNameWidget root, ListWidget list, String key) {

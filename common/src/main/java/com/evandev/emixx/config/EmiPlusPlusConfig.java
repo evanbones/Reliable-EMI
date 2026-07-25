@@ -35,6 +35,7 @@ public class EmiPlusPlusConfig {
     public static boolean scrollInsteadOfPagination = false;
     public static boolean showTitleInsteadOfPageNumbers = false;
     public static boolean hidePageButtonWhenOnePage = false;
+    public static boolean incrementalScrollbarFill = false;
 
     public static Path getConfigDir() {
         return Services.PLATFORM.getConfigDirectory().resolve(EmiPlusPlus.MOD_ID);
@@ -70,6 +71,11 @@ public class EmiPlusPlusConfig {
                     }
 
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
+                    disablePaginationWrapping = data.disablePaginationWrapping;
+                    scrollInsteadOfPagination = data.scrollInsteadOfPagination;
+                    showTitleInsteadOfPageNumbers = data.showTitleInsteadOfPageNumbers;
+                    hidePageButtonWhenOnePage = data.hidePageButtonWhenOnePage;
+                    incrementalScrollbarFill = data.incrementalScrollbarFill;
                 }
             } catch (IOException | JsonSyntaxException e) {
                 EmiPlusPlus.LOGGER.error("[EMI++] Failed to load config", e);
@@ -105,6 +111,7 @@ public class EmiPlusPlusConfig {
         data.scrollInsteadOfPagination = scrollInsteadOfPagination;
         data.showTitleInsteadOfPageNumbers = showTitleInsteadOfPageNumbers;
         data.hidePageButtonWhenOnePage = hidePageButtonWhenOnePage;
+        data.incrementalScrollbarFill = incrementalScrollbarFill;
         return data;
     }
 
@@ -122,5 +129,6 @@ public class EmiPlusPlusConfig {
         boolean scrollInsteadOfPagination = false;
         boolean showTitleInsteadOfPageNumbers = false;
         boolean hidePageButtonWhenOnePage = false;
+        boolean incrementalScrollbarFill = false;
     }
 }
