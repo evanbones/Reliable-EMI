@@ -6,10 +6,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.TagEmiIngredient;
 import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.Item;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -28,7 +33,7 @@ public class EmiStackGroup extends StackGroup {
         Map<ResourceLocation, List<EmiIngredient>> tempMap = new HashMap<>();
         Set<ResourceLocation> tempIds = new HashSet<>();
         for (EmiIngredient ingredient : targets) {
-            for (EmiStack stack : ingredient.getEmiStacks()) {
+            for (EmiStack stack : getIngredientStacks(ingredient)) {
                 ResourceLocation stackId = stack.getId();
                 tempMap.computeIfAbsent(stackId, k -> new ArrayList<>()).add(ingredient);
                 tempIds.add(stackId);
@@ -36,6 +41,30 @@ public class EmiStackGroup extends StackGroup {
         }
         this.targetMap = tempMap;
         this.allTargetIds = tempIds;
+    }
+
+    public static List<EmiStack> getIngredientStacks(EmiIngredient ingredient) {
+        List<EmiStack> stacks = ingredient.getEmiStacks();
+        if (stacks.isEmpty() && ingredient instanceof TagEmiIngredient tagIngredient) {
+            TagKey<?> rawKey = tagIngredient.key;
+            if (rawKey != null) {
+                List<EmiStack> rawStacks = new ArrayList<>();
+                try {
+                    @SuppressWarnings("unchecked")
+                    TagKey<Item> itemTagKey = (TagKey<Item>) rawKey;
+                    var tagHolderList = BuiltInRegistries.ITEM.getTag(itemTagKey);
+                    if (tagHolderList.isPresent()) {
+                        for (Holder<Item> holder : tagHolderList.get()) {
+                            rawStacks.add(EmiStack.of(holder.value()));
+                        }
+                    }
+                } catch (Exception ignored) {}
+                if (!rawStacks.isEmpty()) {
+                    return rawStacks;
+                }
+            }
+        }
+        return stacks;
     }
 
     private static JsonElement normalizeIngredientJson(JsonElement element) {
@@ -150,7 +179,7 @@ public class EmiStackGroup extends StackGroup {
         List<EmiIngredient> relevant = targetMap.get(stackId);
         if (relevant != null) {
             for (EmiIngredient target : relevant) {
-                for (EmiStack ts : target.getEmiStacks()) {
+                for (EmiStack ts : getIngredientStacks(target)) {
                     if (ts.getId().equals(stackId) && ts.getClass() == emiStack.getClass()) return true;
                 }
             }
