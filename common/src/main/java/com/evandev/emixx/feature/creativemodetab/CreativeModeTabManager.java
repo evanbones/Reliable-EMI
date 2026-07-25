@@ -10,6 +10,7 @@ import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -137,6 +138,11 @@ public class CreativeModeTabManager {
         CreativeModeTab selectedTab = tab.creativeModeTab();
         if (selectedTab == null || selectedTab == currentTab) return;
         currentTab = selectedTab;
+
+        if (EmiPlusPlusConfig.showTitleInsteadOfPageNumbers) {
+            Component title = tab.creativeModeTab().getDisplayName();
+            ScreenManager.setCustomIndexTitle(title);
+        }
 
         var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT
                 ? CreativeModeTabGui.topTabNavigationBar : CreativeModeTabGui.leftTabNavigationBar;

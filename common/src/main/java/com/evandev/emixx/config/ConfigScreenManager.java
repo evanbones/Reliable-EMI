@@ -37,13 +37,21 @@ public class ConfigScreenManager {
         addBool(configScreen, list, root, sgGroup, searcher, "stackGroups", "enableStackGroups",
                 () -> EmiPlusPlusConfig.enableStackGroups, v -> EmiPlusPlusConfig.enableStackGroups = v, false);
         addBool(configScreen, list, root, sgGroup, searcher, "stackGroups", "enableCreateStackGroupButton",
-                () -> EmiPlusPlusConfig.enableCreateStackGroupButton, v -> EmiPlusPlusConfig.enableCreateStackGroupButton = v, true);
+                () -> EmiPlusPlusConfig.enableCreateStackGroupButton, v -> EmiPlusPlusConfig.enableCreateStackGroupButton = v, false);
         addAction(list, root, sgGroup, searcher, "stackGroups", "disabledStackGroups",
                 () -> Minecraft.getInstance().setScreen(new StackGroupConfigScreen()), true);
 
         SubGroupNameWidget miscGroup = addSubGroup(root, list, "miscellaneous");
         addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "emiOnlyInRecipeBook",
-                () -> EmiPlusPlusConfig.emiOnlyInRecipeBook, v -> EmiPlusPlusConfig.emiOnlyInRecipeBook = v, true);
+                () -> EmiPlusPlusConfig.emiOnlyInRecipeBook, v -> EmiPlusPlusConfig.emiOnlyInRecipeBook = v, false);
+        addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "disablePaginationWrapping",
+                () -> EmiPlusPlusConfig.disablePaginationWrapping, v -> EmiPlusPlusConfig.disablePaginationWrapping = v, false);
+        addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "scrollInsteadOfPagination",
+                () -> EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.scrollInsteadOfPagination = v, false);
+        addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "showTitleInsteadOfPageNumbers",
+                () -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers || EmiPlusPlusConfig.scrollInsteadOfPagination, v -> EmiPlusPlusConfig.showTitleInsteadOfPageNumbers = v || EmiPlusPlusConfig.scrollInsteadOfPagination, false);
+        addBool(configScreen, list, root, miscGroup, searcher, "miscellaneous", "hidePageButtonWhenOnePage",
+                () -> EmiPlusPlusConfig.hidePageButtonWhenOnePage, v -> EmiPlusPlusConfig.hidePageButtonWhenOnePage = v, true);
     }
 
     private static SubGroupNameWidget addSubGroup(GroupNameWidget root, ListWidget list, String key) {

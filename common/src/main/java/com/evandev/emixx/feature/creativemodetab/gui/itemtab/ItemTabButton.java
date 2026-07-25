@@ -130,23 +130,15 @@ public class ItemTabButton extends TabButton {
             }
 
             if (isHovered && title != null) {
-                var font = Minecraft.getInstance().font;
-                int spaceWidth = ScreenManager.indexScreenSpace != null ? ScreenManager.indexScreenSpace.tw : 0;
-                int maxWidth = spaceWidth * ScreenManager.ENTRY_SIZE - 20;
-
-                Component displayTitle = (maxWidth > 0 && font.width(title) > maxWidth)
-                        ? Component.literal(font.plainSubstrByWidth(title.getString(), maxWidth - font.width("...")) + "...")
-                        : title;
-
-                if (EmiPlusPlusConfig.showCreativeTabNameInSearchbar) {
-                    lastDisplayTitle = displayTitle;
-                    ScreenManager.customIndexTitle = displayTitle;
+                if (EmiPlusPlusConfig.showCreativeTabNameInSearchbar && !EmiPlusPlusConfig.showTitleInsteadOfPageNumbers) {
+                    ScreenManager.setCustomIndexTitle(title);
+                    lastDisplayTitle = ScreenManager.customIndexTitle;
                 }
-                
+
                 if (Minecraft.getInstance().screen != null) {
                     Minecraft.getInstance().screen.setTooltipForNextRenderPass(title);
                 }
-            } else {
+            } else if (!EmiPlusPlusConfig.showTitleInsteadOfPageNumbers) {
                 ScreenManager.removeCustomIndexTitle(lastDisplayTitle != null ? lastDisplayTitle : title);
             }
         } else if (style == ButtonStyle.TOP) {
