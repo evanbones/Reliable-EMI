@@ -1,3 +1,3 @@
 ### Fixed
 
-- Fixed certain tags not matching in stack groups.
+- Fixed edge case stack group matching.
