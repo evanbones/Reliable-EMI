@@ -1,6 +1,7 @@
 package com.evandev.emixx.feature.creativemodetab.gui;
 
 import com.evandev.EmiPlusPlus;
+import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.emixx.feature.creativemodetab.gui.itemtab.ItemTabManager;
 import com.evandev.emixx.feature.creativemodetab.gui.itemtab.ItemTabNavigationBar;
@@ -86,7 +87,7 @@ public class CreativeModeTabGui {
             int startX = indexScreenSpace.tx;
             int startY = indexScreenSpace.ty - (isHeaderVisible() ? EMI_HEADER_HEIGHT : 0) - CREATIVE_MODE_TAB_HEIGHT;
             int tileW = indexScreenSpace.tw;
-            tabCount = Math.max(1, Math.min(MAX_TAB_COUNT_DEFAULT, tileW - 2));
+            tabCount = EmiPlusPlusConfig.maxSidebarTabs > 0 ? EmiPlusPlusConfig.maxSidebarTabs : Math.max(1, Math.min(MAX_TAB_COUNT_DEFAULT, tileW - 2));
 
             buttonPrevious.visible = true;
             buttonPrevious.setX(startX);
@@ -104,7 +105,7 @@ public class CreativeModeTabGui {
 
             if (theme == TabTheme.VANILLA) {
                 int availableHeight = (indexScreenSpace.th * ScreenManager.ENTRY_SIZE) + (VANILLA_TAB_HEIGHT - 1);
-                tabCount = Math.max(1, availableHeight / VANILLA_TAB_HEIGHT);
+                tabCount = EmiPlusPlusConfig.maxSidebarTabs > 0 ? EmiPlusPlusConfig.maxSidebarTabs : Math.max(1, availableHeight / VANILLA_TAB_HEIGHT);
                 leftTabNavigationBar.visible = true;
                 leftTabNavigationBar.pos(leftX, startY);
                 buttonScrollUp.visible = true;
@@ -114,7 +115,7 @@ public class CreativeModeTabGui {
                 buttonScrollDown.setX(leftX + BUTTON_SCROLL_OFFSET_X);
                 buttonScrollDown.setY(startY + (tabCount * VANILLA_TAB_HEIGHT) + BUTTON_SCROLL_OFFSET_Y);
             } else {
-                tabCount = MAX_TAB_COUNT_VANILLA;
+                tabCount = EmiPlusPlusConfig.maxSidebarTabs > 0 ? EmiPlusPlusConfig.maxSidebarTabs : MAX_TAB_COUNT_VANILLA;
                 leftTabNavigationBar.visible = true;
                 leftTabNavigationBar.pos(leftX, startY);
             }

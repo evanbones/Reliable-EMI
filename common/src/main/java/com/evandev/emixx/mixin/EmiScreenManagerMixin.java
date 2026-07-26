@@ -146,7 +146,7 @@ public abstract class EmiScreenManagerMixin {
             if (EmiConfig.searchSidebar == SidebarSide.RIGHT) {
                 panel = panels.get(1);
             } else {
-                panel = panels.get(0);
+                panel = panels.getFirst();
             }
 
             int totalHeight = panel.theme == SidebarTheme.VANILLA ? 11 : 0;

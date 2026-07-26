@@ -34,6 +34,8 @@ public class EmiPlusPlusConfigScreen {
                         () -> EmiPlusPlusConfig.syncSelectedCreativeModeTab, v -> EmiPlusPlusConfig.syncSelectedCreativeModeTab = v))
                 .option(createBoolOption("showCreativeTabNameInSearchbar", true,
                         () -> EmiPlusPlusConfig.showCreativeTabNameInSearchbar, v -> EmiPlusPlusConfig.showCreativeTabNameInSearchbar = v))
+                .option(createIntegerOption("maxSidebarTabs", 0,
+                        () -> EmiPlusPlusConfig.maxSidebarTabs, v -> EmiPlusPlusConfig.maxSidebarTabs = v))
                 .option(ButtonOption.createBuilder()
                         .name(EmiPlusPlus.text("configuration.disabledCreativeModeTabs.manage"))
                         .description(OptionDescription.of(EmiPlusPlus.text("configuration.disabledCreativeModeTabs.tooltip")))
@@ -93,13 +95,13 @@ public class EmiPlusPlusConfigScreen {
                         () -> EmiPlusPlusConfig.searchWidgetAlignWithPanel, v -> EmiPlusPlusConfig.searchWidgetAlignWithPanel = v))
                 .option(createIntegerOption("searchWidgetTopOffset", 0,
                         () -> EmiPlusPlusConfig.searchWidgetTopOffset, v -> EmiPlusPlusConfig.searchWidgetTopOffset = v))
-                .option(createIntegerOption("searchWidgetHorizontalPadding", 0,
+                .option(createIntegerOption("searchWidgetHorizontalPadding", 4,
                         () -> EmiPlusPlusConfig.searchWidgetHorizontalPadding, v -> EmiPlusPlusConfig.searchWidgetHorizontalPadding = v))
-                .option(createIntegerOption("searchWidgetVerticalPadding", 0,
+                .option(createIntegerOption("searchWidgetVerticalPadding", 2,
                         () -> EmiPlusPlusConfig.searchWidgetVerticalPadding, v -> EmiPlusPlusConfig.searchWidgetVerticalPadding = v))
-                .option(createColorOption("searchWidgetTextColor", new Color(0),
+                .option(createColorOption("searchWidgetTextColor", new Color(0xFFFFFF),
                         () -> new Color(EmiPlusPlusConfig.searchWidgetTextColor), v -> EmiPlusPlusConfig.searchWidgetTextColor = v.getRGB()))
-                .option(createColorOption("searchWidgetSuggestionTextColor",  new Color(0),
+                .option(createColorOption("searchWidgetSuggestionTextColor",  new Color(0x808080),
                         () -> new Color(EmiPlusPlusConfig.searchWidgetSuggestionTextColor), v -> EmiPlusPlusConfig.searchWidgetSuggestionTextColor = v.getRGB()));
 
 

@@ -35,13 +35,22 @@ public class EditBoxMixin {
         original.call(instance, sprite, x, y, width, height);
    }
 
-    @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)I", ordinal = 0))
+    @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)I", ordinal = 0), require = 0)
     private int drawSuggestionString(GuiGraphics instance, Font font, String text, int x, int y, int color, Operation<Integer> original) {
         EditBox editBox = (EditBox)(Object)this;
         if (editBox instanceof EmiSearchWidget) {
             color = EmiPlusPlusConfig.searchWidgetSuggestionTextColor;
         }
         return original.call(instance, font, text, x, y, color);
+    }
+
+    @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;IIIZ)I", ordinal = 0), require = 0)
+    private int drawSuggestionStringNeo(GuiGraphics instance, Font font, String text, int x, int y, int color, boolean dropShadow, Operation<Integer> original) {
+        EditBox editBox = (EditBox)(Object)this;
+        if (editBox instanceof EmiSearchWidget) {
+            color = EmiPlusPlusConfig.searchWidgetSuggestionTextColor;
+        }
+        return original.call(instance, font, text, x, y, color, dropShadow);
     }
 
     @ModifyVariable(method = "renderWidget", at = @At(value = "STORE"), ordinal = 2)

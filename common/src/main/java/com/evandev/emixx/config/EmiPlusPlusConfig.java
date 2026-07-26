@@ -22,6 +22,7 @@ public class EmiPlusPlusConfig {
     public static boolean enableCreativeModeTabs = true;
     public static boolean syncSelectedCreativeModeTab = true;
     public static boolean showCreativeTabNameInSearchbar = true;
+    public static int maxSidebarTabs = 0;
     public static List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
     public static Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
 
@@ -62,6 +63,7 @@ public class EmiPlusPlusConfig {
                     enableCreativeModeTabs = data.enableCreativeModeTabs;
                     syncSelectedCreativeModeTab = data.syncSelectedCreativeModeTab;
                     showCreativeTabNameInSearchbar = data.showCreativeTabNameInSearchbar;
+                    maxSidebarTabs = data.maxSidebarTabs;
 
                     if (data.disabledCreativeModeTabs != null) {
                         disabledCreativeModeTabs = new ArrayList<>(data.disabledCreativeModeTabs);
@@ -86,7 +88,7 @@ public class EmiPlusPlusConfig {
                     incrementalScrollbarFill = data.incrementalScrollbarFill;
                 }
             } catch (IOException | JsonSyntaxException e) {
-                EmiPlusPlus.LOGGER.error("[EMI++] Failed to load config", e);
+                EmiPlusPlus.LOGGER.error("Failed to load config", e);
             }
         }
         save();
@@ -100,7 +102,7 @@ public class EmiPlusPlusConfig {
                 GSON.toJson(collectData(), writer);
             }
         } catch (IOException | JsonSyntaxException e) {
-            EmiPlusPlus.LOGGER.error("[EMI++] Failed to save config", e);
+            EmiPlusPlus.LOGGER.error("Failed to save config", e);
         }
     }
 
@@ -109,6 +111,7 @@ public class EmiPlusPlusConfig {
         data.enableCreativeModeTabs = enableCreativeModeTabs;
         data.syncSelectedCreativeModeTab = syncSelectedCreativeModeTab;
         data.showCreativeTabNameInSearchbar = showCreativeTabNameInSearchbar;
+        data.maxSidebarTabs = maxSidebarTabs;
         data.disabledCreativeModeTabs = new ArrayList<>(disabledCreativeModeTabs);
         data.enableStackGroups = enableStackGroups;
         data.enableCreateStackGroupButton = enableCreateStackGroupButton;
@@ -133,6 +136,7 @@ public class EmiPlusPlusConfig {
         boolean enableCreativeModeTabs = true;
         boolean syncSelectedCreativeModeTab = true;
         boolean showCreativeTabNameInSearchbar = true;
+        int maxSidebarTabs = 0;
         List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
         boolean enableStackGroups = true;
         boolean enableCreateStackGroupButton = true;

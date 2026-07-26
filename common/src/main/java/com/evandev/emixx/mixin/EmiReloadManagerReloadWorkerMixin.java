@@ -1,8 +1,8 @@
 package com.evandev.emixx.mixin;
 
-import com.evandev.emixx.integration.emi.StackManager;
 import com.evandev.emixx.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.emixx.feature.stackgroup.StackGroupManager;
+import com.evandev.emixx.integration.emi.StackManager;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
 import net.minecraft.network.chat.Component;
@@ -17,9 +17,9 @@ public class EmiReloadManagerReloadWorkerMixin {
     @Inject(method = "run",
             at = @At(value = "INVOKE", target = "Ldev/emi/emi/registry/EmiStackList;bake()V", shift = At.Shift.AFTER))
     public void run(CallbackInfo ci) {
-        EmiLog.LOG.info("[EMI++] Starting EMI++ reload...");
+        EmiLog.LOG.info("Starting EMI++ reload...");
         var step = Component.literal("Baking stack groups");
-        EmiLog.LOG.info("[EMI++] {}", step.getString());
+        EmiLog.LOG.info("{}", step.getString());
         EmiReloadManager.reloadStep = step;
         EmiReloadManager.reloadWorry = System.currentTimeMillis() + 10_000;
 

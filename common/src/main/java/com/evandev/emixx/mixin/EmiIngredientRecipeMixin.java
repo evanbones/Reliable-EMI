@@ -1,5 +1,6 @@
 package com.evandev.emixx.mixin;
 
+import com.evandev.EmiPlusPlus;
 import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.integration.emi.StackManager;
 import com.evandev.emixx.feature.stackgroup.StackGroupManager;
@@ -22,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class EmiIngredientRecipeMixin {
 
     @Unique
-    private static final ResourceLocation BUTTONS_TEXTURE = ResourceLocation.fromNamespaceAndPath("emixx", "textures/gui/buttons.png");
+    private static final ResourceLocation BUTTONS_TEXTURE = ResourceLocation.fromNamespaceAndPath(EmiPlusPlus.MOD_ID, "textures/gui/buttons.png");
 
     @Inject(method = "addWidgets", at = @At("TAIL"))
     public void addCreateStackGroupButton(WidgetHolder widgets, CallbackInfo ci) {
