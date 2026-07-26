@@ -13,11 +13,16 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.Bounds;
+import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.config.SidebarSide;
+import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.EmiScreenManager;
+import dev.emi.emi.screen.widget.EmiSearchWidget;
 import dev.emi.emi.search.EmiSearch;
 import net.minecraft.client.gui.screens.Screen;
 import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,6 +39,16 @@ public abstract class EmiScreenManagerMixin {
 
     @Shadow
     private static List<? extends EmiIngredient> searchedStacks;
+
+    @Shadow
+    public static EmiSearchWidget search;
+
+    @Shadow
+    private static List<EmiScreenManager.SidebarPanel> panels;
+
+    @Final
+    @Shadow
+    private static int ENTRY_SIZE, SUBPANEL_SEPARATOR_SIZE;
 
     @Shadow
     public static EmiScreenManager.SidebarPanel getSearchPanel() {
@@ -121,6 +136,27 @@ public abstract class EmiScreenManagerMixin {
             return n + ((SidebarPanelWithScrollOffset) panel).emixx$getScrollOffset();
         } else {
             return n;
+        }
+    }
+
+    @Inject(method = "addWidgets", at = @At("TAIL"))
+    private static void searchWidgetVerticalAlign(Screen screen, CallbackInfo ci) {
+        if (!EmiConfig.centerSearchBar && EmiPlusPlusConfig.searchWidgetAlignWithPanel) {
+            EmiScreenManager.SidebarPanel panel;
+            if (EmiConfig.searchSidebar == SidebarSide.RIGHT) {
+                panel = panels.get(1);
+            } else {
+                panel = panels.get(0);
+            }
+
+            int totalHeight = panel.theme == SidebarTheme.VANILLA ? 11 : 0;
+            for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
+                totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
+            }
+
+            search.setY(panel.space.ty + totalHeight + EmiPlusPlusConfig.searchWidgetTopOffset);
+        } else {
+            search.setY(search.getY() + EmiPlusPlusConfig.searchWidgetTopOffset);
         }
     }
 }
