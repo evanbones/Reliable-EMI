@@ -309,6 +309,8 @@ public class StackGroupManager {
             ResourceLocation stackId = stack.getId();
 
             for (StackGroup group : stackGroups) {
+                if (!group.isEnabled) continue;
+
                 Set<ResourceLocation> optimizedIds = group.getOptimizedIds();
                 if (optimizedIds != null && !optimizedIds.isEmpty()) {
                     if (!optimizedIds.contains(stackId)) continue;

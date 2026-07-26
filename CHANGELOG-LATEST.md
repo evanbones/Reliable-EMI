@@ -8,4 +8,4 @@
 
 ### Changed
 
-- The search widget now uses its own unique texture (which means it can now be changed with a resource pack) and has new default look
+- The search widget now uses its own unique texture (which mean stack groups in the config screen and the tag button.
