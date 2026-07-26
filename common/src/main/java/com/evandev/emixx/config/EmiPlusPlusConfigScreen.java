@@ -9,10 +9,13 @@ import dev.isxander.yacl3.api.Option;
 import dev.isxander.yacl3.api.OptionDescription;
 import dev.isxander.yacl3.api.OptionEventListener;
 import dev.isxander.yacl3.api.YetAnotherConfigLib;
+import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
+import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
+import java.awt.Color;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -84,10 +87,27 @@ public class EmiPlusPlusConfigScreen {
                 .option(createBoolOption("incrementalScrollbarFill", false,
                         () -> EmiPlusPlusConfig.incrementalScrollbarFill, v -> EmiPlusPlusConfig.incrementalScrollbarFill = v));
 
+        ConfigCategory.Builder searchWidget = ConfigCategory.createBuilder()
+                .name(EmiPlusPlus.text("configuration.searchWidget"))
+                    .option(createBoolOption("searchWidgetAlignWithPanel", false,
+                        () -> EmiPlusPlusConfig.searchWidgetAlignWithPanel, v -> EmiPlusPlusConfig.searchWidgetAlignWithPanel = v))
+                .option(createIntegerOption("searchWidgetTopOffset", 0,
+                        () -> EmiPlusPlusConfig.searchWidgetTopOffset, v -> EmiPlusPlusConfig.searchWidgetTopOffset = v))
+                .option(createIntegerOption("searchWidgetHorizontalPadding", 0,
+                        () -> EmiPlusPlusConfig.searchWidgetHorizontalPadding, v -> EmiPlusPlusConfig.searchWidgetHorizontalPadding = v))
+                .option(createIntegerOption("searchWidgetVerticalPadding", 0,
+                        () -> EmiPlusPlusConfig.searchWidgetVerticalPadding, v -> EmiPlusPlusConfig.searchWidgetVerticalPadding = v))
+                .option(createColorOption("searchWidgetTextColor", new Color(0),
+                        () -> new Color(EmiPlusPlusConfig.searchWidgetTextColor), v -> EmiPlusPlusConfig.searchWidgetTextColor = v.getRGB()))
+                .option(createColorOption("searchWidgetSuggestionTextColor",  new Color(0),
+                        () -> new Color(EmiPlusPlusConfig.searchWidgetSuggestionTextColor), v -> EmiPlusPlusConfig.searchWidgetSuggestionTextColor = v.getRGB()));
+
+
         return builder
                 .category(creativeModeTabs.build())
                 .category(stackGroups.build())
                 .category(miscellaneous.build())
+                .category(searchWidget.build())
                 .build()
                 .generateScreen(parent);
     }
@@ -99,6 +119,26 @@ public class EmiPlusPlusConfigScreen {
                 .description(OptionDescription.of(EmiPlusPlus.text("configuration." + key + ".tooltip")))
                 .binding(defaultValue, getter, setter)
                 .controller(TickBoxControllerBuilder::create)
+                .build();
+    }
+
+    private static Option<Integer> createIntegerOption(String key, int defaultValue,
+                                                       Supplier<Integer> getter, Consumer<Integer> setter) {
+        return Option.<Integer>createBuilder()
+                .name(EmiPlusPlus.text("configuration." + key))
+                .description(OptionDescription.of(EmiPlusPlus.text("configuration." + key + ".tooltip")))
+                .binding(defaultValue, getter, setter)
+                .controller(IntegerFieldControllerBuilder::create)
+                .build();
+    }
+
+    private static Option<Color> createColorOption(String key, Color defaultValue,
+                                                   Supplier<Color> getter, Consumer<Color> setter) {
+        return Option.<Color>createBuilder()
+                .name(EmiPlusPlus.text("configuration." + key))
+                .description(OptionDescription.of(EmiPlusPlus.text("configuration." + key + ".tooltip")))
+                .binding(defaultValue, getter, setter)
+                .controller(ColorControllerBuilder::create)
                 .build();
     }
 }

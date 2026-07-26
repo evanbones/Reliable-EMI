@@ -11,8 +11,10 @@
     "EmiScreenManagerScreenSpaceMixin",
     "EmiScreenManagerSidebarPanelMixin",
     "EmiSearchSearchWorkerMixin",
+    "EmiSearchWidgetMixin",
     "EmiStackListMixin",
-    "NameQueryMixin"
+    "NameQueryMixin",
+    "minecraft.EditBoxMixin"
   ],
   "injectors": {
     "defaultRequire": 1

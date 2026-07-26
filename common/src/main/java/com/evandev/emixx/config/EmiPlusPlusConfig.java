@@ -37,6 +37,14 @@ public class EmiPlusPlusConfig {
     public static boolean hidePageButtonWhenOnePage = false;
     public static boolean incrementalScrollbarFill = false;
 
+    public static boolean searchWidgetAlignWithPanel = false;
+    public static int searchWidgetTopOffset = 0;
+    public static int searchWidgetHorizontalPadding = 4;
+    public static int searchWidgetVerticalPadding = 2;
+    public static int searchWidgetSuggestionTextColor = 0xFF808080;
+    public static int searchWidgetTextColor = 0xFFFFFFFF;
+
+
     public static Path getConfigDir() {
         return Services.PLATFORM.getConfigDirectory().resolve(EmiPlusPlus.MOD_ID);
     }
@@ -112,6 +120,12 @@ public class EmiPlusPlusConfig {
         data.showTitleInsteadOfPageNumbers = showTitleInsteadOfPageNumbers;
         data.hidePageButtonWhenOnePage = hidePageButtonWhenOnePage;
         data.incrementalScrollbarFill = incrementalScrollbarFill;
+        data.searchWidgetAlignWithPanel = searchWidgetAlignWithPanel;
+        data.searchWidgetTopOffset = searchWidgetTopOffset;
+        data.searchWidgetHorizontalPadding = searchWidgetHorizontalPadding;
+        data.searchWidgetVerticalPadding = searchWidgetVerticalPadding;
+        data.searchWidgetSuggestionTextColor = searchWidgetSuggestionTextColor;
+        data.searchWidgetTextColor = searchWidgetTextColor;
         return data;
     }
 
@@ -125,10 +139,20 @@ public class EmiPlusPlusConfig {
         List<String> disabledStackGroups = new ArrayList<>();
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
         boolean emiOnlyInRecipeBook = false;
+
+        // Scrolling
         boolean disablePaginationWrapping = false;
         boolean scrollInsteadOfPagination = false;
         boolean showTitleInsteadOfPageNumbers = false;
         boolean hidePageButtonWhenOnePage = false;
         boolean incrementalScrollbarFill = false;
+
+        // Search Widget
+        boolean searchWidgetAlignWithPanel = false;
+        int searchWidgetTopOffset = 0;
+        int searchWidgetHorizontalPadding = 4;
+        int searchWidgetVerticalPadding = 2;
+        int searchWidgetSuggestionTextColor = 0xFF808080;
+        int searchWidgetTextColor = 0xFFFFFFFF;
     }
 }

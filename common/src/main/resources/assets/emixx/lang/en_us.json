@@ -104,5 +104,18 @@
   "emixx.configuration.hidePageButtonWhenOnePage": "Hide Single Sidebar Switch Button",
   "emixx.configuration.hidePageButtonWhenOnePage.tooltip": "Hide the sidebar page switching button if there's only one page in the sidebar.",
   "emixx.configuration.incrementalScrollbarFill": "Incremental Scrollbar Fill",
-  "emixx.configuration.incrementalScrollbarFill.tooltip": "Fill the sidebar scrollbar from left to right as you scroll or page through, instead of showing a discrete chunk."
+  "emixx.configuration.incrementalScrollbarFill.tooltip": "Fill the sidebar scrollbar from left to right as you scroll or page through, instead of showing a discrete chunk.",
+  "emixx.configuration.searchWidget": "Search Widget",
+  "emixx.configuration.searchWidgetAlignWithPanel": "Align Search Widget With Bottom of Panel",
+  "emixx.configuration.searchWidgetAlignWithPanel.tooltip": "Align search widget with the bottom of the panel (Only applies if search widget is non-centered).",
+  "emixx.configuration.searchWidgetTopOffset":"Vertical Position Offset",
+  "emixx.configuration.searchWidgetTopOffset.tooltip":"Nudge the search widget up/down",
+  "emixx.configuration.searchWidgetHorizontalPadding": "Horizontal Padding",
+  "emixx.configuration.searchWidgetHorizontalPadding.tooltip": "Add extra space to the left and right",
+  "emixx.configuration.searchWidgetVerticalPadding":"Vertical Padding",
+  "emixx.configuration.searchWidgetVerticalPadding.tooltip":"Add extra space to the top and bottom",
+  "emixx.configuration.searchWidgetSuggestionTextColor": "Placeholder Text Color",
+  "emixx.configuration.searchWidgetSuggestionTextColor.tooltip": "",
+  "emixx.configuration.searchWidgetTextColor":"Text Color",
+  "emixx.configuration.searchWidgetTextColor.tooltip":""
 }
