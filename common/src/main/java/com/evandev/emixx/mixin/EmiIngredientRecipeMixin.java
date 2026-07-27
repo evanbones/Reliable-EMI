@@ -2,8 +2,8 @@ package com.evandev.emixx.mixin;
 
 import com.evandev.EmiPlusPlus;
 import com.evandev.emixx.config.EmiPlusPlusConfig;
-import com.evandev.emixx.integration.emi.StackManager;
 import com.evandev.emixx.feature.stackgroup.StackGroupManager;
+import com.evandev.emixx.integration.emi.StackManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.api.recipe.EmiIngredientRecipe;
 import dev.emi.emi.api.widget.ButtonWidget;
@@ -30,19 +30,19 @@ public class EmiIngredientRecipeMixin {
         if (!EmiPlusPlusConfig.enableCreateStackGroupButton) return;
         if (!((Object) this instanceof EmiTagRecipe emiTagRecipe)) return;
 
-        ResourceLocation tagId = emiTagRecipe.key.location();
+        var tagKey = emiTagRecipe.key;
 
         widgets.add(new ButtonWidget(24, 0, 12, 12, 50, 0,
                 BUTTONS_TEXTURE,
                 () -> EmiConfig.devMode,
                 (mouseX, mouseY, button) -> {
-                    StackGroupManager.toggleTagGroup(tagId);
+                    StackGroupManager.toggleTagGroup(tagKey);
                     StackManager.reload();
                 }) {
             @Override
             public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
                 EmiDrawContext context = EmiDrawContext.wrap(draw);
-                boolean groupEnabled = StackGroupManager.isGroupEnabled(tagId);
+                boolean groupEnabled = StackGroupManager.isGroupEnabled(tagKey);
                 boolean hovered = getBounds().contains(mouseX, mouseY);
                 int currentV = groupEnabled ? 24 : 0;
                 if (hovered && this.isActive.getAsBoolean()) currentV += 12;

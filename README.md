@@ -13,9 +13,13 @@ EMI++ provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
-* **Creative Mode Tabs:** Displays vanilla and modded Creative Mode tabs directly within the EMI interface for easy
+* **Creative Tabs in EMI:** Displays vanilla and modded Creative Mode tabs directly in the EMI interface for easy
   browsing.
-* **Vanilla/Modern Theme:** A unique visual theme for the sidebar, dependent on the EMI theme.
+    * The appearance of the creative tabs change, dependent on the EMI theme (vanilla or modern).
+    * Works especially well with custom [Recreative](https://modrinth.com/mod/recreative) tabs!
+* **Custom Tag Pages (1.21+):** Adds new EMI tag tabs for **Item Tags**, **Block Tags**, **Fluid Tags**, and **Entity
+  Tags**.
+    - Right-click spawn eggs to view entity tags, and search entity & fluid tags using `#tag_id`.
 
 ## Configuration
 

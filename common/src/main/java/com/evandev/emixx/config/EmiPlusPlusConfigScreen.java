@@ -105,9 +105,19 @@ public class EmiPlusPlusConfigScreen {
                         () -> new Color(EmiPlusPlusConfig.searchWidgetSuggestionTextColor), v -> EmiPlusPlusConfig.searchWidgetSuggestionTextColor = v.getRGB()));
 
 
+        ConfigCategory.Builder tags = ConfigCategory.createBuilder()
+                .name(EmiPlusPlus.text("configuration.tags"))
+                .option(createBoolOption("enableCategorizedTagPages", true,
+                        () -> EmiPlusPlusConfig.enableCategorizedTagPages, v -> EmiPlusPlusConfig.enableCategorizedTagPages = v))
+                .option(createBoolOption("enableEntityTags", true,
+                        () -> EmiPlusPlusConfig.enableEntityTags, v -> EmiPlusPlusConfig.enableEntityTags = v))
+                .option(createBoolOption("enableTagSearchEnhancements", true,
+                        () -> EmiPlusPlusConfig.enableTagSearchEnhancements, v -> EmiPlusPlusConfig.enableTagSearchEnhancements = v));
+
         return builder
                 .category(creativeModeTabs.build())
                 .category(stackGroups.build())
+                .category(tags.build())
                 .category(miscellaneous.build())
                 .category(searchWidget.build())
                 .build()

@@ -75,15 +75,32 @@ public class StackGroupManager {
         typeRegistry.put(type, factory);
     }
 
+    public static Path getGroupPath(TagKey<?> tagKey) {
+        ResourceLocation tag = tagKey.location();
+        String registry = tagKey.registry().location().toString();
+        String name = tag.getPath().replace('/', '_');
+        String prefix = registry.equals("minecraft:item") ? "" : registry.replace(':', '_') + "_";
+        String filename = tag.getNamespace() + "_" + prefix + name + ".json";
+        return EmiPlusPlusConfig.getConfigDir().resolve("stack_groups").resolve(filename);
+    }
+
     public static Path getGroupPath(ResourceLocation tag) {
         String name = tag.getPath().replace('/', '_');
         String filename = tag.getNamespace() + "_" + name + ".json";
         return EmiPlusPlusConfig.getConfigDir().resolve("stack_groups").resolve(filename);
     }
 
+    public static boolean hasGroup(TagKey<?> tagKey) {
+        return hasGroup(tagKey.location());
+    }
+
     public static boolean hasGroup(ResourceLocation tag) {
         for (StackGroup g : stackGroups) if (g.getId().equals(tag)) return true;
         return false;
+    }
+
+    public static boolean isGroupEnabled(TagKey<?> tagKey) {
+        return isGroupEnabled(tagKey.location());
     }
 
     public static boolean isGroupEnabled(ResourceLocation tag) {
@@ -93,6 +110,29 @@ public class StackGroupManager {
             }
         }
         return false;
+    }
+
+    public static void toggleTagGroup(TagKey<?> tagKey) {
+        boolean currentlyEnabled = isGroupEnabled(tagKey);
+        ResourceLocation tag = tagKey.location();
+        String idStr = tag.toString();
+        if (currentlyEnabled) {
+            if (!EmiPlusPlusConfig.disabledStackGroups.contains(idStr)) {
+                EmiPlusPlusConfig.disabledStackGroups.add(idStr);
+            }
+        } else {
+            EmiPlusPlusConfig.disabledStackGroups.remove(idStr);
+            if (!hasGroup(tagKey)) {
+                saveGroupConfig(tagKey, true);
+            } else {
+                Path file = getGroupPath(tagKey);
+                if (Files.exists(file)) {
+                    saveGroupConfig(tagKey, true);
+                }
+            }
+        }
+        EmiPlusPlusConfig.save();
+        reload();
     }
 
     public static void toggleTagGroup(ResourceLocation tag) {
@@ -115,6 +155,24 @@ public class StackGroupManager {
         }
         EmiPlusPlusConfig.save();
         reload();
+    }
+
+    private static void saveGroupConfig(TagKey<?> tagKey, boolean enabled) {
+        Path file = getGroupPath(tagKey);
+        try {
+            Files.createDirectories(file.getParent());
+            JsonObject json = new JsonObject();
+            json.addProperty("type", "emixx:tag");
+            json.addProperty("id", tagKey.location().toString());
+            json.addProperty("tag", tagKey.location().toString());
+            json.addProperty("registry", tagKey.registry().location().toString());
+            json.addProperty("enabled", enabled);
+            try (var writer = Files.newBufferedWriter(file)) {
+                new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
+            }
+        } catch (Exception e) {
+            EmiPlusPlus.LOGGER.error("Failed to save stack group", e);
+        }
     }
 
     private static void saveGroupConfig(ResourceLocation tag, boolean enabled) {

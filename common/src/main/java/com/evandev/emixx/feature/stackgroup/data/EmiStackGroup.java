@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -50,12 +51,23 @@ public class EmiStackGroup extends StackGroup {
             if (rawKey != null) {
                 List<EmiStack> rawStacks = new ArrayList<>();
                 try {
-                    @SuppressWarnings("unchecked")
-                    TagKey<Item> itemTagKey = (TagKey<Item>) rawKey;
-                    var tagHolderList = BuiltInRegistries.ITEM.getTag(itemTagKey);
-                    if (tagHolderList.isPresent()) {
-                        for (Holder<Item> holder : tagHolderList.get()) {
-                            rawStacks.add(EmiStack.of(holder.value()));
+                    if (rawKey.registry().equals(BuiltInRegistries.BLOCK.key())) {
+                        @SuppressWarnings("unchecked")
+                        TagKey<Block> blockTagKey = (TagKey<Block>) rawKey;
+                        var tagHolderList = BuiltInRegistries.BLOCK.getTag(blockTagKey);
+                        if (tagHolderList.isPresent()) {
+                            for (var holder : tagHolderList.get()) {
+                                rawStacks.add(EmiStack.of(holder.value()));
+                            }
+                        }
+                    } else {
+                        @SuppressWarnings("unchecked")
+                        TagKey<Item> itemTagKey = (TagKey<Item>) rawKey;
+                        var tagHolderList = BuiltInRegistries.ITEM.getTag(itemTagKey);
+                        if (tagHolderList.isPresent()) {
+                            for (Holder<Item> holder : tagHolderList.get()) {
+                                rawStacks.add(EmiStack.of(holder.value()));
+                            }
                         }
                     }
                 } catch (Exception ignored) {}

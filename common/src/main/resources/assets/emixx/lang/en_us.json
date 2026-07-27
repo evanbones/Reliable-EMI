@@ -119,5 +119,18 @@
   "emixx.configuration.searchWidgetSuggestionTextColor": "Placeholder Text Color",
   "emixx.configuration.searchWidgetSuggestionTextColor.tooltip": "",
   "emixx.configuration.searchWidgetTextColor":"Text Color",
-  "emixx.configuration.searchWidgetTextColor.tooltip":""
+  "emixx.configuration.searchWidgetTextColor.tooltip":"",
+
+  "emixx.configuration.tags": "Tags",
+  "emixx.configuration.enableCategorizedTagPages": "Categorized Tag Pages",
+  "emixx.configuration.enableCategorizedTagPages.tooltip": "Split EMI tag recipes into separate category tabs for Item, Block, Fluid, and Entity Tags.",
+  "emixx.configuration.enableEntityTags": "Entity Tags for Spawn Eggs",
+  "emixx.configuration.enableEntityTags.tooltip": "Register entity type tags in EMI so right-clicking spawn eggs displays their entity tags.",
+  "emixx.configuration.enableTagSearchEnhancements": "Tag Search Enhancements",
+  "emixx.configuration.enableTagSearchEnhancements.tooltip": "Enable searching entity type tags and fluid tags in the index using the # tag search prefix.",
+
+  "emi.category.emixx.item_tags": "Item Tags",
+  "emi.category.emixx.block_tags": "Block Tags",
+  "emi.category.emixx.fluid_tags": "Fluid Tags",
+  "emi.category.emixx.entity_type_tags": "Entity Tags"
 }

@@ -14,12 +14,10 @@
   "emixx.configuration.enableCreativeModeTabs": "启用创造模式标签页",
   "emixx.configuration.syncSelectedCreativeModeTab": "同步选中的标签页",
   "emixx.configuration.disabledCreativeModeTabs": "禁用的创造模式标签页",
-  "emixx.emixx.configuration.disabledCreativeModeTabs.manage": "配置...",
   "emixx.configuration.stackGroups": "折叠组",
   "emixx.configuration.enableStackGroups": "[未完成的选项] 启用折叠组",
   "emixx.configuration.enableCreateStackGroupButton": "启用创建折叠组按钮",
   "emixx.configuration.disabledStackGroups": "禁用的折叠组",
-  "emixx.emixx.configuration.disabledStackGroups.manage": "配置...",
 
   "stackgroup.emixx.enchanted_books": "附魔书",
   "stackgroup.emixx.potions": "药水",
@@ -94,5 +92,16 @@
   "emixx.configuration.emiOnlyInRecipeBook": "仅在配方书中显示 EMI",
   "emixx.configuration.emiOnlyInRecipeBook.tooltip": "启用后，EMI 仅在原版配方书打开时激活。",
 
-  "emi.category.emixx.villager_trades": "村民交易"
+  "emixx.configuration.tags": "标签",
+  "emixx.configuration.enableCategorizedTagPages": "标签分类页面",
+  "emixx.configuration.enableCategorizedTagPages.tooltip": "将 EMI 标签配方拆分为独立的物品、方块、流体和实体标签选项卡。",
+  "emixx.configuration.enableEntityTags": "刷怪蛋实体标签",
+  "emixx.configuration.enableEntityTags.tooltip": "在 EMI 中注册实体类型标签，右键刷怪蛋时显示其对应的实体标签。",
+  "emixx.configuration.enableTagSearchEnhancements": "标签搜索增强",
+  "emixx.configuration.enableTagSearchEnhancements.tooltip": "启用在搜索栏中使用 # 前缀搜索实体标签和流体标签。",
+
+  "emi.category.emixx.item_tags": "物品标签",
+  "emi.category.emixx.block_tags": "方块标签",
+  "emi.category.emixx.fluid_tags": "流体标签",
+  "emi.category.emixx.entity_type_tags": "实体标签"
 }

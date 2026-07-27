@@ -20,6 +20,10 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "EmiIngredientRecipeMixin"
+    "EmiIngredientRecipeMixin",
+    "EmiTagRecipeMixin",
+    "RegexTagQueryMixin",
+    "TagQueryMixin",
+    "VanillaPluginMixin"
   ]
 }

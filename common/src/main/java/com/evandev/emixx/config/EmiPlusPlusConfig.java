@@ -30,6 +30,10 @@ public class EmiPlusPlusConfig {
     public static boolean enableCreateStackGroupButton = true;
     public static List<String> disabledStackGroups = new ArrayList<>();
 
+    public static boolean enableCategorizedTagPages = true;
+    public static boolean enableEntityTags = true;
+    public static boolean enableTagSearchEnhancements = true;
+
     public static boolean emiOnlyInRecipeBook = false;
 
     public static boolean disablePaginationWrapping = false;
@@ -80,6 +84,10 @@ public class EmiPlusPlusConfig {
                         stackGroupItemOrder = new HashMap<>(data.stackGroupItemOrder);
                     }
 
+                    enableCategorizedTagPages = data.enableCategorizedTagPages;
+                    enableEntityTags = data.enableEntityTags;
+                    enableTagSearchEnhancements = data.enableTagSearchEnhancements;
+
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
                     disablePaginationWrapping = data.disablePaginationWrapping;
                     scrollInsteadOfPagination = data.scrollInsteadOfPagination;
@@ -116,6 +124,9 @@ public class EmiPlusPlusConfig {
         data.enableStackGroups = enableStackGroups;
         data.enableCreateStackGroupButton = enableCreateStackGroupButton;
         data.disabledStackGroups = new ArrayList<>(disabledStackGroups);
+        data.enableCategorizedTagPages = enableCategorizedTagPages;
+        data.enableEntityTags = enableEntityTags;
+        data.enableTagSearchEnhancements = enableTagSearchEnhancements;
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
         data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
         data.disablePaginationWrapping = disablePaginationWrapping;
@@ -142,6 +153,11 @@ public class EmiPlusPlusConfig {
         boolean enableCreateStackGroupButton = true;
         List<String> disabledStackGroups = new ArrayList<>();
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
+
+        // Tags
+        boolean enableCategorizedTagPages = true;
+        boolean enableEntityTags = true;
+        boolean enableTagSearchEnhancements = true;
         boolean emiOnlyInRecipeBook = false;
 
         // Scrolling
