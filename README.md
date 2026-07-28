@@ -44,7 +44,7 @@ JSON file in `config/emixx/stack_groups/my_group.json`.
 | `enabled`    | Boolean (Optional) | Set to `false` to disable this group.                                                                             |
 | `priority`   | Integer (Optional) | Controls match order when an item could belong to multiple groups. Higher values are checked first (default `0`). |
 | `contents`   | List               | *(For `emixx:group`)* A list of items or tags to include.                                                         |
-| `exclusions` | List               | *(For `emixx:group`)* Items to remove from the group (useful when using broad tags).                              |
+| `exclusions` | List               | *(For `emixx:group`/`emixx:regex`)* Items to remove from the group (useful when using broad tags or regexes).     |
 | `regex`      | String             | *(For `emixx:group`/`emixx:regex`)* A regular expression pattern used to match item IDs dynamically.              |
 | `regexes`    | List (Optional)    | *(For `emixx:group`)* Like `regex`, but accepts a list of multiple patterns.                                      |
 

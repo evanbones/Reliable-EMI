@@ -94,6 +94,13 @@ public class EmiPlusPlusConfig {
                     showTitleInsteadOfPageNumbers = data.showTitleInsteadOfPageNumbers;
                     hidePageButtonWhenOnePage = data.hidePageButtonWhenOnePage;
                     incrementalScrollbarFill = data.incrementalScrollbarFill;
+
+                    searchWidgetAlignWithPanel = data.searchWidgetAlignWithPanel;
+                    searchWidgetTopOffset = data.searchWidgetTopOffset;
+                    searchWidgetHorizontalPadding = data.searchWidgetHorizontalPadding;
+                    searchWidgetVerticalPadding = data.searchWidgetVerticalPadding;
+                    searchWidgetSuggestionTextColor = data.searchWidgetSuggestionTextColor;
+                    searchWidgetTextColor = data.searchWidgetTextColor;
                 }
             } catch (IOException | JsonSyntaxException e) {
                 EmiPlusPlus.LOGGER.error("Failed to load config", e);

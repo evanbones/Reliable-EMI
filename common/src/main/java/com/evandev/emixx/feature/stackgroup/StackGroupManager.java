@@ -3,7 +3,6 @@ package com.evandev.emixx.feature.stackgroup;
 import com.evandev.EmiPlusPlus;
 import com.evandev.emixx.config.EmiPlusPlusConfig;
 import com.evandev.emixx.feature.stackgroup.data.EmiStackGroup;
-import com.evandev.emixx.feature.stackgroup.data.RegexStackGroup;
 import com.evandev.emixx.feature.stackgroup.data.StackGroup;
 import com.evandev.emixx.feature.stackgroup.data.groups.*;
 import com.google.gson.JsonObject;
@@ -22,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 
 public class StackGroupManager {
     public static final List<StackGroup> stackGroups = new ArrayList<>();
@@ -58,17 +56,7 @@ public class StackGroupManager {
         registerType("emixx:banner_patterns", (id, json) -> new BannerPatternItemGroup());
         registerType("emixx:animal_armors", (id, json) -> new AnimalArmorItemGroup());
 
-        registerType("emixx:regex", (id, json) -> {
-            String regexString = GsonHelper.getAsString(json, "regex");
-            String nameKey = json.has("name") ? GsonHelper.getAsString(json, "name") : null;
-            Component customName = nameKey != null ? Component.translatable(nameKey) : null;
-            try {
-                return new RegexStackGroup(id, Pattern.compile(regexString), customName);
-            } catch (Exception e) {
-                EmiPlusPlus.LOGGER.error("Invalid regex in stack group {}: {}", id, regexString, e);
-                return null;
-            }
-        });
+        registerType("emixx:regex", (id, json) -> EmiStackGroup.parse(json, id));
     }
 
     public static void registerType(String type, BiFunction<ResourceLocation, JsonObject, StackGroup> factory) {
