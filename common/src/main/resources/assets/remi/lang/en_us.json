@@ -95,6 +95,8 @@
   "remi.configuration.enableCreateStackGroupButton.tooltip": "Enable or disable the button in tag recipes to quickly create a stack group.",
   "remi.configuration.disabledStackGroups.tooltip": "Configure specific Stack Groups.",
   "remi.configuration.disabledStackGroups.tooltip.unavailable": "You must be in a world to manage Stack Groups.",
+  "remi.configuration.dragCheatToInventory": "Better Cheat Mode",
+  "remi.configuration.dragCheatToInventory.tooltip": "When in Cheat Mode, dragging items from the sidebar directly into an inventory screen will cheat them into your inventory. Shift drag to copy entire stacks.",
   "remi.configuration.emiOnlyInRecipeBook": "EMI Only In Recipe Book",
   "remi.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open.",
   "remi.configuration.disablePaginationWrapping": "Disable Pagination Wrapping",

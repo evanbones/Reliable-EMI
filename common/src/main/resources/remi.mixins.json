@@ -5,7 +5,6 @@
   "minVersion": "0.8",
   "client": [
     "emi.BoMScreenMixin",
-    "minecraft.CreativeModeInventoryScreenMixin",
     "emi.EmiReloadManagerReloadWorkerMixin",
     "emi.EmiScreenManagerMixin",
     "emi.EmiScreenManagerScreenSpaceMixin",
@@ -14,15 +13,19 @@
     "emi.EmiSearchWidgetMixin",
     "emi.EmiStackListMixin",
     "emi.NameQueryMixin",
+    "minecraft.AbstractContainerScreenAccessor",
+    "minecraft.CreativeModeInventoryScreenMixin",
     "minecraft.EditBoxMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
+    "emi.CreateItemC2SPacketMixin",
     "emi.EmiIngredientRecipeMixin",
     "emi.EmiTagRecipeMixin",
     "emi.RegexTagQueryMixin",
+    "emi.TagEmiIngredientMixin",
     "emi.TagQueryMixin",
     "emi.VanillaPluginMixin"
   ]

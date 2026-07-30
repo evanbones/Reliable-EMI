@@ -6,25 +6,37 @@ import com.evandev.remi.feature.stackgroup.EmiGroupStack;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.emi.StackManager;
+import com.evandev.remi.mixin.minecraft.AbstractContainerScreenAccessor;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.config.SidebarType;
+import dev.emi.emi.network.CreateItemC2SPacket;
+import dev.emi.emi.network.EmiNetwork;
+import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.widget.EmiSearchWidget;
 import dev.emi.emi.search.EmiSearch;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -38,11 +50,9 @@ import java.util.List;
 public abstract class EmiScreenManagerMixin {
 
     @Shadow
-    private static List<? extends EmiIngredient> searchedStacks;
-
-    @Shadow
     public static EmiSearchWidget search;
-
+    @Shadow
+    private static List<? extends EmiIngredient> searchedStacks;
     @Shadow
     private static List<EmiScreenManager.SidebarPanel> panels;
 
@@ -112,6 +122,113 @@ public abstract class EmiScreenManagerMixin {
             StackManager.onStackInteraction(instance);
         }
         return original.call(instance);
+    }
+
+    @WrapOperation(
+            at = @At(value = "INVOKE", target = "Ldev/emi/emi/registry/EmiDragDropHandlers;dropStack(Lnet/minecraft/client/gui/screens/Screen;Ldev/emi/emi/api/stack/EmiIngredient;II)Z"),
+            method = "mouseReleased"
+    )
+    private static boolean wrapDropStack(Screen screen, EmiIngredient stack, int x, int y, Operation<Boolean> original) {
+        boolean handled = original.call(screen, stack, x, y);
+        if (!handled && ReliableEmiConfig.dragCheatToInventory && EmiApi.isCheatMode()) {
+            if (screen instanceof AbstractContainerScreen<?> containerScreen) {
+                handled = remi$giveDraggedToInventory(containerScreen, stack, x, y);
+            }
+        }
+        return handled;
+    }
+
+    @Unique
+    private static Slot remi$getSlotUnderMouse(AbstractContainerScreen<?> screen, int mouseX, int mouseY) {
+        if (screen instanceof AbstractContainerScreenAccessor accessor) {
+            return accessor.remi$getHoveredSlot();
+        }
+        return null;
+    }
+
+    @Unique
+    private static String remi$getCommandSlotName(int containerSlot) {
+        if (containerSlot >= 0 && containerSlot <= 8) {
+            return "hotbar." + containerSlot;
+        } else if (containerSlot >= 9 && containerSlot <= 35) {
+            return "inventory." + (containerSlot - 9);
+        } else if (containerSlot == 36) {
+            return "armor.feet";
+        } else if (containerSlot == 37) {
+            return "armor.legs";
+        } else if (containerSlot == 38) {
+            return "armor.chest";
+        } else if (containerSlot == 39) {
+            return "armor.head";
+        } else if (containerSlot == 40) {
+            return "weapon.offhand";
+        }
+        return null;
+    }
+
+    @Unique
+    private static boolean remi$giveDraggedToInventory(AbstractContainerScreen<?> screen, EmiIngredient ingredient, int x, int y) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null) {
+            return false;
+        }
+        if (!EmiApi.isCheatMode()) {
+            return false;
+        }
+        if (!client.player.hasPermissions(2) && !client.player.isCreative()) {
+            return false;
+        }
+        if (ingredient == null || ingredient.isEmpty()) {
+            return false;
+        }
+        List<EmiStack> stacks = ingredient.getEmiStacks();
+        if (stacks == null || stacks.isEmpty()) {
+            return false;
+        }
+        EmiStack emiStack = stacks.getFirst();
+        ItemStack itemStack = emiStack.getItemStack();
+        if (itemStack == null || itemStack.isEmpty()) {
+            return false;
+        }
+
+        ItemStack toGive = itemStack.copy();
+        int amount = Screen.hasShiftDown() ? toGive.getMaxStackSize() : 1;
+        toGive.setCount(amount);
+
+        Slot targetSlot = remi$getSlotUnderMouse(screen, x, y);
+        boolean isPlayerInventory = targetSlot != null && targetSlot.container == client.player.getInventory();
+
+        if (isPlayerInventory) {
+            if (client.player.isCreative() && client.gameMode != null) {
+                int slotId = targetSlot.getContainerSlot();
+                targetSlot.setByPlayer(toGive);
+                client.gameMode.handleCreativeModeItemAdd(toGive, slotId);
+                return true;
+            } else {
+                String slotName = remi$getCommandSlotName(targetSlot.getContainerSlot());
+                if (slotName != null && client.level != null) {
+                    ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getComponentsPatch());
+                    String command = "item replace entity @s " + slotName + " with " + argument.serialize(client.level.registryAccess()) + " " + amount;
+                    if (command.length() < 256) {
+                        client.player.connection.sendUnsignedCommand(command);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (EmiClient.onServer) {
+            EmiNetwork.sendToServer(new CreateItemC2SPacket(0, toGive));
+            return true;
+        } else if (client.level != null) {
+            ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getComponentsPatch());
+            String command = "give @s " + argument.serialize(client.level.registryAccess()) + " " + amount;
+            if (command.length() < 256) {
+                client.player.connection.sendUnsignedCommand(command);
+                return true;
+            }
+        }
+        return false;
     }
 
     @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)

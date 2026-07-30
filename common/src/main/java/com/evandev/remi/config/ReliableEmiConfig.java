@@ -35,6 +35,7 @@ public class ReliableEmiConfig {
     public static boolean enableTagSearchEnhancements = true;
 
     public static boolean emiOnlyInRecipeBook = false;
+    public static boolean dragCheatToInventory = true;
 
     public static boolean disablePaginationWrapping = false;
     public static boolean scrollInsteadOfPagination = false;
@@ -114,6 +115,7 @@ public class ReliableEmiConfig {
                     enableTagSearchEnhancements = data.enableTagSearchEnhancements;
 
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
+                    dragCheatToInventory = data.dragCheatToInventory;
                     disablePaginationWrapping = data.disablePaginationWrapping;
                     scrollInsteadOfPagination = data.scrollInsteadOfPagination;
                     showTitleInsteadOfPageNumbers = data.showTitleInsteadOfPageNumbers;
@@ -160,6 +162,7 @@ public class ReliableEmiConfig {
         data.enableEntityTags = enableEntityTags;
         data.enableTagSearchEnhancements = enableTagSearchEnhancements;
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
+        data.dragCheatToInventory = dragCheatToInventory;
         data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
         data.disablePaginationWrapping = disablePaginationWrapping;
         data.scrollInsteadOfPagination = scrollInsteadOfPagination;
@@ -191,6 +194,7 @@ public class ReliableEmiConfig {
         boolean enableEntityTags = true;
         boolean enableTagSearchEnhancements = true;
         boolean emiOnlyInRecipeBook = false;
+        boolean dragCheatToInventory = true;
 
         // Scrolling
         boolean disablePaginationWrapping = false;

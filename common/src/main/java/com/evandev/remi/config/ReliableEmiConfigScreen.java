@@ -78,6 +78,8 @@ public class ReliableEmiConfigScreen {
 
         ConfigCategory.Builder miscellaneous = ConfigCategory.createBuilder()
                 .name(ReliableEmi.text("configuration.miscellaneous"))
+                .option(createBoolOption("dragCheatToInventory", true,
+                        () -> ReliableEmiConfig.dragCheatToInventory, v -> ReliableEmiConfig.dragCheatToInventory = v))
                 .option(createBoolOption("emiOnlyInRecipeBook", false,
                         () -> ReliableEmiConfig.emiOnlyInRecipeBook, v -> ReliableEmiConfig.emiOnlyInRecipeBook = v))
                 .option(createBoolOption("disablePaginationWrapping", false,

@@ -8,8 +8,8 @@
     "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://github.com/evanbones/emi-plus-plus/",
-    "sources": "https://github.com/evanbones/emi-plus-plus/"
+    "homepage": "https://github.com/evanbones/Reliable-EMI/",
+    "sources": "https://github.com/evanbones/Reliable-EMI/"
   },
   "license": "${license}",
   "icon": "${mod_id}.png",
