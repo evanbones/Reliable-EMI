@@ -1,5 +1,5 @@
-### Fixed
+### Changed
 
-- Fixed some config options not loading properly.
-- Fixed `exclusions` being ignored on `emixx:regex` stack groups.
-- Fixed other bugs with the `emixx:regex` stack group type.
+- Renamed mod from EMI++ to Reliable EMI.
+- Changed mod ID from `emixx` to `remi`.
+    - Existing configs should still be compatible, though I'd recommend migrating your configs to the `remi` namespace.

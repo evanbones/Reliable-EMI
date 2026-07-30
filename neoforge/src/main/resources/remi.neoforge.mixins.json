@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.evandev.remi.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "plugin": "com.evandev.remi.mixinplugin.ReliableEmiNeoForgeMixinPlugin",
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "mekanism.GuiElementHandlerMixin"
+  ]
+}

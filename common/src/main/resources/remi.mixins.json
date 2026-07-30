@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "package": "com.evandev.remi.mixin",
+  "compatibilityLevel": "JAVA_18",
+  "minVersion": "0.8",
+  "client": [
+    "emi.BoMScreenMixin",
+    "minecraft.CreativeModeInventoryScreenMixin",
+    "emi.EmiReloadManagerReloadWorkerMixin",
+    "emi.EmiScreenManagerMixin",
+    "emi.EmiScreenManagerScreenSpaceMixin",
+    "emi.EmiScreenManagerSidebarPanelMixin",
+    "emi.EmiSearchSearchWorkerMixin",
+    "emi.EmiSearchWidgetMixin",
+    "emi.EmiStackListMixin",
+    "emi.NameQueryMixin",
+    "minecraft.EditBoxMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "emi.EmiIngredientRecipeMixin",
+    "emi.EmiTagRecipeMixin",
+    "emi.RegexTagQueryMixin",
+    "emi.TagQueryMixin",
+    "emi.VanillaPluginMixin"
+  ]
+}

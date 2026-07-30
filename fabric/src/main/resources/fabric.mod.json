@@ -16,13 +16,13 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.evandev.emixx.EmiPlusPlusFabric"
+      "com.evandev.remi.ReliableEmiFabric"
     ],
     "client": [
-      "com.evandev.emixx.EmiPlusPlusClientFabric"
+      "com.evandev.remi.ReliableEmiClientFabric"
     ],
     "modmenu": [
-      "com.evandev.emixx.integration.modmenu.ModMenuIntegration"
+      "com.evandev.remi.integration.modmenu.ModMenuIntegration"
     ]
   },
   "mixins": [

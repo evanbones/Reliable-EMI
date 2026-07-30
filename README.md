@@ -1,15 +1,16 @@
-# EMI++
+# Reliable EMI
 
 [![neoforge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/neoforge_vector.svg)](https://neoforged.net/)
 [![forge](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/forge_vector.svg)](https://files.minecraftforge.net/)
 [![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/fabric_vector.svg)](https://fabricmc.net/)
 
-**EMI++** is an addon for [EMI](https://github.com/emilyploszaj/emi), adding a variety of useful features, improvements,
+**Reliable EMI** (REMI) is an addon for [EMI](https://github.com/emilyploszaj/emi), adding a variety of useful features,
+improvements,
 and customization options to enhance your recipe viewing experience!
 
 ## Features
 
-EMI++ provides the following enhancements:
+REMI provides the following enhancements:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
@@ -23,7 +24,7 @@ EMI++ provides the following enhancements:
 
 ## Configuration
 
-EMI++ offers extensive configuration options to tweak the interface to your needs. You can configure the mod via the
+REMI offers extensive configuration options to tweak the interface to your needs. You can configure the mod via the
 **in-game config screen** with [YACL](https://modrinth.com/mod/yacl) installed or by editing the configuration file
 directly.
 
@@ -31,8 +32,8 @@ directly.
 
 You can define new custom stack groups or modify existing ones using standard **JSON files**.
 
-EMI++ loads stack groups from the `config/emixx/stack_groups` directory. For example, to create a custom group, create a
-JSON file in `config/emixx/stack_groups/my_group.json`.
+REMI loads stack groups from the `config/remi/stack_groups` directory. For example, to create a custom group, create a
+JSON file in `config/remi/stack_groups/my_group.json`.
 
 **JSON Structure:**
 
@@ -40,20 +41,20 @@ JSON file in `config/emixx/stack_groups/my_group.json`.
 |--------------|--------------------|-------------------------------------------------------------------------------------------------------------------|
 | `id`         | String             | A unique identifier (e.g., `"mypack:currency"`).                                                                  |
 | `name`       | String (Optional)  | A translation key or string for the group's name (e.g., `"mypack.group.currency"` or `"Currency"`).               |
-| `type`       | String             | Determines how the group is built. Can be `"emixx:group"`, `"emixx:tag"`, or `"emixx:regex"`.                     |
+| `type`       | String             | Determines how the group is built. Can be `"remi:group"`, `"remi:tag"`, or `"remi:regex"`.                        |
 | `enabled`    | Boolean (Optional) | Set to `false` to disable this group.                                                                             |
 | `priority`   | Integer (Optional) | Controls match order when an item could belong to multiple groups. Higher values are checked first (default `0`). |
-| `contents`   | List               | *(For `emixx:group`)* A list of items or tags to include.                                                         |
-| `exclusions` | List               | *(For `emixx:group`/`emixx:regex`)* Items to remove from the group (useful when using broad tags or regexes).     |
-| `regex`      | String             | *(For `emixx:group`/`emixx:regex`)* A regular expression pattern used to match item IDs dynamically.              |
-| `regexes`    | List (Optional)    | *(For `emixx:group`)* Like `regex`, but accepts a list of multiple patterns.                                      |
+| `contents`   | List               | *(For `remi:group`)* A list of items or tags to include.                                                          |
+| `exclusions` | List               | *(For `remi:group`/`remi:regex`)* Items to remove from the group (useful when using broad tags or regexes).       |
+| `regex`      | String             | *(For `remi:group`/`remi:regex`)* A regular expression pattern used to match item IDs dynamically.                |
+| `regexes`    | List (Optional)    | *(For `remi:group`)* Like `regex`, but accepts a list of multiple patterns.                                       |
 
 **Example: Creating a shiny things group (standard list)**
 
 ```json
 {
   "id": "mypack:shiny_things",
-  "type": "emixx:group",
+  "type": "remi:group",
   "contents": [
     "minecraft:diamond",
     "minecraft:emerald",
@@ -69,13 +70,13 @@ JSON file in `config/emixx/stack_groups/my_group.json`.
 
 **Example: Creating a group using Regex**
 
-You can use the `"emixx:regex"` type to dynamically group items based on their naming patterns. The example below groups
+You can use the `"remi:regex"` type to dynamically group items based on their naming patterns. The example below groups
 all items that end in _sword (from any namespace):
 
 ```json
 {
   "id": "mypack:swords",
-  "type": "emixx:regex",
+  "type": "remi:regex",
   "regex": ".*:.*_sword",
   "name": "Swords"
 }
@@ -84,7 +85,7 @@ all items that end in _sword (from any namespace):
 
 **Virtual Objects (Fluids, Modifiers, etc.):**
 
-EMI++ also supports grouping non-item objects such as Fluids, JEED effects, etc. To do this,
+Reliable EMI also supports grouping non-item objects such as Fluids, JEED effects, etc. To do this,
 prefix the entry with its EMI registry type using the format `<type>:<namespace>:<path>`.
 
 *Example: Creating a special group*
@@ -93,7 +94,7 @@ prefix the entry with its EMI registry type using the format `<type>:<namespace>
 {
   "id": "mypack:basic_fluids",
   "name": "mypack.stack_group.basic_fluids",
-  "type": "emixx:group",
+  "type": "remi:group",
   "contents": [
     "fluid:minecraft:water",
     "fluid:minecraft:lava",
@@ -114,7 +115,7 @@ path/ID as the default group and set `"enabled": false`.
 
 *Example: Disabling the spawn eggs group*
 
-File: `config/emixx/stack_groups/spawn_eggs.json`
+File: `config/remi/stack_groups/spawn_eggs.json`
 
 ```json
 {
