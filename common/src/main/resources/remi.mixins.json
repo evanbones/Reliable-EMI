@@ -15,13 +15,16 @@
     "emi.NameQueryMixin",
     "minecraft.AbstractContainerScreenAccessor",
     "minecraft.CreativeModeInventoryScreenMixin",
-    "minecraft.EditBoxMixin"
+    "minecraft.EditBoxMixin",
+    "minecraft.RecipeBookComponentMixin",
+    "minecraft.ScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
     "emi.CreateItemC2SPacketMixin",
+    "emi.EmiApiMixin",
     "emi.EmiIngredientRecipeMixin",
     "emi.EmiTagRecipeMixin",
     "emi.RegexTagQueryMixin",

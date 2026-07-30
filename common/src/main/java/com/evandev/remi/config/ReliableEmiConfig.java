@@ -35,6 +35,7 @@ public class ReliableEmiConfig {
     public static boolean enableTagSearchEnhancements = true;
 
     public static boolean emiOnlyInRecipeBook = false;
+    public static boolean emiOnlyInRecipeBookState = false;
     public static boolean dragCheatToInventory = true;
 
     public static boolean disablePaginationWrapping = false;
@@ -115,6 +116,7 @@ public class ReliableEmiConfig {
                     enableTagSearchEnhancements = data.enableTagSearchEnhancements;
 
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
+                    emiOnlyInRecipeBookState = data.emiOnlyInRecipeBookState;
                     dragCheatToInventory = data.dragCheatToInventory;
                     disablePaginationWrapping = data.disablePaginationWrapping;
                     scrollInsteadOfPagination = data.scrollInsteadOfPagination;
@@ -162,6 +164,7 @@ public class ReliableEmiConfig {
         data.enableEntityTags = enableEntityTags;
         data.enableTagSearchEnhancements = enableTagSearchEnhancements;
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
+        data.emiOnlyInRecipeBookState = emiOnlyInRecipeBookState;
         data.dragCheatToInventory = dragCheatToInventory;
         data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
         data.disablePaginationWrapping = disablePaginationWrapping;
@@ -188,13 +191,14 @@ public class ReliableEmiConfig {
         boolean enableCreateStackGroupButton = true;
         List<String> disabledStackGroups = new ArrayList<>();
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
+        boolean emiOnlyInRecipeBook = false;
+        boolean emiOnlyInRecipeBookState = false;
+        boolean dragCheatToInventory = true;
 
         // Tags
         boolean enableCategorizedTagPages = true;
         boolean enableEntityTags = true;
         boolean enableTagSearchEnhancements = true;
-        boolean emiOnlyInRecipeBook = false;
-        boolean dragCheatToInventory = true;
 
         // Scrolling
         boolean disablePaginationWrapping = false;
