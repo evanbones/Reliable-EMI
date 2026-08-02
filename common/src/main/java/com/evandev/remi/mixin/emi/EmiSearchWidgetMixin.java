@@ -12,30 +12,38 @@ import org.spongepowered.asm.mixin.injection.At;
 public class EmiSearchWidgetMixin {
     @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V", ordinal = 0))
     private void renderHighlightTop(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
-        x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
-        y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
-        width = width + ReliableEmiConfig.searchWidgetHorizontalPadding * 2 - 2;
+        if (!ReliableEmiConfig.searchWidgetUseVanillaTexture) {
+            x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
+            y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
+            width = width + ReliableEmiConfig.searchWidgetHorizontalPadding * 2 - 2;
+        }
         original.call(instance, x, y, width, height, color);
     }
     @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V", ordinal = 1))
     private void renderHighlightBottom(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
-        x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
-        y = y + ReliableEmiConfig.searchWidgetVerticalPadding - 1;
-        width = width + ReliableEmiConfig.searchWidgetHorizontalPadding * 2 - 2;
+        if (!ReliableEmiConfig.searchWidgetUseVanillaTexture) {
+            x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
+            y = y + ReliableEmiConfig.searchWidgetVerticalPadding - 1;
+            width = width + ReliableEmiConfig.searchWidgetHorizontalPadding * 2 - 2;
+        }
         original.call(instance, x, y, width, height, color);
     }
     @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V", ordinal = 2))
     private void renderHighlightLeft(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
-        x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
-        y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
-        height = height + ReliableEmiConfig.searchWidgetVerticalPadding * 2 - 2;
+        if (!ReliableEmiConfig.searchWidgetUseVanillaTexture) {
+            x = x - ReliableEmiConfig.searchWidgetHorizontalPadding + 1;
+            y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
+            height = height + ReliableEmiConfig.searchWidgetVerticalPadding * 2 - 2;
+        }
         original.call(instance, x, y, width, height, color);
     }
     @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V", ordinal = 3))
     private void renderHighlightRight(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
-        x = x + ReliableEmiConfig.searchWidgetHorizontalPadding - 1;
-        y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
-        height = height + ReliableEmiConfig.searchWidgetVerticalPadding * 2 - 2;
+        if (!ReliableEmiConfig.searchWidgetUseVanillaTexture) {
+            x = x + ReliableEmiConfig.searchWidgetHorizontalPadding - 1;
+            y = y - ReliableEmiConfig.searchWidgetVerticalPadding + 1;
+            height = height + ReliableEmiConfig.searchWidgetVerticalPadding * 2 - 2;
+        }
         original.call(instance, x, y, width, height, color);
     }
 }

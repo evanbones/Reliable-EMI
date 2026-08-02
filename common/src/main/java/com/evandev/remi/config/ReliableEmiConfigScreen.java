@@ -104,7 +104,9 @@ public class ReliableEmiConfigScreen {
                 .option(createColorOption("searchWidgetTextColor", new Color(0xFFFFFF),
                         () -> new Color(ReliableEmiConfig.searchWidgetTextColor), v -> ReliableEmiConfig.searchWidgetTextColor = v.getRGB()))
                 .option(createColorOption("searchWidgetSuggestionTextColor",  new Color(0x808080),
-                        () -> new Color(ReliableEmiConfig.searchWidgetSuggestionTextColor), v -> ReliableEmiConfig.searchWidgetSuggestionTextColor = v.getRGB()));
+                        () -> new Color(ReliableEmiConfig.searchWidgetSuggestionTextColor), v -> ReliableEmiConfig.searchWidgetSuggestionTextColor = v.getRGB()))
+                .option(createBoolOption("searchWidgetUseVanillaTexture", false,
+                        () -> ReliableEmiConfig.searchWidgetUseVanillaTexture, v -> ReliableEmiConfig.searchWidgetUseVanillaTexture = v));
 
 
         ConfigCategory.Builder tags = ConfigCategory.createBuilder()

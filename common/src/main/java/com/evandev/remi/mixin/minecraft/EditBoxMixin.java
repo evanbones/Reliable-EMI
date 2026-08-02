@@ -30,7 +30,7 @@ public class EditBoxMixin {
     @WrapOperation(method = "renderWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V"))
     private void drawSearchWidgetBackground(GuiGraphics instance, ResourceLocation sprite, int x, int y, int width, int height, Operation<Void> original) {
         EditBox editBox = (EditBox) (Object) this;
-        if (editBox instanceof EmiSearchWidget) {
+        if (editBox instanceof EmiSearchWidget && !ReliableEmiConfig.searchWidgetUseVanillaTexture) {
             int horizontalPadding = ReliableEmiConfig.searchWidgetHorizontalPadding;
             int verticalPadding = ReliableEmiConfig.searchWidgetVerticalPadding;
             sprite = remi$SPRITES.get(editBox.isActive(), editBox.isFocused());

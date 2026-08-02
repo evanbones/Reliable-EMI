@@ -50,6 +50,7 @@ public class ReliableEmiConfig {
     public static int searchWidgetVerticalPadding = 2;
     public static int searchWidgetSuggestionTextColor = 0xFF808080;
     public static int searchWidgetTextColor = 0xFFFFFFFF;
+    public static boolean searchWidgetUseVanillaTexture = false;
 
 
     public static Path getConfigDir() {
@@ -130,6 +131,7 @@ public class ReliableEmiConfig {
                     searchWidgetVerticalPadding = data.searchWidgetVerticalPadding;
                     searchWidgetSuggestionTextColor = data.searchWidgetSuggestionTextColor;
                     searchWidgetTextColor = data.searchWidgetTextColor;
+                    searchWidgetUseVanillaTexture = data.searchWidgetUseVanillaTexture;
                 }
             } catch (IOException | JsonSyntaxException e) {
                 ReliableEmi.LOGGER.error("Failed to load config", e);
@@ -178,6 +180,7 @@ public class ReliableEmiConfig {
         data.searchWidgetVerticalPadding = searchWidgetVerticalPadding;
         data.searchWidgetSuggestionTextColor = searchWidgetSuggestionTextColor;
         data.searchWidgetTextColor = searchWidgetTextColor;
+        data.searchWidgetUseVanillaTexture = searchWidgetUseVanillaTexture;
         return data;
     }
 
@@ -214,5 +217,6 @@ public class ReliableEmiConfig {
         int searchWidgetVerticalPadding = 2;
         int searchWidgetSuggestionTextColor = 0xFF808080;
         int searchWidgetTextColor = 0xFFFFFFFF;
+        boolean searchWidgetUseVanillaTexture = false;
     }
 }
