@@ -1,3 +1,3 @@
-### Added
+### Fixed
 
-- Added a config option to disable REMI's search box changes.
+- Fixed issues with Better Cheat Mode.

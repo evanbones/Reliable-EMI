@@ -167,6 +167,26 @@ public abstract class EmiScreenManagerMixin {
     }
 
     @Unique
+    private static int remi$getCreativeSlotId(int containerSlot) {
+        if (containerSlot >= 0 && containerSlot <= 8) {
+            return containerSlot + 36;
+        } else if (containerSlot >= 9 && containerSlot <= 35) {
+            return containerSlot;
+        } else if (containerSlot == 36) {
+            return 8;
+        } else if (containerSlot == 37) {
+            return 7;
+        } else if (containerSlot == 38) {
+            return 6;
+        } else if (containerSlot == 39) {
+            return 5;
+        } else if (containerSlot == 40) {
+            return 45;
+        }
+        return -1;
+    }
+
+    @Unique
     private static boolean remi$giveDraggedToInventory(AbstractContainerScreen<?> screen, EmiIngredient ingredient, int x, int y) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
@@ -200,10 +220,12 @@ public abstract class EmiScreenManagerMixin {
 
         if (isPlayerInventory) {
             if (client.player.isCreative() && client.gameMode != null) {
-                int slotId = targetSlot.getContainerSlot();
-                targetSlot.setByPlayer(toGive);
-                client.gameMode.handleCreativeModeItemAdd(toGive, slotId);
-                return true;
+                int creativeSlotId = remi$getCreativeSlotId(targetSlot.getContainerSlot());
+                if (creativeSlotId != -1) {
+                    targetSlot.setByPlayer(toGive);
+                    client.gameMode.handleCreativeModeItemAdd(toGive, creativeSlotId);
+                    return true;
+                }
             } else {
                 String slotName = remi$getCommandSlotName(targetSlot.getContainerSlot());
                 if (slotName != null && client.level != null) {
