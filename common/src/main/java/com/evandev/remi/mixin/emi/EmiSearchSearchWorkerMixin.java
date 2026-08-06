@@ -35,7 +35,10 @@ public class EmiSearchSearchWorkerMixin implements SearchWorkerBridge {
             target = "Ldev/emi/emi/search/EmiSearch;apply(Ldev/emi/emi/search/EmiSearch$SearchWorker;Ljava/util/List;)V"))
     private void run(@Coerce Object worker, List<? extends EmiIngredient> stacks, Operation<Void> original) {
         synchronized (EmiSearch.class) {
-            if (EmiScreenManager.getSearchPanel().getType() == SidebarType.INDEX) {
+            EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
+            boolean isIndex = (searchPanel != null && searchPanel.getType() == SidebarType.INDEX)
+                    || EmiScreenManager.hasSidebarAvailable(SidebarType.INDEX);
+            if (isIndex) {
                 List<EmiStack> combinedStacks = new ArrayList<>();
                 for (EmiIngredient stack : stacks) {
                     if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);

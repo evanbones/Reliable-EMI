@@ -11,6 +11,7 @@ import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.widget.SidebarButtonWidget;
 import dev.emi.emi.screen.widget.SizedButtonWidget;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Final;
@@ -72,13 +73,53 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE",
             target = "Ldev/emi/emi/EmiRenderHelper;getPageText(III)Lnet/minecraft/network/chat/Component;", remap = true))
     private Component replaceIndexHeader(int page, int total, int maxWidth, Operation<Component> original) {
+        int availWidth = remi$getAvailableHeaderWidth();
         if (getType() == SidebarType.INDEX && ScreenManager.customIndexTitle != null) {
-            return ScreenManager.customIndexTitle;
-        } else if (ReliableEmiConfig.showTitleInsteadOfPageNumbers){
-            return getType().getText();
+            return remi$truncateTitleToWidth(ScreenManager.customIndexTitle, availWidth);
+        } else if (ReliableEmiConfig.showTitleInsteadOfPageNumbers) {
+            return remi$truncateTitleToWidth(getType().getText(), availWidth);
         }
 
-        return original.call(page, total, maxWidth);
+        return original.call(page, total, availWidth);
+    }
+
+    @Unique
+    private int remi$getAvailableHeaderWidth() {
+        if (this.space == null) return 0;
+        int leftButtonsWidth = 0;
+        int rightButtonsWidth = 0;
+
+        if (ReliableEmiConfig.scrollInsteadOfPagination) {
+            if (this.cycle.visible) {
+                leftButtonsWidth += 18;
+            }
+        } else {
+            if (this.pageLeft.visible) {
+                leftButtonsWidth += 18;
+            }
+            if (this.cycle.visible) {
+                leftButtonsWidth += 18;
+            }
+            if (this.pageRight.visible) {
+                rightButtonsWidth += 18;
+            }
+        }
+
+        int leftBound = space.tx + leftButtonsWidth;
+        int rightBound = space.tx + space.tw * ScreenManager.ENTRY_SIZE - rightButtonsWidth;
+        return Math.max(0, rightBound - leftBound);
+    }
+
+    @Unique
+    private Component remi$truncateTitleToWidth(Component text, int maxWidth) {
+        if (text == null) return Component.empty();
+        if (maxWidth <= 0) return Component.empty();
+        var font = Minecraft.getInstance().font;
+        if (font.width(text) <= maxWidth) return text;
+        int ellipsisWidth = font.width("...");
+        if (maxWidth <= ellipsisWidth) return Component.literal(".");
+        String plain = font.plainSubstrByWidth(text.getString(), maxWidth - ellipsisWidth);
+        return Component.literal(plain + "...");
     }
 
     @Inject(at = @At("TAIL"), method = "setSpaces")
@@ -157,7 +198,35 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "maxLeft")
     private int modifyMaxLeft(int maxLeft) {
-        return maxLeft + cycle.getWidth();
+        return Math.max(0, maxLeft);
+    }
+
+    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "x")
+    private int centerHeaderX(int x) {
+        if (this.space == null) return x;
+
+        int leftButtonsWidth = 0;
+        int rightButtonsWidth = 0;
+
+        if (ReliableEmiConfig.scrollInsteadOfPagination) {
+            if (this.cycle.visible) {
+                leftButtonsWidth += 18;
+            }
+        } else {
+            if (this.pageLeft.visible) {
+                leftButtonsWidth += 18;
+            }
+            if (this.cycle.visible) {
+                leftButtonsWidth += 18;
+            }
+            if (this.pageRight.visible) {
+                rightButtonsWidth += 18;
+            }
+        }
+
+        int leftBound = space.tx + leftButtonsWidth;
+        int rightBound = space.tx + space.tw * ScreenManager.ENTRY_SIZE - rightButtonsWidth;
+        return (leftBound + rightBound) / 2;
     }
 
     @Inject(method = "wrapPage", at = @At("HEAD"), cancellable = true)

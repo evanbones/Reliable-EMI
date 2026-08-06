@@ -76,11 +76,34 @@ public abstract class EmiScreenManagerMixin {
         return headerOffset;
     }
 
+    @Unique
+    private static EmiScreenManager.SidebarPanel remi$getEffectiveSearchPanel() {
+        EmiScreenManager.SidebarPanel searchPanel = getSearchPanel();
+        if (searchPanel != null && searchPanel.space != null && searchPanel.getType() == SidebarType.INDEX) {
+            return searchPanel;
+        }
+        for (EmiScreenManager.SidebarPanel p : panels) {
+            if (p.getType() == SidebarType.INDEX && p.space != null) {
+                return p;
+            }
+        }
+        if (searchPanel != null && searchPanel.space != null) {
+            return searchPanel;
+        }
+        for (EmiScreenManager.SidebarPanel p : panels) {
+            if (p.space != null) {
+                return p;
+            }
+        }
+        return searchPanel;
+    }
+
     @Redirect(method = "recalculate",
             at = @At(value = "FIELD", target = "Ldev/emi/emi/screen/EmiScreenManager;searchedStacks:Ljava/util/List;",
                     opcode = Opcodes.PUTSTATIC))
     private static void redirectStacksSourceToEmixx(List<? extends EmiIngredient> value) {
-        if (getSearchPanel().getType() == SidebarType.INDEX) {
+        EmiScreenManager.SidebarPanel searchPanel = remi$getEffectiveSearchPanel();
+        if (searchPanel != null && searchPanel.getType() == SidebarType.INDEX) {
             searchedStacks = StackManager.displayedStacks;
         } else {
             searchedStacks = EmiSearch.stacks;
@@ -91,7 +114,8 @@ public abstract class EmiScreenManagerMixin {
             at = @At(value = "FIELD", target = "Ldev/emi/emi/search/EmiSearch;stacks:Ljava/util/List;",
                     opcode = Opcodes.GETSTATIC))
     private static List<? extends EmiIngredient> redirectCachedStacksToEmixx(List<? extends EmiIngredient> original) {
-        if (getSearchPanel().getType() == SidebarType.INDEX) {
+        EmiScreenManager.SidebarPanel searchPanel = remi$getEffectiveSearchPanel();
+        if (searchPanel != null && searchPanel.getType() == SidebarType.INDEX) {
             Layout.textureDirty = true;
             return StackManager.displayedStacks;
         }
@@ -100,7 +124,8 @@ public abstract class EmiScreenManagerMixin {
 
     @Inject(method = "getSearchSource", at = @At(value = "RETURN"), cancellable = true)
     private static void redirectSearchSourceToEmixx(CallbackInfoReturnable<List<? extends EmiIngredient>> cir) {
-        if (getSearchPanel().getType() == SidebarType.INDEX)
+        EmiScreenManager.SidebarPanel searchPanel = remi$getEffectiveSearchPanel();
+        if (searchPanel != null && searchPanel.getType() == SidebarType.INDEX)
             cir.setReturnValue(StackManager.sourceStacks);
     }
 
@@ -280,22 +305,30 @@ public abstract class EmiScreenManagerMixin {
 
     @Inject(method = "addWidgets", at = @At("TAIL"))
     private static void searchWidgetVerticalAlign(Screen screen, CallbackInfo ci) {
-        if (!EmiConfig.centerSearchBar && ReliableEmiConfig.searchWidgetAlignWithPanel) {
-            EmiScreenManager.SidebarPanel panel;
-            if (EmiConfig.searchSidebar == SidebarSide.RIGHT) {
-                panel = panels.get(1);
-            } else {
-                panel = panels.getFirst();
-            }
+        if (ReliableEmiConfig.searchWidgetAlignWithPanel || !EmiConfig.centerSearchBar) {
+            EmiScreenManager.SidebarPanel panel = remi$getEffectiveSearchPanel();
+            if (panel != null && panel.space != null) {
+                search.setX(panel.space.tx + ReliableEmiConfig.searchWidgetLeftOffset);
+                int width = Math.max(1, panel.space.tw * ENTRY_SIZE + ReliableEmiConfig.searchWidgetWidth);
+                search.setWidth(width);
 
-            int totalHeight = panel.theme == SidebarTheme.VANILLA ? 11 : 0;
-            for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
-                totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
+                if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
+                    int totalHeight = panel.theme == SidebarTheme.VANILLA ? 11 : 0;
+                    for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
+                        totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
+                    }
+                    search.setY(panel.space.ty + totalHeight + ReliableEmiConfig.searchWidgetTopOffset);
+                } else {
+                    if (panel.side == SidebarSide.RIGHT) {
+                        search.setY(screen.height - 21 + ReliableEmiConfig.searchWidgetTopOffset);
+                    } else {
+                        search.setY(screen.height - 21 - 21 + ReliableEmiConfig.searchWidgetTopOffset);
+                    }
+                }
+                return;
             }
-
-            search.setY(panel.space.ty + totalHeight + ReliableEmiConfig.searchWidgetTopOffset);
-        } else {
-            search.setY(search.getY() + ReliableEmiConfig.searchWidgetTopOffset);
         }
+        search.setY(search.getY() + ReliableEmiConfig.searchWidgetTopOffset);
+        search.setX(search.getX() + ReliableEmiConfig.searchWidgetLeftOffset);
     }
 }

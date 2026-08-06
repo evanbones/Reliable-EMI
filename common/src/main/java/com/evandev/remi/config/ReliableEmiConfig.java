@@ -45,6 +45,8 @@ public class ReliableEmiConfig {
     public static boolean incrementalScrollbarFill = false;
 
     public static boolean searchWidgetAlignWithPanel = false;
+    public static int searchWidgetWidth = 0;
+    public static int searchWidgetLeftOffset = 0;
     public static int searchWidgetTopOffset = 0;
     public static int searchWidgetHorizontalPadding = 4;
     public static int searchWidgetVerticalPadding = 2;
@@ -126,6 +128,8 @@ public class ReliableEmiConfig {
                     incrementalScrollbarFill = data.incrementalScrollbarFill;
 
                     searchWidgetAlignWithPanel = data.searchWidgetAlignWithPanel;
+                    searchWidgetWidth = data.searchWidgetWidth;
+                    searchWidgetLeftOffset = data.searchWidgetLeftOffset;
                     searchWidgetTopOffset = data.searchWidgetTopOffset;
                     searchWidgetHorizontalPadding = data.searchWidgetHorizontalPadding;
                     searchWidgetVerticalPadding = data.searchWidgetVerticalPadding;
@@ -175,6 +179,8 @@ public class ReliableEmiConfig {
         data.hidePageButtonWhenOnePage = hidePageButtonWhenOnePage;
         data.incrementalScrollbarFill = incrementalScrollbarFill;
         data.searchWidgetAlignWithPanel = searchWidgetAlignWithPanel;
+        data.searchWidgetWidth = searchWidgetWidth;
+        data.searchWidgetLeftOffset = searchWidgetLeftOffset;
         data.searchWidgetTopOffset = searchWidgetTopOffset;
         data.searchWidgetHorizontalPadding = searchWidgetHorizontalPadding;
         data.searchWidgetVerticalPadding = searchWidgetVerticalPadding;
@@ -212,6 +218,8 @@ public class ReliableEmiConfig {
 
         // Search Widget
         boolean searchWidgetAlignWithPanel = false;
+        int searchWidgetWidth = 0;
+        int searchWidgetLeftOffset = 0;
         int searchWidgetTopOffset = 0;
         int searchWidgetHorizontalPadding = 4;
         int searchWidgetVerticalPadding = 2;

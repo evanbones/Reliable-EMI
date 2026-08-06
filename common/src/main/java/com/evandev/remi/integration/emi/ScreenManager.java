@@ -12,6 +12,7 @@ public class ScreenManager {
     public static final int ENTRY_SIZE = 18;
     public static EmiScreenManager.ScreenSpace indexScreenSpace;
     public static Component customIndexTitle;
+    private static Component rawCustomIndexTitle;
     private static Screen screen;
 
     public static boolean isSearching() {
@@ -25,6 +26,7 @@ public class ScreenManager {
 
     public static void onIndexScreenSpaceCreated(EmiScreenManager.ScreenSpace space) {
         indexScreenSpace = space;
+        refreshCustomIndexTitle();
         if (screen == null) return;
 
         if (ReliableEmiConfig.enableCreativeModeTabs) {
@@ -42,16 +44,28 @@ public class ScreenManager {
     }
 
     public static void setCustomIndexTitle(Component title) {
+        rawCustomIndexTitle = title;
+        refreshCustomIndexTitle();
+    }
+
+    public static void refreshCustomIndexTitle() {
+        if (rawCustomIndexTitle == null) {
+            customIndexTitle = null;
+            return;
+        }
         var font = Minecraft.getInstance().font;
         int spaceWidth = ScreenManager.indexScreenSpace != null ? ScreenManager.indexScreenSpace.tw : 0;
         int maxWidth = spaceWidth * ScreenManager.ENTRY_SIZE - 20;
 
-        ScreenManager.customIndexTitle = (maxWidth > 0 && font.width(title) > maxWidth)
-                ? Component.literal(font.plainSubstrByWidth(title.getString(), maxWidth - font.width("...")) + "...")
-                : title;
+        ScreenManager.customIndexTitle = (maxWidth > 0 && font.width(rawCustomIndexTitle) > maxWidth)
+                ? Component.literal(font.plainSubstrByWidth(rawCustomIndexTitle.getString(), Math.max(1, maxWidth - font.width("..."))) + "...")
+                : rawCustomIndexTitle;
     }
 
     public static void removeCustomIndexTitle(Component component) {
-        if (customIndexTitle == component) customIndexTitle = null;
+        if (rawCustomIndexTitle == component || customIndexTitle == component) {
+            rawCustomIndexTitle = null;
+            customIndexTitle = null;
+        }
     }
 }

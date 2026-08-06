@@ -3,19 +3,14 @@ package com.evandev.remi.config;
 import com.evandev.ReliableEmi;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabConfigScreen;
 import com.evandev.remi.feature.stackgroup.gui.StackGroupConfigScreen;
-import dev.isxander.yacl3.api.ButtonOption;
-import dev.isxander.yacl3.api.ConfigCategory;
-import dev.isxander.yacl3.api.Option;
-import dev.isxander.yacl3.api.OptionDescription;
-import dev.isxander.yacl3.api.OptionEventListener;
-import dev.isxander.yacl3.api.YetAnotherConfigLib;
+import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -93,8 +88,12 @@ public class ReliableEmiConfigScreen {
 
         ConfigCategory.Builder searchWidget = ConfigCategory.createBuilder()
                 .name(ReliableEmi.text("configuration.searchWidget"))
-                    .option(createBoolOption("searchWidgetAlignWithPanel", false,
+                .option(createBoolOption("searchWidgetAlignWithPanel", false,
                         () -> ReliableEmiConfig.searchWidgetAlignWithPanel, v -> ReliableEmiConfig.searchWidgetAlignWithPanel = v))
+                .option(createIntegerOption("searchWidgetWidth", 0,
+                        () -> ReliableEmiConfig.searchWidgetWidth, v -> ReliableEmiConfig.searchWidgetWidth = v))
+                .option(createIntegerOption("searchWidgetLeftOffset", 0,
+                        () -> ReliableEmiConfig.searchWidgetLeftOffset, v -> ReliableEmiConfig.searchWidgetLeftOffset = v))
                 .option(createIntegerOption("searchWidgetTopOffset", 0,
                         () -> ReliableEmiConfig.searchWidgetTopOffset, v -> ReliableEmiConfig.searchWidgetTopOffset = v))
                 .option(createIntegerOption("searchWidgetHorizontalPadding", 4,
@@ -103,7 +102,7 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.searchWidgetVerticalPadding, v -> ReliableEmiConfig.searchWidgetVerticalPadding = v))
                 .option(createColorOption("searchWidgetTextColor", new Color(0xFFFFFF),
                         () -> new Color(ReliableEmiConfig.searchWidgetTextColor), v -> ReliableEmiConfig.searchWidgetTextColor = v.getRGB()))
-                .option(createColorOption("searchWidgetSuggestionTextColor",  new Color(0x808080),
+                .option(createColorOption("searchWidgetSuggestionTextColor", new Color(0x808080),
                         () -> new Color(ReliableEmiConfig.searchWidgetSuggestionTextColor), v -> ReliableEmiConfig.searchWidgetSuggestionTextColor = v.getRGB()))
                 .option(createBoolOption("searchWidgetUseVanillaTexture", false,
                         () -> ReliableEmiConfig.searchWidgetUseVanillaTexture, v -> ReliableEmiConfig.searchWidgetUseVanillaTexture = v));
@@ -129,7 +128,7 @@ public class ReliableEmiConfigScreen {
     }
 
     private static Option<Boolean> createBoolOption(String key, boolean defaultValue,
-                                                      Supplier<Boolean> getter, Consumer<Boolean> setter) {
+                                                    Supplier<Boolean> getter, Consumer<Boolean> setter) {
         return Option.<Boolean>createBuilder()
                 .name(ReliableEmi.text("configuration." + key))
                 .description(OptionDescription.of(ReliableEmi.text("configuration." + key + ".tooltip")))
