@@ -72,6 +72,8 @@ publishMods {
         accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
         projectId = "1411826"
         minecraftVersions.add("1.20.1")
+        client = true
+        server = false
 
         requires { slug = "fabric-api" }
         requires { slug = "fabric-language-kotlin" }

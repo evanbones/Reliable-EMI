@@ -1,7 +1,7 @@
 modLoader = "kotlinforforge"
 loaderVersion = "[4.10,)"
-issueTrackerURL = "https://github.com/ConcerroX/emi-plus-plus/issues"
-license = "MIT Licensed"
+issueTrackerURL = "https://github.com/evanbones/Reliable-EMI/issues"
+license = "MIT"
 
 [[mods]]
 modId = "emixx"

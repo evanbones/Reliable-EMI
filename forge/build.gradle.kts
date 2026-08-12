@@ -91,6 +91,8 @@ publishMods {
         projectId = "1411826"
         minecraftVersions.add("1.20.1")
 
+        client = true
+        server = false
         requires { slug = "kotlin-for-forge" }
         requires { slug = "emi" }
     }
