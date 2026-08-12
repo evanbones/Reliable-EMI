@@ -81,7 +81,10 @@ public abstract class EmiScreenManagerMixin {
     @Unique
     private static EmiScreenManager.SidebarPanel remi$getEffectiveSearchPanel() {
         EmiScreenManager.SidebarPanel searchPanel = getSearchPanel();
-        if (searchPanel != null && searchPanel.space != null && searchPanel.getType() == SidebarType.INDEX) {
+        if (searchPanel == null) {
+            return null;
+        }
+        if (searchPanel.space != null && searchPanel.getType() == SidebarType.INDEX) {
             return searchPanel;
         }
         for (EmiScreenManager.SidebarPanel p : panels) {
@@ -89,7 +92,7 @@ public abstract class EmiScreenManagerMixin {
                 return p;
             }
         }
-        if (searchPanel != null && searchPanel.space != null) {
+        if (searchPanel.space != null) {
             return searchPanel;
         }
         for (EmiScreenManager.SidebarPanel p : panels) {

@@ -55,6 +55,10 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Final
     public int tw;
 
+    @Shadow
+    @Final
+    public boolean search;
+
     @Unique
     private String remi$lastSearchValue;
 
@@ -94,7 +98,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
 
         List<? extends EmiIngredient> stacks;
         if (type == SidebarType.INDEX) {
-            stacks = StackManager.displayedStacks;
+            stacks = this.search ? StackManager.displayedStacks : StackManager.sourceStacks;
             if (!ReliableEmiConfig.isStackGroupsEnabled(SidebarType.INDEX)) {
                 List<EmiIngredient> ungrouped = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {
@@ -124,7 +128,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                 stacks = tabFiltered;
             }
 
-            if (EmiScreenManager.search != null) {
+            if (this.search && EmiScreenManager.search != null) {
                 String searchValue = EmiScreenManager.search.getValue();
                 if (!Objects.equals(searchValue, remi$lastSearchValue)) {
                     remi$lastSearchValue = searchValue;
