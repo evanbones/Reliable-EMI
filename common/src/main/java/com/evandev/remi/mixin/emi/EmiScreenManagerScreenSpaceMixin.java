@@ -95,9 +95,6 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
         List<? extends EmiIngredient> stacks;
         if (type == SidebarType.INDEX) {
             stacks = StackManager.displayedStacks;
-            if (!ReliableEmiConfig.isCreativeTabsEnabled(SidebarType.INDEX) && CreativeModeTabManager.getCurrentTab() != CreativeModeTabManager.getIndexCreativeModeTab()) {
-                stacks = StackManager.indexStacks;
-            }
             if (!ReliableEmiConfig.isStackGroupsEnabled(SidebarType.INDEX)) {
                 List<EmiIngredient> ungrouped = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {

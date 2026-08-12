@@ -1,5 +1,5 @@
-### Added
+### Fixed
 
-- Added support for additional workstations in the Workstation tab.
-- Added support for stack groups and creative tab filtering in other tabs.
-- Added additional config options for sidebar customization.
+- Performance improvements.
+- (Hopefully) fixed certain mods causing the index to break.
+- Fixed stale stack group rendering in tabs other than the index.

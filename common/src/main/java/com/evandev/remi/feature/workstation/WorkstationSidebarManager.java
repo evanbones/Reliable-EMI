@@ -16,6 +16,7 @@ import dev.emi.emi.runtime.EmiFavorite;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.search.EmiSearch;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
@@ -104,8 +105,7 @@ public class WorkstationSidebarManager {
 
         List<EmiRecipeHandler<?>> handlers = (List) EmiRecipeFiller.getAllHandlers(screen);
         if (!handlers.isEmpty()) {
-            List<EmiRecipe> allRecipes = EmiRecipes.manager.getRecipes();
-            for (EmiRecipe r : allRecipes) {
+            for (EmiRecipe r : getCandidateRecipesForScreen(screen)) {
                 if (r.hideCraftable() || r.getOutputs().isEmpty()) {
                     continue;
                 }
@@ -139,6 +139,48 @@ public class WorkstationSidebarManager {
                 .sorted(Comparator.comparingInt((EmiFavorite.Craftable a) -> EmiStackList.getIndex(a.getStack()))
                         .thenComparingLong(EmiFavorite::getAmount))
                 .collect(Collectors.toList());
+    }
+
+    private static List<EmiRecipe> getCandidateRecipesForScreen(AbstractContainerScreen<?> screen) {
+        List<EmiRecipeCategory> categories = getRelevantCategoriesForScreen(screen);
+        if (categories.isEmpty()) {
+            return EmiRecipes.manager.getRecipes();
+        }
+
+        Set<EmiRecipe> candidates = Sets.newLinkedHashSet();
+        for (EmiRecipeCategory category : categories) {
+            candidates.addAll(EmiRecipes.manager.getRecipes(category));
+        }
+        return List.copyOf(candidates);
+    }
+
+    private static List<EmiRecipeCategory> getRelevantCategoriesForScreen(AbstractContainerScreen<?> screen) {
+        MenuType<?> menuType = screen instanceof InventoryScreen ? MenuType.CRAFTING : safeGetMenuType(screen.getMenu());
+        if (menuType == null) {
+            return List.of();
+        }
+
+        List<Supplier<EmiRecipeCategory>> categorySuppliers = MENU_CATEGORIES.get(menuType);
+        if (categorySuppliers == null) {
+            return List.of();
+        }
+
+        List<EmiRecipeCategory> categories = new ArrayList<>();
+        for (Supplier<EmiRecipeCategory> supplier : categorySuppliers) {
+            EmiRecipeCategory category = supplier.get();
+            if (category != null) {
+                categories.add(category);
+            }
+        }
+        return categories;
+    }
+
+    private static MenuType<?> safeGetMenuType(AbstractContainerMenu menu) {
+        try {
+            return menu.getType();
+        } catch (UnsupportedOperationException e) {
+            return null;
+        }
     }
 
     private static List<EmiStack> getWorkstationStacksForScreen(AbstractContainerScreen<?> screen) {

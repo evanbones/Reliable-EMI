@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.1] - 2026-08-12
+
+### Fixed
+
+- Performance improvements.
+- (Hopefully) fixed certain mods causing the index to break.
+- Fixed stale stack group rendering in tabs other than the index.
+
 ## [4.3.0] - 2026-08-12
 
 ### Added

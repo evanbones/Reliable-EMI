@@ -119,6 +119,7 @@ public class StackManager {
         if (type == SidebarType.INDEX) {
             buildDisplayedStacks();
         }
+        EmiScreenManager.repopulatePanels(type);
         EmiScreenManager.recalculate();
     }
 }
