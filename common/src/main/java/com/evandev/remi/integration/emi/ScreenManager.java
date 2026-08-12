@@ -3,6 +3,10 @@ package com.evandev.remi.integration.emi;
 import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
+import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
+import com.evandev.remi.mixin.emi.EmiScreenManagerAccessor;
+import dev.emi.emi.config.SidebarSide;
+import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,9 +39,37 @@ public class ScreenManager {
         }
     }
 
+    public static EmiScreenManager.SidebarPanel getTargetCreativeTabPanel() {
+        if (!ReliableEmiConfig.enableCreativeModeTabs) return null;
+        var panels = EmiScreenManagerAccessor.getPanels();
+        if (panels == null || panels.isEmpty()) return null;
+
+        var target = ReliableEmiConfig.creativeTabSidebarTarget;
+        for (var p : panels) {
+            if (p != null && p.space != null && target.matches(p)) {
+                return p;
+            }
+        }
+
+        var searchPanel = EmiScreenManager.getSearchPanel();
+        if (searchPanel != null && searchPanel.space != null) {
+            return searchPanel;
+        }
+        if (indexScreenSpace != null) {
+            for (var p : panels) {
+                if (p != null && p.space == indexScreenSpace) return p;
+            }
+        }
+        return null;
+    }
+
+    public static EmiScreenManager.ScreenSpace getActiveCreativeTabScreenSpace() {
+        var panel = getTargetCreativeTabPanel();
+        return panel != null ? panel.space : null;
+    }
+
     public static boolean onMouseScrolled(double mouseX, double mouseY, double amount) {
-        if (ReliableEmiConfig.enableCreativeModeTabs && indexScreenSpace != null
-                && CreativeModeTabGui.contains(mouseX, mouseY)) {
+        if (ReliableEmiConfig.enableCreativeModeTabs && CreativeModeTabGui.contains(mouseX, mouseY)) {
             return CreativeModeTabGui.onMouseScrolled(amount);
         }
         return false;

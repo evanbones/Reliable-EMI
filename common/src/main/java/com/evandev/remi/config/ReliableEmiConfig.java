@@ -1,10 +1,15 @@
 package com.evandev.remi.config;
 
 import com.evandev.ReliableEmi;
+import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.platform.Services;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import dev.emi.emi.config.SidebarSide;
+import dev.emi.emi.config.SidebarType;
+import dev.emi.emi.screen.EmiScreenManager;
+import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,32 +23,32 @@ import java.util.Map;
 
 public class ReliableEmiConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-
     public static boolean enableCreativeModeTabs = true;
+    public static CreativeTabSidebarTarget creativeTabSidebarTarget = CreativeTabSidebarTarget.INDEX;
+    public static CreativeTabTheme creativeTabTheme = CreativeTabTheme.SYNCED;
     public static boolean syncSelectedCreativeModeTab = true;
     public static boolean showCreativeTabNameInSearchbar = true;
     public static int maxSidebarTabs = 0;
     public static List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
     public static Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
-
     public static boolean enableStackGroups = true;
     public static boolean enableCreateStackGroupButton = true;
     public static List<String> disabledStackGroups = new ArrayList<>();
-
+    public static boolean stackGroupsIndex = true;
+    public static boolean stackGroupsCraftables = true;
+    public static boolean stackGroupsWorkstation = true;
+    public static boolean stackGroupsFavorites = false;
     public static boolean enableCategorizedTagPages = true;
     public static boolean enableEntityTags = true;
     public static boolean enableTagSearchEnhancements = true;
-
     public static boolean emiOnlyInRecipeBook = false;
     public static boolean emiOnlyInRecipeBookState = false;
     public static boolean dragCheatToInventory = true;
-
     public static boolean disablePaginationWrapping = false;
     public static boolean scrollInsteadOfPagination = false;
     public static boolean showTitleInsteadOfPageNumbers = false;
     public static boolean hidePageButtonWhenOnePage = false;
     public static boolean incrementalScrollbarFill = false;
-
     public static boolean searchWidgetAlignWithPanel = false;
     public static int searchWidgetWidth = 0;
     public static int searchWidgetLeftOffset = 0;
@@ -54,6 +59,21 @@ public class ReliableEmiConfig {
     public static int searchWidgetTextColor = 0xFFFFFFFF;
     public static boolean searchWidgetUseVanillaTexture = false;
 
+    public static boolean isCreativeTabsEnabled(SidebarType type) {
+        if (!enableCreativeModeTabs || type == null) return false;
+        var targetPanel = com.evandev.remi.integration.emi.ScreenManager.getTargetCreativeTabPanel();
+        return targetPanel != null && targetPanel.getType() == type;
+    }
+
+    public static boolean isStackGroupsEnabled(SidebarType type) {
+        if (!enableStackGroups || type == null) return false;
+        if (type == SidebarType.INDEX) return stackGroupsIndex;
+        if (type == SidebarType.CRAFTABLES) return stackGroupsCraftables;
+        if (WorkstationSidebarManager.WORKSTATION != null && type == WorkstationSidebarManager.WORKSTATION)
+            return stackGroupsWorkstation;
+        if (type == SidebarType.FAVORITES) return stackGroupsFavorites;
+        return false;
+    }
 
     public static Path getConfigDir() {
         Path remiDir = Services.PLATFORM.getConfigDirectory().resolve(ReliableEmi.MOD_ID);
@@ -95,16 +115,21 @@ public class ReliableEmiConfig {
                 ConfigData data = GSON.fromJson(reader, ConfigData.class);
                 if (data != null) {
                     enableCreativeModeTabs = data.enableCreativeModeTabs;
+                    if (data.creativeTabSidebarTarget != null) creativeTabSidebarTarget = data.creativeTabSidebarTarget;
+                    if (data.creativeTabTheme != null) creativeTabTheme = data.creativeTabTheme;
                     syncSelectedCreativeModeTab = data.syncSelectedCreativeModeTab;
                     showCreativeTabNameInSearchbar = data.showCreativeTabNameInSearchbar;
                     maxSidebarTabs = data.maxSidebarTabs;
-
                     if (data.disabledCreativeModeTabs != null) {
                         disabledCreativeModeTabs = new ArrayList<>(data.disabledCreativeModeTabs);
                     }
 
                     enableStackGroups = data.enableStackGroups;
                     enableCreateStackGroupButton = data.enableCreateStackGroupButton;
+                    stackGroupsIndex = data.stackGroupsIndex;
+                    stackGroupsCraftables = data.stackGroupsCraftables;
+                    stackGroupsWorkstation = data.stackGroupsWorkstation;
+                    stackGroupsFavorites = data.stackGroupsFavorites;
 
                     if (data.disabledStackGroups != null) {
                         disabledStackGroups = new ArrayList<>(data.disabledStackGroups);
@@ -154,17 +179,28 @@ public class ReliableEmiConfig {
         } catch (IOException | JsonSyntaxException e) {
             ReliableEmi.LOGGER.error("Failed to save config", e);
         }
+
+        var client = Minecraft.getInstance();
+        if (client.screen != null && !EmiScreenManager.isDisabled()) {
+            EmiScreenManager.addWidgets(client.screen);
+        }
     }
 
     private static ConfigData collectData() {
         ConfigData data = new ConfigData();
         data.enableCreativeModeTabs = enableCreativeModeTabs;
+        data.creativeTabSidebarTarget = creativeTabSidebarTarget;
+        data.creativeTabTheme = creativeTabTheme;
         data.syncSelectedCreativeModeTab = syncSelectedCreativeModeTab;
         data.showCreativeTabNameInSearchbar = showCreativeTabNameInSearchbar;
         data.maxSidebarTabs = maxSidebarTabs;
         data.disabledCreativeModeTabs = new ArrayList<>(disabledCreativeModeTabs);
         data.enableStackGroups = enableStackGroups;
         data.enableCreateStackGroupButton = enableCreateStackGroupButton;
+        data.stackGroupsIndex = stackGroupsIndex;
+        data.stackGroupsCraftables = stackGroupsCraftables;
+        data.stackGroupsWorkstation = stackGroupsWorkstation;
+        data.stackGroupsFavorites = stackGroupsFavorites;
         data.disabledStackGroups = new ArrayList<>(disabledStackGroups);
         data.enableCategorizedTagPages = enableCategorizedTagPages;
         data.enableEntityTags = enableEntityTags;
@@ -190,14 +226,43 @@ public class ReliableEmiConfig {
         return data;
     }
 
+    public enum CreativeTabSidebarTarget {
+        INDEX, CRAFTABLES, WORKSTATION, FAVORITES, LEFT, RIGHT, TOP, BOTTOM;
+
+        public boolean matches(EmiScreenManager.SidebarPanel panel) {
+            if (panel == null) return false;
+            return switch (this) {
+                case INDEX -> panel.getType() == SidebarType.INDEX;
+                case CRAFTABLES -> panel.getType() == SidebarType.CRAFTABLES;
+                case WORKSTATION ->
+                        WorkstationSidebarManager.WORKSTATION != null && panel.getType() == WorkstationSidebarManager.WORKSTATION;
+                case FAVORITES -> panel.getType() == SidebarType.FAVORITES;
+                case LEFT -> panel.side == SidebarSide.LEFT;
+                case RIGHT -> panel.side == SidebarSide.RIGHT;
+                case TOP -> panel.side == SidebarSide.TOP;
+                case BOTTOM -> panel.side == SidebarSide.BOTTOM;
+            };
+        }
+    }
+
+    public enum CreativeTabTheme {
+        SYNCED, MODERN, VANILLA
+    }
+
     private static class ConfigData {
         boolean enableCreativeModeTabs = true;
+        CreativeTabSidebarTarget creativeTabSidebarTarget = CreativeTabSidebarTarget.INDEX;
+        CreativeTabTheme creativeTabTheme = CreativeTabTheme.SYNCED;
         boolean syncSelectedCreativeModeTab = true;
         boolean showCreativeTabNameInSearchbar = true;
         int maxSidebarTabs = 0;
         List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
         boolean enableStackGroups = true;
         boolean enableCreateStackGroupButton = true;
+        boolean stackGroupsIndex = true;
+        boolean stackGroupsCraftables = true;
+        boolean stackGroupsWorkstation = true;
+        boolean stackGroupsFavorites = false;
         List<String> disabledStackGroups = new ArrayList<>();
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
         boolean emiOnlyInRecipeBook = false;

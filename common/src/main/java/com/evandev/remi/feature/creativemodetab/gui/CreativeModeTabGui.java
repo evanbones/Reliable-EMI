@@ -62,15 +62,29 @@ public class CreativeModeTabGui {
     }
 
     public static TabTheme currentTheme() {
+        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.MODERN) {
+            return TabTheme.DEFAULT;
+        }
+        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.VANILLA) {
+            return TabTheme.VANILLA;
+        }
+        var panel = ScreenManager.getTargetCreativeTabPanel();
+        if (panel != null) {
+            return panel.theme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
+        }
         return EmiConfig.rightSidebarTheme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
     }
 
     private static boolean isHeaderVisible() {
+        var panel = ScreenManager.getTargetCreativeTabPanel();
+        if (panel != null) {
+            return panel.header;
+        }
         return EmiConfig.rightSidebarHeader == HeaderType.VISIBLE;
     }
 
-    private static void onLayout() {
-        var indexScreenSpace = ScreenManager.indexScreenSpace;
+    public static void onLayout() {
+        var indexScreenSpace = ScreenManager.getActiveCreativeTabScreenSpace();
         TabTheme theme = currentTheme();
 
         buttonPrevious.visible = false;

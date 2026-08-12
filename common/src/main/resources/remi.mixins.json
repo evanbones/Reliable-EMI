@@ -6,6 +6,7 @@
   "client": [
     "emi.BoMScreenMixin",
     "emi.EmiReloadManagerReloadWorkerMixin",
+    "emi.EmiScreenManagerAccessor",
     "emi.EmiScreenManagerMixin",
     "emi.EmiScreenManagerScreenSpaceMixin",
     "emi.EmiScreenManagerSidebarPanelMixin",

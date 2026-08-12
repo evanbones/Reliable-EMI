@@ -1,16 +1,22 @@
 package com.evandev.remi.integration.emi;
 
+import com.evandev.remi.feature.stackgroup.EmiGroupStack;
+import com.evandev.remi.feature.stackgroup.GroupedEmiStack;
 import com.evandev.remi.feature.stackgroup.StackGroupManager;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
+import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Layout {
     private static final int HIGHLIGHT_COLOR = 0x66FFFFFF;
     private static final int TILE_OFFSET_ADJUST = 17;
 
-    public static int startIndex = -10;
     public static boolean clean = true;
     public static boolean textureDirty = true;
 
@@ -28,40 +34,39 @@ public class Layout {
     }
 
     public static void buildLayoutTiles(EmiScreenManager.ScreenSpace screenSpace, EmiDrawContext context) {
-        if (textureDirty) {
-            StackManager.stackTextureGrid.clear();
-            for (int y = 0; y < screenSpace.th; y++) {
-                for (int x = 0; x < screenSpace.tw; x++) {
-                    EmiStack emiStack = getFromGrid(y, x);
-                    StackGroup currentGroup = getGroup(emiStack);
-                    if (emiStack == null || currentGroup == null) continue;
+        SidebarType type = screenSpace.getType();
+        List<Tile> tiles = new ArrayList<>();
+        for (int y = 0; y < screenSpace.th; y++) {
+            for (int x = 0; x < screenSpace.tw; x++) {
+                EmiStack emiStack = getFromGrid(y, x);
+                StackGroup currentGroup = getGroup(emiStack, type);
+                if (emiStack == null || currentGroup == null) continue;
 
-                    Tile tile = new Tile(x, y, 0);
-                    if (y == 0 || groupAt(y - 1, x) != currentGroup) tile.type |= TileType.TOP.bit;
-                    if (x == 0 || groupAt(y, x - 1) != currentGroup) tile.type |= TileType.LEFT.bit;
-                    if (y == screenSpace.th - 1 || groupAt(y + 1, x) != currentGroup) tile.type |= TileType.BOTTOM.bit;
-                    if (x == screenSpace.tw - 1 || groupAt(y, x + 1) != currentGroup) tile.type |= TileType.RIGHT.bit;
+                Tile tile = new Tile(x, y, 0);
+                if (y == 0 || groupAt(y - 1, x, type) != currentGroup) tile.type |= TileType.TOP.bit;
+                if (x == 0 || groupAt(y, x - 1, type) != currentGroup) tile.type |= TileType.LEFT.bit;
+                if (y == screenSpace.th - 1 || groupAt(y + 1, x, type) != currentGroup)
+                    tile.type |= TileType.BOTTOM.bit;
+                if (x == screenSpace.tw - 1 || groupAt(y, x + 1, type) != currentGroup) tile.type |= TileType.RIGHT.bit;
 
-                    if (groupAt(y - 1, x - 1) != currentGroup && groupAt(y - 1, x) == currentGroup && groupAt(y, x - 1) == currentGroup)
-                        tile.type |= TileType.TOP_LEFT.bit;
-                    if (groupAt(y - 1, x + 1) != currentGroup && groupAt(y - 1, x) == currentGroup && groupAt(y, x + 1) == currentGroup)
-                        tile.type |= TileType.TOP_RIGHT.bit;
-                    if (groupAt(y + 1, x - 1) != currentGroup && groupAt(y + 1, x) == currentGroup && groupAt(y, x - 1) == currentGroup)
-                        tile.type |= TileType.BOTTOM_LEFT.bit;
-                    if (groupAt(y + 1, x + 1) != currentGroup && groupAt(y + 1, x) == currentGroup && groupAt(y, x + 1) == currentGroup)
-                        tile.type |= TileType.BOTTOM_RIGHT.bit;
+                if (groupAt(y - 1, x - 1, type) != currentGroup && groupAt(y - 1, x, type) == currentGroup && groupAt(y, x - 1, type) == currentGroup)
+                    tile.type |= TileType.TOP_LEFT.bit;
+                if (groupAt(y - 1, x + 1, type) != currentGroup && groupAt(y - 1, x, type) == currentGroup && groupAt(y, x + 1, type) == currentGroup)
+                    tile.type |= TileType.TOP_RIGHT.bit;
+                if (groupAt(y + 1, x - 1, type) != currentGroup && groupAt(y + 1, x, type) == currentGroup && groupAt(y, x - 1, type) == currentGroup)
+                    tile.type |= TileType.BOTTOM_LEFT.bit;
+                if (groupAt(y + 1, x + 1, type) != currentGroup && groupAt(y + 1, x, type) == currentGroup && groupAt(y, x + 1, type) == currentGroup)
+                    tile.type |= TileType.BOTTOM_RIGHT.bit;
 
-                    if (tile.type != 0) StackManager.stackTextureGrid.add(tile);
-                }
+                if (tile.type != 0) tiles.add(tile);
             }
         }
-        textureDirty = false;
-        render(screenSpace, context);
+        render(screenSpace, context, tiles);
     }
 
-    public static void render(EmiScreenManager.ScreenSpace screenSpace, EmiDrawContext context) {
+    public static void render(EmiScreenManager.ScreenSpace screenSpace, EmiDrawContext context, List<Tile> tiles) {
         int es = ScreenManager.ENTRY_SIZE;
-        for (Tile tile : StackManager.stackTextureGrid) {
+        for (Tile tile : tiles) {
             int px = screenSpace.tx + tile.x * es;
             int py = screenSpace.ty + tile.y * es;
             if (tile.check(TileType.TOP)) context.fill(px, py, es, 1, HIGHLIGHT_COLOR);
@@ -81,18 +86,33 @@ public class Layout {
         return grid[y][x];
     }
 
-    private static StackGroup getGroup(EmiStack emiStack) {
+    private static StackGroup getGroup(EmiStack emiStack, SidebarType type) {
         if (emiStack == null) return null;
+        if (emiStack instanceof EmiGroupStack gs) {
+            if (StackManager.isGroupExpanded(type, gs.group.getId())) return gs.group;
+        }
+        if (emiStack instanceof GroupedEmiStack<?> ges) {
+            if (StackManager.isGroupExpanded(type, ges.stackGroup.getId())) return ges.stackGroup;
+        }
         var groupedStacks = StackGroupManager.stackToGroupedStacks.get(emiStack);
-        if (groupedStacks == null) return null;
-        for (var gs : groupedStacks) {
-            if (StackManager.expandedStackGroups.contains(gs.stackGroup.getId())) return gs.stackGroup;
+        if (groupedStacks != null) {
+            for (var gs : groupedStacks) {
+                if (StackManager.isGroupExpanded(type, gs.stackGroup.getId())) return gs.stackGroup;
+            }
+        }
+        var idVariants = StackGroupManager.getItemToGroupedStacks().get(emiStack.getId());
+        if (idVariants != null) {
+            for (var gs : idVariants) {
+                if (gs.realStack.isEqual(emiStack, Comparison.compareComponents())) {
+                    if (StackManager.isGroupExpanded(type, gs.stackGroup.getId())) return gs.stackGroup;
+                }
+            }
         }
         return null;
     }
 
-    private static StackGroup groupAt(int y, int x) {
-        return getGroup(getFromGrid(y, x));
+    private static StackGroup groupAt(int y, int x, SidebarType type) {
+        return getGroup(getFromGrid(y, x), type);
     }
 
     public enum TileType {

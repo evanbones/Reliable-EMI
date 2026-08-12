@@ -5,6 +5,7 @@ import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.creativemodetab.gui.itemtab.ItemTab;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.emi.StackManager;
+import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
@@ -15,7 +16,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,14 +28,13 @@ public class CreativeModeTabManager {
     private static final List<CreativeModeTab> disabledCreativeModeTabs = new ArrayList<>();
     private static final List<CreativeModeTab> creativeModeTabs = new ArrayList<>();
     private static final Map<CreativeModeTab, ItemTab> tabCache = new IdentityHashMap<>();
-
+    private static final Map<CreativeModeTab, Set<Item>> tabItemCache = new IdentityHashMap<>();
     public static int scrollOffset = 0;
     private static CreativeModeTab currentTab;
     private static boolean isSelectingVanillaByEmiPlusPlus = false;
     private static boolean isSelectingEmiPlusPlusByVanilla = false;
-
     private static CreativeModeTab indexCreativeModeTab;
-    private static java.lang.reflect.Method recreativeIconMethod = null;
+    private static Method recreativeIconMethod = null;
     private static boolean checkedRecreativeMethod = false;
 
     static {
@@ -40,6 +43,44 @@ public class CreativeModeTabManager {
         addFromRegistry(hidden, CreativeModeTabs.HOTBAR);
         addFromRegistry(hidden, CreativeModeTabs.SEARCH);
         HIDDEN_CREATIVE_MODE_TABS = Collections.unmodifiableList(hidden);
+    }
+
+    public static CreativeModeTab getCurrentTab() {
+        return currentTab;
+    }
+
+    public static CreativeModeTab getIndexCreativeModeTab() {
+        return indexCreativeModeTab;
+    }
+
+    public static Set<Item> getTabItems(CreativeModeTab tab) {
+        if (tab == null) return Set.of();
+        return tabItemCache.computeIfAbsent(tab, t -> {
+            Set<Item> items = new HashSet<>();
+            for (ItemStack is : t.getDisplayItems()) {
+                if (!is.isEmpty()) {
+                    items.add(is.getItem());
+                }
+            }
+            return items;
+        });
+    }
+
+    public static boolean isIngredientInCurrentTab(EmiIngredient ingredient) {
+        if (currentTab == null || currentTab == indexCreativeModeTab) {
+            return true;
+        }
+        if (ingredient == null) return false;
+        Set<Item> items = getTabItems(currentTab);
+        if (items.isEmpty()) return true;
+        for (EmiStack stack : ingredient.getEmiStacks()) {
+            if (stack != null && stack.getItemStack() != null && !stack.getItemStack().isEmpty()) {
+                if (items.contains(stack.getItemStack().getItem())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void addFromRegistry(List<CreativeModeTab> list, ResourceKey<CreativeModeTab> key) {
@@ -96,6 +137,7 @@ public class CreativeModeTabManager {
         creativeModeTabs.clear();
         creativeModeTabs.addAll(getVisibleCreativeModeTabs());
         tabCache.clear();
+        tabItemCache.clear();
         scrollOffset = Math.min(scrollOffset, getMaxScroll());
     }
 
@@ -180,6 +222,8 @@ public class CreativeModeTabManager {
         } else {
             StackManager.updateSourceStacks(sourceStacks);
         }
+
+        EmiScreenManager.recalculate();
     }
 
     private static List<ItemTab> updateTabs() {

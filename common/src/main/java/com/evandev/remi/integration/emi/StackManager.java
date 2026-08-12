@@ -5,20 +5,17 @@ import com.evandev.remi.feature.stackgroup.StackGroupManager;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.registry.EmiStackList;
 import dev.emi.emi.runtime.EmiHidden;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.search.EmiSearch;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class StackManager {
-    public static final Set<ResourceLocation> expandedStackGroups = new HashSet<>();
-    public static final List<Layout.Tile> stackTextureGrid = new ArrayList<>();
+    public static final Map<SidebarType, Set<ResourceLocation>> expandedStackGroups = new HashMap<>();
     public static List<EmiStack> indexStacks = EmiStackList.filteredStacks;
     public static List<EmiStack> sourceStacks = List.of();
     public static List<EmiStack> searchedStacks = List.of();
@@ -26,6 +23,12 @@ public class StackManager {
     public static EmiStack[][] stackGrid = new EmiStack[0][0];
     private static List<EmiStack> groupedStacks = List.of();
     private static List<EmiStack> groupedIndexStacks = List.of();
+
+    public static boolean isGroupExpanded(SidebarType type, ResourceLocation groupId) {
+        if (type == null) return false;
+        Set<ResourceLocation> set = expandedStackGroups.get(type);
+        return set != null && set.contains(groupId);
+    }
 
     public static void reload() {
         expandedStackGroups.clear();
@@ -72,7 +75,7 @@ public class StackManager {
 
         for (EmiStack s : groupedStacks) {
             if (s instanceof EmiGroupStack gs) {
-                gs.isExpanded = expandedStackGroups.contains(gs.group.getId());
+                gs.isExpanded = isGroupExpanded(SidebarType.INDEX, gs.group.getId());
             }
         }
     }
@@ -97,19 +100,25 @@ public class StackManager {
         displayedStacks = result;
     }
 
-    public static void onStackInteraction(EmiIngredient ingredient) {
+    public static void onStackInteraction(EmiIngredient ingredient, SidebarType type) {
         if (!(ingredient instanceof EmiGroupStack gs)) return;
+        if (type == null) type = SidebarType.INDEX;
 
         Layout.textureDirty = true;
-        gs.isExpanded = !gs.isExpanded;
+        Set<ResourceLocation> set = expandedStackGroups.computeIfAbsent(type, k -> new HashSet<>());
+        boolean isExpanded = !set.contains(gs.group.getId());
 
-        if (gs.isExpanded) {
-            expandedStackGroups.add(gs.group.getId());
+        if (isExpanded) {
+            set.add(gs.group.getId());
         } else {
-            expandedStackGroups.remove(gs.group.getId());
+            set.remove(gs.group.getId());
         }
 
-        buildDisplayedStacks();
+        gs.isExpanded = isExpanded;
+
+        if (type == SidebarType.INDEX) {
+            buildDisplayedStacks();
+        }
         EmiScreenManager.recalculate();
     }
 }

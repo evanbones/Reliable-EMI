@@ -1,5 +1,10 @@
 package com.evandev.remi.mixin.emi;
 
+import com.evandev.remi.config.ReliableEmiConfig;
+import com.evandev.remi.feature.creativemodetab.CreativeModeTabManager;
+import com.evandev.remi.feature.stackgroup.EmiGroupStack;
+import com.evandev.remi.feature.stackgroup.StackGroupManager;
+import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.StackManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -83,11 +88,46 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Inject(method = "getStacks", at = @At("HEAD"), cancellable = true)
     private void remi$getCorrectStacks(CallbackInfoReturnable<List<? extends EmiIngredient>> cir) {
         SidebarType type = getType();
+        if (type == SidebarType.CHESS || type == SidebarType.NONE || type == SidebarType.EMPTY) {
+            return;
+        }
+
+        List<? extends EmiIngredient> stacks;
         if (type == SidebarType.INDEX) {
-            cir.setReturnValue(StackManager.displayedStacks);
+            stacks = StackManager.displayedStacks;
+            if (!ReliableEmiConfig.isCreativeTabsEnabled(SidebarType.INDEX) && CreativeModeTabManager.getCurrentTab() != CreativeModeTabManager.getIndexCreativeModeTab()) {
+                stacks = StackManager.indexStacks;
+            }
+            if (!ReliableEmiConfig.isStackGroupsEnabled(SidebarType.INDEX)) {
+                List<EmiIngredient> ungrouped = new ArrayList<>();
+                for (EmiIngredient ing : stacks) {
+                    if (ing instanceof EmiGroupStack gs) {
+                        for (var item : gs.itemsNew) ungrouped.add(item.realStack);
+                    } else {
+                        ungrouped.add(ing);
+                    }
+                }
+                stacks = ungrouped;
+            }
         } else {
-            List<? extends EmiIngredient> stacks = EmiSidebars.getStacks(type);
-            if (type != SidebarType.CHESS && EmiScreenManager.search != null) {
+            if (WorkstationSidebarManager.WORKSTATION != null && type == WorkstationSidebarManager.WORKSTATION) {
+                stacks = WorkstationSidebarManager.workstationStacks;
+            } else {
+                stacks = EmiSidebars.getStacks(type);
+            }
+            if (stacks == null) stacks = List.of();
+
+            if (ReliableEmiConfig.isCreativeTabsEnabled(type)) {
+                List<EmiIngredient> tabFiltered = new ArrayList<>();
+                for (EmiIngredient ing : stacks) {
+                    if (CreativeModeTabManager.isIngredientInCurrentTab(ing)) {
+                        tabFiltered.add(ing);
+                    }
+                }
+                stacks = tabFiltered;
+            }
+
+            if (EmiScreenManager.search != null) {
                 String searchValue = EmiScreenManager.search.getValue();
                 if (!Objects.equals(searchValue, remi$lastSearchValue)) {
                     remi$lastSearchValue = searchValue;
@@ -97,24 +137,28 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                     }
                 }
                 if (remi$compiledQuery != null && !remi$compiledQuery.isEmpty()) {
-                    List<EmiIngredient> filtered = new ArrayList<>();
+                    List<EmiIngredient> searchFiltered = new ArrayList<>();
                     for (EmiIngredient ing : stacks) {
                         List<EmiStack> emiStacks = ing.getEmiStacks();
                         if (!emiStacks.isEmpty() && remi$compiledQuery.test(emiStacks.getFirst())) {
-                            filtered.add(ing);
+                            searchFiltered.add(ing);
                         }
                     }
-                    stacks = filtered;
+                    stacks = searchFiltered;
                 }
             }
-            cir.setReturnValue(stacks);
+
+            if (ReliableEmiConfig.isStackGroupsEnabled(type)) {
+                stacks = StackGroupManager.buildGroupedIngredients(stacks, type);
+            }
         }
+        cir.setReturnValue(stacks);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void createGrid(int tx, int ty, int tw, int th, boolean rtl, List<Bounds> exclusion,
                             Supplier<SidebarType> typeSupplier, boolean search, CallbackInfo ci) {
-        if (getType() == SidebarType.INDEX)
+        if (ReliableEmiConfig.isStackGroupsEnabled(getType()))
             StackManager.stackGrid = new EmiStack[th + 9][tw + 9];
     }
 
@@ -124,14 +168,8 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
      */
     @Overwrite
     public void render(EmiDrawContext context, int mouseX, int mouseY, float delta, int startIndex) {
-        if (getType() == SidebarType.INDEX) {
+        if (ReliableEmiConfig.isStackGroupsEnabled(getType())) {
             Layout.checkGridSize(tw, th);
-        }
-
-        if (startIndex != Layout.startIndex) {
-            Layout.startIndex = startIndex;
-            Layout.textureDirty = true;
-            Layout.clean = false;
         }
 
         if (pageSize > 0) {
@@ -147,7 +185,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             }
             context.push();
 
-            if (getType() == SidebarType.INDEX && !Layout.clean) {
+            if (ReliableEmiConfig.isStackGroupsEnabled(getType())) {
                 for (EmiStack[] row : StackManager.stackGrid) {
                     if (row != null) Arrays.fill(row, null);
                 }
@@ -161,8 +199,12 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                     int cy = getY(xo, yo);
                     EmiIngredient stack = stacks.get(i++);
 
-                    if (getType() == SidebarType.INDEX && !Layout.clean)
-                        StackManager.stackGrid[yo][xo] = (EmiStack) stack;
+                    if (ReliableEmiConfig.isStackGroupsEnabled(getType())) {
+                        EmiStack gridStack = stack instanceof EmiStack es ? es : (stack != null && !stack.getEmiStacks().isEmpty() ? stack.getEmiStacks().getFirst() : null);
+                        if (gridStack != null) {
+                            StackManager.stackGrid[yo][xo] = gridStack;
+                        }
+                    }
 
                     batcher.render(stack, context.raw(), cx + 1, cy + 1, delta);
                     if (getType() == SidebarType.INDEX) {
@@ -178,7 +220,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             }
             batcher.draw();
             context.pop();
-            if (getType() == SidebarType.INDEX)
+            if (ReliableEmiConfig.isStackGroupsEnabled(getType()))
                 Layout.buildLayoutTiles(EmiScreenManager.ScreenSpace.class.cast(this), context);
         }
     }

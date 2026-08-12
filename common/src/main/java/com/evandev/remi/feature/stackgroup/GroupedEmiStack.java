@@ -2,6 +2,7 @@ package com.evandev.remi.feature.stackgroup;
 
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
 import dev.emi.emi.api.stack.Comparison;
+import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.screen.StackBatcher;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,10 +17,16 @@ import java.util.List;
 
 public class GroupedEmiStack<T extends EmiStack> extends EmiStack implements StackBatcher.Batchable {
     public final T realStack;
+    public final EmiIngredient realIngredient;
     public final StackGroup stackGroup;
 
     public GroupedEmiStack(T realStack, StackGroup stackGroup) {
+        this(realStack, realStack, stackGroup);
+    }
+
+    public GroupedEmiStack(T realStack, EmiIngredient realIngredient, StackGroup stackGroup) {
         this.realStack = realStack;
+        this.realIngredient = realIngredient != null ? realIngredient : realStack;
         this.stackGroup = stackGroup;
         this.amount = realStack.getAmount();
         this.chance = realStack.getChance();
@@ -28,7 +35,11 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack implements Sta
 
     @Override
     public void render(GuiGraphics draw, int x, int y, float delta, int flags) {
-        realStack.render(draw, x, y, delta, flags);
+        if (realIngredient != null) {
+            realIngredient.render(draw, x, y, delta, flags);
+        } else {
+            realStack.render(draw, x, y, delta, flags);
+        }
     }
 
     @Override
@@ -79,11 +90,15 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack implements Sta
 
     @Override
     public List<EmiStack> getEmiStacks() {
+        if (realIngredient != null) {
+            return realIngredient.getEmiStacks();
+        }
         return realStack.getEmiStacks();
     }
 
     @Override
     public boolean isEmpty() {
+        if (realIngredient != null) return realIngredient.isEmpty();
         return realStack.isEmpty();
     }
 
@@ -133,6 +148,7 @@ public class GroupedEmiStack<T extends EmiStack> extends EmiStack implements Sta
 
     @Override
     public List<ClientTooltipComponent> getTooltip() {
+        if (realIngredient != null) return realIngredient.getTooltip();
         return realStack.getTooltip();
     }
 

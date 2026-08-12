@@ -5,11 +5,13 @@ import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.stackgroup.data.EmiStackGroup;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
 import com.evandev.remi.feature.stackgroup.data.groups.*;
+import com.evandev.remi.integration.emi.StackManager;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.config.SidebarType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -68,6 +70,10 @@ public class StackGroupManager {
 
         registerType("remi:regex", (id, json) -> EmiStackGroup.parse(json, id));
         registerType("emixx:regex", (id, json) -> EmiStackGroup.parse(json, id));
+    }
+
+    public static Map<ResourceLocation, List<GroupedEmiStack<EmiStack>>> getItemToGroupedStacks() {
+        return itemToGroupedStacks;
     }
 
     public static void registerType(String type, BiFunction<ResourceLocation, JsonObject, StackGroup> factory) {
@@ -362,6 +368,89 @@ public class StackGroupManager {
                 }
             }
             if (!wasGrouped) result.add(emiStack);
+        }
+        return result;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static List<EmiIngredient> buildGroupedIngredients(List<? extends EmiIngredient> source, SidebarType type) {
+        if (source == null || source.isEmpty()) return List.of();
+        List<EmiIngredient> result = new ArrayList<>(source.size());
+        Set<StackGroup> addedGroups = Collections.newSetFromMap(new IdentityHashMap<>());
+        IdentityHashMap<StackGroup, List<GroupedEmiStack<EmiStack>>> groupMatches = new IdentityHashMap<>();
+
+        Map<EmiIngredient, EmiStack> ingredientToPrimaryStack = new IdentityHashMap<>();
+        for (EmiIngredient ing : source) {
+            if (ing == null) continue;
+            EmiStack primary = ing instanceof EmiStack es ? es : (!ing.getEmiStacks().isEmpty() ? ing.getEmiStacks().getFirst() : null);
+            if (primary != null) {
+                ingredientToPrimaryStack.put(ing, primary);
+                List<GroupedEmiStack<EmiStack>> variants = stackToGroupedStacks.get(primary);
+                if (variants == null) {
+                    List<GroupedEmiStack<EmiStack>> idVariants = itemToGroupedStacks.get(primary.getId());
+                    if (idVariants != null) {
+                        variants = new ArrayList<>();
+                        for (var v : idVariants) {
+                            if (v.realStack.isEqual(primary, Comparison.compareComponents())) variants.add(v);
+                        }
+                    }
+                }
+                if (variants != null) {
+                    for (var grouped : variants) {
+                        GroupedEmiStack wrapped = new GroupedEmiStack(primary, ing, grouped.stackGroup);
+                        groupMatches.computeIfAbsent(grouped.stackGroup, k -> new ArrayList<>()).add(wrapped);
+                    }
+                }
+            }
+        }
+
+        for (EmiIngredient ing : source) {
+            if (ing == null) continue;
+            EmiStack primary = ingredientToPrimaryStack.get(ing);
+            if (primary == null) {
+                result.add(ing);
+                continue;
+            }
+
+            List<GroupedEmiStack<EmiStack>> variants = stackToGroupedStacks.get(primary);
+            if (variants == null) {
+                List<GroupedEmiStack<EmiStack>> idVariants = itemToGroupedStacks.get(primary.getId());
+                if (idVariants != null) {
+                    variants = new ArrayList<>();
+                    for (var v : idVariants) {
+                        if (v.realStack.isEqual(primary, Comparison.compareComponents())) variants.add(v);
+                    }
+                }
+            }
+
+            if (variants == null || variants.isEmpty()) {
+                result.add(ing);
+                continue;
+            }
+
+            boolean wasGrouped = false;
+            for (var grouped : variants) {
+                StackGroup group = grouped.stackGroup;
+                List<GroupedEmiStack<EmiStack>> matches = groupMatches.get(group);
+                if (matches == null) continue;
+                if (group.isEnabled && matches.size() >= 2) {
+                    if (addedGroups.add(group)) {
+                        EmiGroupStack groupStack = new EmiGroupStack(group, new ArrayList<>(matches));
+                        groupStack.isExpanded = StackManager.isGroupExpanded(type, group.getId());
+                        if (groupStack.isExpanded) {
+                            result.add(groupStack);
+                            for (GroupedEmiStack<EmiStack> item : matches) {
+                                result.add(item.realIngredient != null ? item.realIngredient : item.realStack);
+                            }
+                        } else {
+                            result.add(groupStack);
+                        }
+                    }
+                    wasGrouped = true;
+                    break;
+                }
+            }
+            if (!wasGrouped) result.add(ing);
         }
         return result;
     }

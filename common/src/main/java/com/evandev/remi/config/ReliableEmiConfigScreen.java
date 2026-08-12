@@ -5,12 +5,14 @@ import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabConfigScreen;
 import com.evandev.remi.feature.stackgroup.gui.StackGroupConfigScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerFieldControllerBuilder;
 import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.awt.*;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -25,6 +27,12 @@ public class ReliableEmiConfigScreen {
                 .name(ReliableEmi.text("configuration.creativeModeTabs"))
                 .option(createBoolOption("enableCreativeModeTabs", true,
                         () -> ReliableEmiConfig.enableCreativeModeTabs, v -> ReliableEmiConfig.enableCreativeModeTabs = v))
+                .option(createEnumOption("creativeTabSidebarTarget", ReliableEmiConfig.CreativeTabSidebarTarget.INDEX,
+                        ReliableEmiConfig.CreativeTabSidebarTarget.class,
+                        () -> ReliableEmiConfig.creativeTabSidebarTarget, v -> ReliableEmiConfig.creativeTabSidebarTarget = v))
+                .option(createEnumOption("creativeTabTheme", ReliableEmiConfig.CreativeTabTheme.SYNCED,
+                        ReliableEmiConfig.CreativeTabTheme.class,
+                        () -> ReliableEmiConfig.creativeTabTheme, v -> ReliableEmiConfig.creativeTabTheme = v))
                 .option(createBoolOption("syncSelectedCreativeModeTab", true,
                         () -> ReliableEmiConfig.syncSelectedCreativeModeTab, v -> ReliableEmiConfig.syncSelectedCreativeModeTab = v))
                 .option(createBoolOption("showCreativeTabNameInSearchbar", true,
@@ -42,6 +50,14 @@ public class ReliableEmiConfigScreen {
                 .name(ReliableEmi.text("configuration.stackGroups"))
                 .option(createBoolOption("enableStackGroups", true,
                         () -> ReliableEmiConfig.enableStackGroups, v -> ReliableEmiConfig.enableStackGroups = v))
+                .option(createBoolOption("stackGroupsIndex", true,
+                        () -> ReliableEmiConfig.stackGroupsIndex, v -> ReliableEmiConfig.stackGroupsIndex = v))
+                .option(createBoolOption("stackGroupsCraftables", true,
+                        () -> ReliableEmiConfig.stackGroupsCraftables, v -> ReliableEmiConfig.stackGroupsCraftables = v))
+                .option(createBoolOption("stackGroupsWorkstation", true,
+                        () -> ReliableEmiConfig.stackGroupsWorkstation, v -> ReliableEmiConfig.stackGroupsWorkstation = v))
+                .option(createBoolOption("stackGroupsFavorites", false,
+                        () -> ReliableEmiConfig.stackGroupsFavorites, v -> ReliableEmiConfig.stackGroupsFavorites = v))
                 .option(createBoolOption("enableCreateStackGroupButton", true,
                         () -> ReliableEmiConfig.enableCreateStackGroupButton, v -> ReliableEmiConfig.enableCreateStackGroupButton = v))
                 .option(ButtonOption.createBuilder()
@@ -154,6 +170,18 @@ public class ReliableEmiConfigScreen {
                 .description(OptionDescription.of(ReliableEmi.text("configuration." + key + ".tooltip")))
                 .binding(defaultValue, getter, setter)
                 .controller(ColorControllerBuilder::create)
+                .build();
+    }
+
+    private static <T extends Enum<T>> Option<T> createEnumOption(String key, T defaultValue, Class<T> enumClass,
+                                                                  Supplier<T> getter, Consumer<T> setter) {
+        return Option.<T>createBuilder()
+                .name(ReliableEmi.text("configuration." + key))
+                .description(OptionDescription.of(ReliableEmi.text("configuration." + key + ".tooltip")))
+                .binding(defaultValue, getter, setter)
+                .controller(opt -> EnumControllerBuilder.create(opt)
+                        .enumClass(enumClass)
+                        .formatValue(v -> ReliableEmi.text("enum." + key + "." + v.name().toLowerCase(Locale.ROOT))))
                 .build();
     }
 }

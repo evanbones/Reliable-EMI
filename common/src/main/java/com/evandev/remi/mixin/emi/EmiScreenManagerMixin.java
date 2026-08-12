@@ -69,8 +69,9 @@ public abstract class EmiScreenManagerMixin {
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "createScreenSpace", name = "headerOffset")
     private static int modifyHeaderOffset(int headerOffset, EmiScreenManager.SidebarPanel panel, Screen screen,
                                           List<Bounds> exclusion) {
-        if (panel.supportsType(SidebarType.INDEX) && ReliableEmiConfig.enableCreativeModeTabs) {
-            if (CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT) {
+        if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
+            EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
+            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT) {
                 return headerOffset + CreativeModeTabGui.CREATIVE_MODE_TAB_HEIGHT;
             }
         }
@@ -160,9 +161,11 @@ public abstract class EmiScreenManagerMixin {
 
     @WrapOperation(at = @At(value = "INVOKE", target = "Ldev/emi/emi/api/stack/EmiIngredient;isEmpty()Z", ordinal = 0),
             method = "mouseReleased")
-    private static boolean modifyMouseReleased(EmiIngredient instance, Operation<Boolean> original) {
+    private static boolean modifyMouseReleased(EmiIngredient instance, Operation<Boolean> original, @Local(name = "mouseX") double mouseX, @Local(name = "mouseY") double mouseY) {
         if (instance instanceof EmiGroupStack) {
-            StackManager.onStackInteraction(instance);
+            EmiScreenManager.ScreenSpace space = EmiScreenManager.getHoveredSpace((int) mouseX, (int) mouseY);
+            SidebarType type = space != null ? space.getType() : SidebarType.INDEX;
+            StackManager.onStackInteraction(instance, type);
         }
         return original.call(instance);
     }
@@ -298,8 +301,9 @@ public abstract class EmiScreenManagerMixin {
 
     @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)
     private static Bounds modifyEmixxBounds(Bounds bounds, EmiScreenManager.SidebarPanel panel) {
-        if (panel.supportsType(SidebarType.INDEX) && ReliableEmiConfig.enableCreativeModeTabs) {
-            if (CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA) {
+        if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
+            EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
+            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA) {
                 int tabSpace = 35;
                 return new Bounds(
                         bounds.x() + tabSpace,

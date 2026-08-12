@@ -1,6 +1,7 @@
 package com.evandev.remi.mixin.emi;
 
 import com.evandev.remi.config.ReliableEmiConfig;
+import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -126,6 +127,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     private void addEmiPlusPlusWidgets(EmiScreenManager.ScreenSpace main, List<EmiScreenManager.ScreenSpace> subpanels, CallbackInfo ci) {
         if (supportsType(SidebarType.INDEX)) {
             ScreenManager.onIndexScreenSpaceCreated(main);
+        }
+        if (ReliableEmiConfig.enableCreativeModeTabs) {
+            CreativeModeTabGui.onLayout();
         }
     }
 
