@@ -1,6 +1,9 @@
 {
   "stackgroup.remi.tooltip": " item(s)",
 
+  "emi.sidebar.type.workstation": "Workstation",
+  "emi.sidebar.type.workstation.description": "Displays recipes valid for the open workstation",
+
   "gui.remi.possible_enchantments": "Possible enchantments: ",
   "gui.remi.possible_enchantments_for_enchanted_book": "All the non-treasure enchantments",
   "gui.remi.random_color": "Random Color",

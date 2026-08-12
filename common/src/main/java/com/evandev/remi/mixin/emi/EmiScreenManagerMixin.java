@@ -3,6 +3,7 @@ package com.evandev.remi.mixin.emi;
 import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.stackgroup.EmiGroupStack;
+import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.emi.StackManager;
@@ -96,6 +97,23 @@ public abstract class EmiScreenManagerMixin {
             }
         }
         return searchPanel;
+    }
+
+    @Inject(method = "recalculate", at = @At("HEAD"))
+    private static void remi$updateWorkstationCraftables(CallbackInfo ci) {
+        WorkstationSidebarManager.updateWorkstationCraftables();
+    }
+
+    @WrapOperation(
+            method = "updateMouse",
+            at = @At(value = "INVOKE", target = "Ldev/emi/emi/screen/EmiScreenManager$ScreenSpace;getType()Ldev/emi/emi/config/SidebarType;", ordinal = 0)
+    )
+    private static SidebarType remi$modifyHoveredSpaceType(EmiScreenManager.ScreenSpace instance, Operation<SidebarType> original) {
+        SidebarType type = original.call(instance);
+        if (WorkstationSidebarManager.WORKSTATION != null && type == WorkstationSidebarManager.WORKSTATION) {
+            return SidebarType.CRAFTABLES;
+        }
+        return type;
     }
 
     @Redirect(method = "recalculate",
@@ -308,8 +326,8 @@ public abstract class EmiScreenManagerMixin {
         if (ReliableEmiConfig.searchWidgetAlignWithPanel || !EmiConfig.centerSearchBar) {
             EmiScreenManager.SidebarPanel panel = remi$getEffectiveSearchPanel();
             if (panel != null && panel.space != null) {
-                search.setX(panel.space.tx + ReliableEmiConfig.searchWidgetLeftOffset);
-                int width = Math.max(1, panel.space.tw * ENTRY_SIZE + ReliableEmiConfig.searchWidgetWidth);
+                search.setX(panel.space.tx - 5 + ReliableEmiConfig.searchWidgetLeftOffset);
+                int width = Math.max(1, panel.space.tw * ENTRY_SIZE + 10 + ReliableEmiConfig.searchWidgetWidth);
                 search.setWidth(width);
 
                 if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
@@ -317,7 +335,7 @@ public abstract class EmiScreenManagerMixin {
                     for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
                         totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
                     }
-                    search.setY(panel.space.ty + totalHeight + ReliableEmiConfig.searchWidgetTopOffset);
+                    search.setY(panel.space.ty + totalHeight + 2 + ReliableEmiConfig.searchWidgetTopOffset);
                 } else {
                     if (panel.side == SidebarSide.RIGHT) {
                         search.setY(screen.height - 21 + ReliableEmiConfig.searchWidgetTopOffset);

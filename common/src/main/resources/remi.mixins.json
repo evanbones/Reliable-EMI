@@ -28,6 +28,10 @@
     "emi.EmiIngredientRecipeMixin",
     "emi.EmiTagRecipeMixin",
     "emi.RegexTagQueryMixin",
+    "emi.SidebarTypeMixin",
+    "emi.EmiSidebarsMixin",
+    "emi.SidebarButtonWidgetMixin",
+    "emi.SizedButtonWidgetAccessor",
     "emi.TagEmiIngredientMixin",
     "emi.TagQueryMixin",
     "emi.VanillaPluginMixin"

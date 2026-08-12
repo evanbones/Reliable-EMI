@@ -13,15 +13,15 @@ import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiHidden;
+import dev.emi.emi.runtime.EmiSidebars;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.StackBatcher;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import dev.emi.emi.search.EmiSearch;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +48,12 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Final
     public int tw;
 
+    @Unique
+    private String remi$lastSearchValue;
+
+    @Unique
+    private EmiSearch.CompiledQuery remi$compiledQuery;
+
     @Shadow
     public abstract List<? extends EmiIngredient> getStacks();
 
@@ -71,6 +77,34 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
 
     @Shadow
     public abstract SidebarType getType();
+
+    @Inject(method = "getStacks", at = @At("HEAD"), cancellable = true)
+    private void remi$getCorrectStacks(CallbackInfoReturnable<List<? extends EmiIngredient>> cir) {
+        SidebarType type = getType();
+        if (type == SidebarType.INDEX) {
+            cir.setReturnValue(StackManager.displayedStacks);
+        } else {
+            List<? extends EmiIngredient> stacks = EmiSidebars.getStacks(type);
+            if (type != SidebarType.CHESS && EmiScreenManager.search != null && !EmiScreenManager.search.getValue().isEmpty()) {
+                String searchValue = EmiScreenManager.search.getValue();
+                if (remi$compiledQuery == null || !searchValue.equals(remi$lastSearchValue)) {
+                    remi$lastSearchValue = searchValue;
+                    remi$compiledQuery = new EmiSearch.CompiledQuery(searchValue);
+                }
+                if (!remi$compiledQuery.isEmpty()) {
+                    List<EmiIngredient> filtered = new java.util.ArrayList<>();
+                    for (EmiIngredient ing : stacks) {
+                        List<EmiStack> emiStacks = ing.getEmiStacks();
+                        if (!emiStacks.isEmpty() && remi$compiledQuery.test(emiStacks.getFirst())) {
+                            filtered.add(ing);
+                        }
+                    }
+                    stacks = filtered;
+                }
+            }
+            cir.setReturnValue(stacks);
+        }
+    }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void createGrid(int tx, int ty, int tw, int th, boolean rtl, List<Bounds> exclusion,

@@ -10,7 +10,7 @@ and customization options to enhance your recipe viewing experience!
 
 ## Features
 
-REMI provides the following enhancements:
+REMI provides a ton of enhancements, including:
 
 * **Stack Grouping:** Cleans up the EMI item list by grouping related items together (e.g., keeping all colored wools in
   one expandable entry).
@@ -18,6 +18,8 @@ REMI provides the following enhancements:
   browsing.
     * The appearance of the creative tabs change, dependent on the EMI theme (vanilla or modern).
     * Works especially well with custom [Recreative](https://modrinth.com/mod/recreative) tabs!
+* **Workstation Tab (1.21+):** Displays all valid recipes for the workstation currently open (e.g. showing everything
+  smeltable in a furnace, stonecutter outputs in a stonecutter, etc.). Fully integrated with EMI's sidebar!
 * **Custom Tag Pages (1.21+):** Adds new EMI tag tabs for **Item Tags**, **Block Tags**, **Fluid Tags**, and **Entity
   Tags**.
     - Right-click spawn eggs to view entity tags, and search entity & fluid tags using `#tag_id`.
