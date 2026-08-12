@@ -5,11 +5,14 @@ import concerrox.emixx.content.creativemodetab.CreativeModeTabManager;
 import concerrox.emixx.content.stackgroup.StackGroupManager;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.concurrent.ExecutionException;
 
 @Mixin(targets = "dev.emi.emi.runtime.EmiReloadManager$ReloadWorker", remap = false)
 public class EmiReloadManagerReloadWorkerMixin {
@@ -26,8 +29,16 @@ public class EmiReloadManagerReloadWorkerMixin {
         EmiReloadManager.reloadStep = step;
         EmiReloadManager.reloadWorry = System.currentTimeMillis() + 10_000;
 
-        StackGroupManager.INSTANCE.reload();
-        StackManager.INSTANCE.reload();
-        CreativeModeTabManager.INSTANCE.reload();
+        try {
+            Minecraft.getInstance().submit(() -> {
+                StackGroupManager.INSTANCE.reload();
+                StackManager.INSTANCE.reload();
+                CreativeModeTabManager.INSTANCE.reload();
+            }).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            EmiLog.LOG.error("[EMI++] Failed to reload stack lists", e);
+        }
     }
 }

@@ -1,3 +1,3 @@
 ### Fixed
 
-- Ported fixes from 1.21.
+- Hopefully fixed reload-related crash.
