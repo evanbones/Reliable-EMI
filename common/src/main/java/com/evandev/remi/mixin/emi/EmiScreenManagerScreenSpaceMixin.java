@@ -23,8 +23,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static com.evandev.remi.integration.emi.ScreenManager.ENTRY_SIZE;
@@ -85,14 +87,17 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             cir.setReturnValue(StackManager.displayedStacks);
         } else {
             List<? extends EmiIngredient> stacks = EmiSidebars.getStacks(type);
-            if (type != SidebarType.CHESS && EmiScreenManager.search != null && !EmiScreenManager.search.getValue().isEmpty()) {
+            if (type != SidebarType.CHESS && EmiScreenManager.search != null) {
                 String searchValue = EmiScreenManager.search.getValue();
-                if (remi$compiledQuery == null || !searchValue.equals(remi$lastSearchValue)) {
+                if (!Objects.equals(searchValue, remi$lastSearchValue)) {
                     remi$lastSearchValue = searchValue;
-                    remi$compiledQuery = new EmiSearch.CompiledQuery(searchValue);
+                    remi$compiledQuery = searchValue.isEmpty() ? null : new EmiSearch.CompiledQuery(searchValue);
+                    if (batcher != null) {
+                        batcher.repopulate();
+                    }
                 }
-                if (!remi$compiledQuery.isEmpty()) {
-                    List<EmiIngredient> filtered = new java.util.ArrayList<>();
+                if (remi$compiledQuery != null && !remi$compiledQuery.isEmpty()) {
+                    List<EmiIngredient> filtered = new ArrayList<>();
                     for (EmiIngredient ing : stacks) {
                         List<EmiStack> emiStacks = ing.getEmiStacks();
                         if (!emiStacks.isEmpty() && remi$compiledQuery.test(emiStacks.getFirst())) {

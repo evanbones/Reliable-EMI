@@ -55,7 +55,7 @@ public class WorkstationSidebarManager {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static List<EmiIngredient> getWorkstationCraftables(AbstractContainerScreen<?> screen) {
-        if (screen == null || screen instanceof InventoryScreen) {
+        if (screen == null) {
             return List.of();
         }
         List<EmiRecipeHandler<?>> handlers = (List) EmiRecipeFiller.getAllHandlers(screen);
