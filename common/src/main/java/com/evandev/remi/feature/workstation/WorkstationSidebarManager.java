@@ -13,6 +13,7 @@ import dev.emi.emi.registry.EmiRecipeFiller;
 import dev.emi.emi.registry.EmiRecipes;
 import dev.emi.emi.registry.EmiStackList;
 import dev.emi.emi.runtime.EmiFavorite;
+import dev.emi.emi.runtime.EmiReloadManager;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.search.EmiSearch;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -23,16 +24,16 @@ import net.minecraft.world.item.Items;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class WorkstationSidebarManager {
 
     private static final Map<MenuType<?>, List<Supplier<EmiRecipeCategory>>> MENU_CATEGORIES = new HashMap<>();
     private static final Map<MenuType<?>, List<Supplier<EmiStack>>> MENU_EXPLICIT_STACKS = new HashMap<>();
+    private static final Map<Object, List<EmiIngredient>> CRAFTABLE_CACHE = new HashMap<>();
     public static SidebarType WORKSTATION;
     public static List<EmiIngredient> workstationStacks = List.of();
     private static AbstractContainerScreen<?> lastWorkstationScreen = null;
-    private static long lastWorkstationSync = 0;
+    private static boolean hasLastWorkstationScreen = false;
 
     static {
         registerMenuCategory(MenuType.SMITHING, () -> VanillaEmiRecipeCategories.SMITHING);
@@ -69,30 +70,48 @@ public class WorkstationSidebarManager {
         MENU_EXPLICIT_STACKS.computeIfAbsent(menuType, k -> new ArrayList<>()).addAll(Arrays.asList(stacks));
     }
 
+    public static void reload() {
+        CRAFTABLE_CACHE.clear();
+        lastWorkstationScreen = null;
+        hasLastWorkstationScreen = false;
+        workstationStacks = List.of();
+    }
+
     public static void updateWorkstationCraftables() {
         AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
-        int minDelay = 400;
-        if (WORKSTATION != null && EmiScreenManager.hasSidebarVisible(WORKSTATION)) {
-            minDelay = 50;
+        if (hasLastWorkstationScreen && screen == lastWorkstationScreen) {
+            return;
         }
-        if (screen != lastWorkstationScreen || Math.abs(System.currentTimeMillis() - lastWorkstationSync) >= minDelay) {
-            lastWorkstationSync = System.currentTimeMillis();
-            lastWorkstationScreen = screen;
-            List<EmiIngredient> newWorkstationStacks = getWorkstationCraftables(screen);
-            if (!newWorkstationStacks.equals(workstationStacks)) {
-                workstationStacks = newWorkstationStacks;
-                EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
-                if (searchPanel != null && searchPanel.space != null) {
-                    searchPanel.space.batcher.repopulate();
-                    if (WORKSTATION != null && searchPanel.getType() == WORKSTATION) {
-                        EmiSearch.update();
-                    }
-                }
-                if (WORKSTATION != null) {
-                    EmiScreenManager.repopulatePanels(WORKSTATION);
-                }
+        if (!EmiReloadManager.isLoaded()) {
+            return;
+        }
+        lastWorkstationScreen = screen;
+        hasLastWorkstationScreen = true;
+
+        List<EmiIngredient> newWorkstationStacks = getCachedWorkstationCraftables(screen);
+        if (newWorkstationStacks == workstationStacks) {
+            return;
+        }
+        workstationStacks = newWorkstationStacks;
+        EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
+        if (searchPanel != null && searchPanel.space != null) {
+            searchPanel.space.batcher.repopulate();
+            if (WORKSTATION != null && searchPanel.getType() == WORKSTATION) {
+                EmiSearch.update();
             }
         }
+        if (WORKSTATION != null) {
+            EmiScreenManager.repopulatePanels(WORKSTATION);
+        }
+    }
+
+    private static List<EmiIngredient> getCachedWorkstationCraftables(AbstractContainerScreen<?> screen) {
+        if (screen == null) {
+            return List.of();
+        }
+        MenuType<?> menuType = safeGetMenuType(screen.getMenu());
+        Object key = menuType != null ? menuType : screen.getClass();
+        return CRAFTABLE_CACHE.computeIfAbsent(key, k -> getWorkstationCraftables(screen));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -134,24 +153,35 @@ public class WorkstationSidebarManager {
             return List.of();
         }
 
-        return set.stream()
-                .map(EmiFavorite.Craftable::new)
-                .sorted(Comparator.comparingInt((EmiFavorite.Craftable a) -> EmiStackList.getIndex(a.getStack()))
-                        .thenComparingLong(EmiFavorite::getAmount))
-                .collect(Collectors.toList());
+        List<Sorted> sorted = new ArrayList<>(set.size());
+        for (EmiRecipe recipe : set) {
+            EmiFavorite.Craftable craftable = new EmiFavorite.Craftable(recipe);
+            sorted.add(new Sorted(craftable, EmiStackList.getIndex(craftable.getStack())));
+        }
+        sorted.sort(Comparator.comparingInt(Sorted::index)
+                .thenComparingLong(s -> s.craftable().getAmount()));
+
+        List<EmiIngredient> craftables = new ArrayList<>(sorted.size());
+        for (Sorted s : sorted) {
+            craftables.add(s.craftable());
+        }
+        return craftables;
     }
 
-    private static List<EmiRecipe> getCandidateRecipesForScreen(AbstractContainerScreen<?> screen) {
+    private static Collection<EmiRecipe> getCandidateRecipesForScreen(AbstractContainerScreen<?> screen) {
         List<EmiRecipeCategory> categories = getRelevantCategoriesForScreen(screen);
         if (categories.isEmpty()) {
             return EmiRecipes.manager.getRecipes();
+        }
+        if (categories.size() == 1) {
+            return EmiRecipes.manager.getRecipes(categories.get(0));
         }
 
         Set<EmiRecipe> candidates = Sets.newLinkedHashSet();
         for (EmiRecipeCategory category : categories) {
             candidates.addAll(EmiRecipes.manager.getRecipes(category));
         }
-        return List.copyOf(candidates);
+        return candidates;
     }
 
     private static List<EmiRecipeCategory> getRelevantCategoriesForScreen(AbstractContainerScreen<?> screen) {
@@ -219,5 +249,8 @@ public class WorkstationSidebarManager {
         }
 
         return stacks;
+    }
+
+    private record Sorted(EmiFavorite.Craftable craftable, int index) {
     }
 }

@@ -2,6 +2,7 @@ package com.evandev.remi.mixin.emi;
 
 import com.evandev.remi.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.remi.feature.stackgroup.StackGroupManager;
+import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.StackManager;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
@@ -26,5 +27,6 @@ public class EmiReloadManagerReloadWorkerMixin {
         StackGroupManager.reload();
         StackManager.reload();
         CreativeModeTabManager.reload();
+        WorkstationSidebarManager.reload();
     }
 }
