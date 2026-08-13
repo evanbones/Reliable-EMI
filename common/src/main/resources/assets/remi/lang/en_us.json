@@ -137,6 +137,8 @@
   "remi.configuration.disablePaginationWrapping.tooltip": "Don't wrap around to the first/last page.",
   "remi.configuration.scrollInsteadOfPagination": "Enable Scroll Mode",
   "remi.configuration.scrollInsteadOfPagination.tooltip": "Disable pages and scroll through items one row at a time instead.",
+  "remi.configuration.verticalScrollbar": "Enable Vertical Scrollbar",
+  "remi.configuration.verticalScrollbar.tooltip": "In scroll mode, use a vertical scrollbar instead of the default horizontal progress bar",
   "remi.configuration.showTitleInsteadOfPageNumbers": "Show Page Title in Headers",
   "remi.configuration.showTitleInsteadOfPageNumbers.tooltip": "(Always enabled in Scroll Mode) Hide page numbers and show the title of the page instead. If using creative tabs, the active creative tab title is used for the Index page.",
   "remi.configuration.hidePageButtonWhenOnePage": "Hide Single Sidebar Switch Button",

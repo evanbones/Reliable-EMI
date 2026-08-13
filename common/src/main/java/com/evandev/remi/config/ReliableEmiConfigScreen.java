@@ -97,6 +97,8 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.disablePaginationWrapping, v -> ReliableEmiConfig.disablePaginationWrapping = v))
                 .option(scrollInsteadOfPagination)
                 .option(showTitleInsteadOfPageNumbers)
+                .option(createBoolOption("verticalScrollbar", false,
+                        () -> ReliableEmiConfig.verticalScrollbar, v -> ReliableEmiConfig.verticalScrollbar = v))
                 .option(createBoolOption("hidePageButtonWhenOnePage", false,
                         () -> ReliableEmiConfig.hidePageButtonWhenOnePage, v -> ReliableEmiConfig.hidePageButtonWhenOnePage = v))
                 .option(createBoolOption("incrementalScrollbarFill", false,

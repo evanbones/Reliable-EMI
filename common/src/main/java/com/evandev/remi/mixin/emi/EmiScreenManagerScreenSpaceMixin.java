@@ -180,10 +180,6 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             batcher.begin(0, 0, 0);
             int i = startIndex;
             List<? extends EmiIngredient> stacks = getStacks();
-            int hovered = getRawOffsetFromMouse(mouseX, mouseY);
-            if (hovered != -1 && EmiConfig.showHoverOverlay && startIndex + hovered < stacks.size()) {
-                EmiRenderHelper.drawSlotHightlight(context, getRawX(hovered), getRawY(hovered), ENTRY_SIZE, ENTRY_SIZE, 0);
-            }
             context.push();
 
             if (ReliableEmiConfig.isStackGroupsEnabled(getType())) {
@@ -219,10 +215,17 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                     }
                 }
             }
-            batcher.draw();
-            context.pop();
+
             if (ReliableEmiConfig.isStackGroupsEnabled(getType()))
                 Layout.buildLayoutTiles(EmiScreenManager.ScreenSpace.class.cast(this), context);
+
+            int hovered = getRawOffsetFromMouse(mouseX, mouseY);
+            if (hovered != -1 && EmiConfig.showHoverOverlay && startIndex + hovered < stacks.size()) {
+                EmiRenderHelper.drawSlotHightlight(context, getRawX(hovered), getRawY(hovered), ENTRY_SIZE, ENTRY_SIZE, 0);
+            }
+
+            batcher.draw();
+            context.pop();
         }
     }
 }
