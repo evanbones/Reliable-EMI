@@ -1,3 +1,3 @@
 ### Fixed
 
-- Hopefully fixed reload-related crash.
+- More protection against random crashes.
