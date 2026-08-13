@@ -49,6 +49,8 @@ public class ReliableEmiConfig {
     public static boolean showTitleInsteadOfPageNumbers = false;
     public static boolean hidePageButtonWhenOnePage = false;
     public static boolean incrementalScrollbarFill = false;
+    public static boolean verticalScrollbar = false;
+
     public static boolean searchWidgetAlignWithPanel = false;
     public static int searchWidgetWidth = 0;
     public static int searchWidgetLeftOffset = 0;
@@ -214,6 +216,7 @@ public class ReliableEmiConfig {
         data.showTitleInsteadOfPageNumbers = showTitleInsteadOfPageNumbers;
         data.hidePageButtonWhenOnePage = hidePageButtonWhenOnePage;
         data.incrementalScrollbarFill = incrementalScrollbarFill;
+        data.verticalScrollbar = verticalScrollbar;
         data.searchWidgetAlignWithPanel = searchWidgetAlignWithPanel;
         data.searchWidgetWidth = searchWidgetWidth;
         data.searchWidgetLeftOffset = searchWidgetLeftOffset;
@@ -280,6 +283,7 @@ public class ReliableEmiConfig {
         boolean showTitleInsteadOfPageNumbers = false;
         boolean hidePageButtonWhenOnePage = false;
         boolean incrementalScrollbarFill = false;
+        boolean verticalScrollbar = true;
 
         // Search Widget
         boolean searchWidgetAlignWithPanel = false;

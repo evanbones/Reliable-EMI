@@ -2,11 +2,15 @@ package com.evandev.remi.mixin.emi;
 
 import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
+import com.evandev.remi.gui.components.ScrollbarWidget;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.SidebarPages;
+import dev.emi.emi.config.SidebarSide;
+import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
@@ -26,6 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
+
+import static com.evandev.remi.integration.emi.ScreenManager.ENTRY_SIZE;
 
 @Mixin(value = EmiScreenManager.SidebarPanel.class, remap = false)
 public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelWithScrollOffset {
@@ -54,6 +60,19 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     @Shadow
     public int page;
 
+    @Shadow
+    public SidebarTheme theme;
+
+    @Shadow
+    public List<EmiScreenManager.ScreenSpace> spaces;
+
+    @Unique
+    private ScrollbarWidget remi$scrollbar;
+
+    public ScrollbarWidget remi$getScrollbarWidget() {
+        return this.remi$scrollbar;
+    }
+
     @Unique
     private int remi$scrollOffsetRows = 0;
 
@@ -61,12 +80,15 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         return this.remi$scrollOffsetRows * this.space.tw;
     }
 
-    @Unique
+    public void remi$setScrollOffset(int offset) {
+        this.remi$scrollOffsetRows = Math.max(0, Math.min(offset, this.remi$getTotalScrollRows()));
+        space.batcher.repopulate();
+    }
+
     public int remi$getScrollOffsetRows() {
         return this.remi$scrollOffsetRows;
     }
 
-    @Unique
     public int remi$getTotalScrollRows() {
         return Math.max((space.getStacks().size() - 1) / space.tw + 1 - space.th, 0);
     }
@@ -142,9 +164,17 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         }
     }
 
+    @Inject(method = "drawHeader", at = @At("HEAD"))
+    private void drawVerticalScrollbar(EmiDrawContext context, int mouseX, int mouseY, float delta, int page, int totalPages, CallbackInfo ci) {
+        this.remi$scrollbar.render(context.raw(), mouseX, mouseY, delta);
+    }
+
     @WrapOperation(method="drawHeader", at = @At(value = "INVOKE", target="Ldev/emi/emi/EmiRenderHelper;drawScroll(Ldev/emi/emi/runtime/EmiDrawContext;IIIIIII)V", remap = true))
     private void drawScrollBar(EmiDrawContext context, int x, int y, int width, int height, int progress, int total, int color, Operation<Void> original) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
+            if (ReliableEmiConfig.verticalScrollbar) {
+                return;
+            }
             progress = this.remi$getScrollOffsetRows();
             int totalScrollRows = this.remi$getTotalScrollRows();
             total = totalScrollRows + this.space.th;
@@ -168,18 +198,6 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         } else {
             original.call(context, x, y, width, height, progress, total, color);
         }
-    }
-
-    @Unique
-    private static void remi$drawIncrementalScrollBar(EmiDrawContext context, int x, int y, int width, int height, int filled, int total, int color) {
-        if (total <= 1) {
-            return;
-        }
-
-        int fillWidth = (int) Math.round((double) width * Math.min(filled, total) / total);
-        fillWidth = Math.max(fillWidth, Math.min(width, height));
-
-        context.fill(x, y, fillWidth, height, color);
     }
 
     @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollLeft")
@@ -233,6 +251,33 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         return (leftBound + rightBound) / 2;
     }
 
+    @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;drawCenteredText(Lnet/minecraft/network/chat/Component;II)V"))
+    private void verticalCenterHeaderText(EmiDrawContext instance, Component text, int x, int y, Operation<Void> original) {
+        if (ReliableEmiConfig.verticalScrollbar) {
+            y += 2;
+        }
+        original.call(instance, text, x, y);
+    }
+
+    @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V"))
+    private void hideHorizontalScrollbar(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
+        if (!ReliableEmiConfig.verticalScrollbar) {
+            original.call(instance, x, y, width, height, color);
+        }
+    }
+
+    @Unique
+    private static void remi$drawIncrementalScrollBar(EmiDrawContext context, int x, int y, int width, int height, int filled, int total, int color) {
+        if (total <= 1) {
+            return;
+        }
+
+        int fillWidth = (int) Math.round((double) width * Math.min(filled, total) / total);
+        fillWidth = Math.max(fillWidth, Math.min(width, height));
+
+        context.fill(x, y, fillWidth, height, color);
+    }
+
     @Inject(method = "wrapPage", at = @At("HEAD"), cancellable = true)
     public void clampScrollOffset(CallbackInfo ci) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
@@ -268,6 +313,23 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         }
     }
 
+    @Inject(method = "updateWidgetPosition", at = @At("TAIL"))
+    public void updateScrollbarPosition(CallbackInfo ci) {
+        if (ReliableEmiConfig.verticalScrollbar) {
+            int panelPadding = 1;
+
+            int x = this.space.tx + this.space.tw * ENTRY_SIZE + panelPadding;
+            int y = this.space.ty;
+            int height = this.space.th * ENTRY_SIZE;
+            int width = 16;
+
+            this.remi$scrollbar.setX(x);
+            this.remi$scrollbar.setY(y);
+            this.remi$scrollbar.setWidth(width);
+            this.remi$scrollbar.setHeight(height);
+        }
+    }
+
     @WrapOperation(method="<init>", at = @At(value="NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 0))
     private SizedButtonWidget pageLeftButton(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, Button.OnPress action, Operation<SizedButtonWidget> original) {
         BooleanSupplier hasPrevPage = () -> {
@@ -291,6 +353,11 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
             }
         };
         return original.call(x, y, width, height, u, v, hasNextPage, action);
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    public void addScrollbar(SidebarSide side, SidebarPages pages, CallbackInfo ci) {
+        this.remi$scrollbar = new ScrollbarWidget((EmiScreenManager.SidebarPanel)(Object)this);
     }
 
     @Inject(method = "updateWidgetPosition", at = @At("TAIL"))
@@ -348,5 +415,18 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
             }
             space.batcher.repopulate();
         }
+    }
+
+    @WrapOperation(method = "getBounds", at = @At(value = "NEW", target = "(IIII)Ldev/emi/emi/api/widget/Bounds;"))
+    private Bounds addScrollbarToBounds(int x, int y, int width, int height, Operation<Bounds> original) {
+        if (ReliableEmiConfig.verticalScrollbar) {
+            width += this.remi$scrollbar.getWidth() - theme.horizontalPadding;
+        }
+        return original.call(x, y, width, height);
+    }
+
+    @ModifyVariable(method = "drawBackground", at = @At(value = "STORE", ordinal = 0), name = "totalHeight")
+    private int fixSeperatorSpacingAlwaysAddedToHeight(int val) {
+        return val - 3;
     }
 }

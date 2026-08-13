@@ -356,4 +356,40 @@ public abstract class EmiScreenManagerMixin {
         search.setY(search.getY() + ReliableEmiConfig.searchWidgetTopOffset);
         search.setX(search.getX() + ReliableEmiConfig.searchWidgetLeftOffset);
     }
+
+    @Inject(method = "mouseClicked", at = @At("TAIL"), cancellable = true)
+    private static void scrollbarMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        for (EmiScreenManager.SidebarPanel panel : panels) {
+            SidebarPanelWithScrollOffset scrollPanel = (SidebarPanelWithScrollOffset) panel;
+            if (scrollPanel.remi$getScrollbarWidget().mouseClicked(mouseX, mouseY, button)) {
+                cir.setReturnValue(true);
+            }
+        }
+    }
+
+    @Inject(method = "mouseReleased", at = @At("TAIL"))
+    private static void scrollbarMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        for (EmiScreenManager.SidebarPanel panel : panels) {
+            SidebarPanelWithScrollOffset scrollPanel = (SidebarPanelWithScrollOffset) panel;
+            scrollPanel.remi$getScrollbarWidget().stopDragging();
+        }
+    }
+
+    @Inject(method = "mouseDragged", at = @At("TAIL"), cancellable = true)
+    private static void scrollbarMouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+        for (EmiScreenManager.SidebarPanel panel : panels) {
+            SidebarPanelWithScrollOffset scrollPanel = (SidebarPanelWithScrollOffset) panel;
+            if (scrollPanel.remi$getScrollbarWidget().mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+                cir.setReturnValue(true);
+            }
+        }
+    }
+
+    @ModifyVariable(method = "createScreenSpace", at = @At(value = "STORE"), name = "xMax")
+    private static int addScrollbarToXMax(int xMax, @Local(name = "panel") EmiScreenManager.SidebarPanel panel, @Local(name = "theme") SidebarTheme theme) {
+        if (ReliableEmiConfig.verticalScrollbar) {
+            xMax -= ((SidebarPanelWithScrollOffset) panel).remi$getScrollbarWidget().getWidth() - theme.horizontalPadding;
+        }
+        return xMax;
+    }
 }
