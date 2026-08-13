@@ -61,6 +61,10 @@ public class ReliableEmiConfig {
     public static int searchWidgetTextColor = 0xFFFFFFFF;
     public static boolean searchWidgetUseVanillaTexture = false;
 
+    public static boolean isVerticalScrollbarEnabled() {
+        return verticalScrollbar && scrollInsteadOfPagination;
+    }
+
     public static boolean isCreativeTabsEnabled(SidebarType type) {
         if (!enableCreativeModeTabs || type == null) return false;
         var targetPanel = com.evandev.remi.integration.emi.ScreenManager.getTargetCreativeTabPanel();
@@ -153,6 +157,7 @@ public class ReliableEmiConfig {
                     showTitleInsteadOfPageNumbers = data.showTitleInsteadOfPageNumbers;
                     hidePageButtonWhenOnePage = data.hidePageButtonWhenOnePage;
                     incrementalScrollbarFill = data.incrementalScrollbarFill;
+                    verticalScrollbar = data.verticalScrollbar;
 
                     searchWidgetAlignWithPanel = data.searchWidgetAlignWithPanel;
                     searchWidgetWidth = data.searchWidgetWidth;
@@ -283,7 +288,7 @@ public class ReliableEmiConfig {
         boolean showTitleInsteadOfPageNumbers = false;
         boolean hidePageButtonWhenOnePage = false;
         boolean incrementalScrollbarFill = false;
-        boolean verticalScrollbar = true;
+        boolean verticalScrollbar = false;
 
         // Search Widget
         boolean searchWidgetAlignWithPanel = false;

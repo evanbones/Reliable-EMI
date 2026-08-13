@@ -74,6 +74,10 @@ public class ReliableEmiConfigScreen {
                 v -> ReliableEmiConfig.showTitleInsteadOfPageNumbers = v || ReliableEmiConfig.scrollInsteadOfPagination);
         showTitleInsteadOfPageNumbers.setAvailable(!ReliableEmiConfig.scrollInsteadOfPagination);
 
+        Option<Boolean> verticalScrollbar = createBoolOption("verticalScrollbar", false,
+                () -> ReliableEmiConfig.verticalScrollbar, v -> ReliableEmiConfig.verticalScrollbar = v);
+        verticalScrollbar.setAvailable(ReliableEmiConfig.scrollInsteadOfPagination);
+
         Option<Boolean> scrollInsteadOfPagination = Option.<Boolean>createBuilder()
                 .name(ReliableEmi.text("configuration.scrollInsteadOfPagination"))
                 .description(OptionDescription.of(ReliableEmi.text("configuration.scrollInsteadOfPagination.tooltip")))
@@ -84,6 +88,7 @@ public class ReliableEmiConfigScreen {
                     boolean v = opt.pendingValue();
                     if (v) showTitleInsteadOfPageNumbers.requestSet(true);
                     showTitleInsteadOfPageNumbers.setAvailable(!v);
+                    verticalScrollbar.setAvailable(v);
                 })
                 .build();
 
@@ -97,8 +102,7 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.disablePaginationWrapping, v -> ReliableEmiConfig.disablePaginationWrapping = v))
                 .option(scrollInsteadOfPagination)
                 .option(showTitleInsteadOfPageNumbers)
-                .option(createBoolOption("verticalScrollbar", false,
-                        () -> ReliableEmiConfig.verticalScrollbar, v -> ReliableEmiConfig.verticalScrollbar = v))
+                .option(verticalScrollbar)
                 .option(createBoolOption("hidePageButtonWhenOnePage", false,
                         () -> ReliableEmiConfig.hidePageButtonWhenOnePage, v -> ReliableEmiConfig.hidePageButtonWhenOnePage = v))
                 .option(createBoolOption("incrementalScrollbarFill", false,

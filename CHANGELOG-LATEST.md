@@ -1,3 +1,7 @@
-### Changed
+### Added
 
-- Search bar behaviour now properly follows the EMI config.
+- Added a config option for a vertical scrollbar (thanks, @Kobber!)
+
+### Fixed
+
+- Workstation tab performance improvements.

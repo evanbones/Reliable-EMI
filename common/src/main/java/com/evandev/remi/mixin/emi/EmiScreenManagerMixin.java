@@ -6,6 +6,7 @@ import com.evandev.remi.feature.stackgroup.EmiGroupStack;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.ScreenManager;
+import com.evandev.remi.gui.components.ScrollbarWidget;
 import com.evandev.remi.integration.emi.StackManager;
 import com.evandev.remi.mixin.minecraft.AbstractContainerScreenAccessor;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
@@ -387,8 +388,8 @@ public abstract class EmiScreenManagerMixin {
 
     @ModifyVariable(method = "createScreenSpace", at = @At(value = "STORE"), name = "xMax")
     private static int addScrollbarToXMax(int xMax, @Local(name = "panel") EmiScreenManager.SidebarPanel panel, @Local(name = "theme") SidebarTheme theme) {
-        if (ReliableEmiConfig.verticalScrollbar) {
-            xMax -= ((SidebarPanelWithScrollOffset) panel).remi$getScrollbarWidget().getWidth() - theme.horizontalPadding;
+        if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
+            xMax -= ScrollbarWidget.WIDTH - theme.horizontalPadding;
         }
         return xMax;
     }

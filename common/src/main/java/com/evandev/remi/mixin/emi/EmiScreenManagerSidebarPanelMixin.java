@@ -37,12 +37,6 @@ import static com.evandev.remi.integration.emi.ScreenManager.ENTRY_SIZE;
 public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelWithScrollOffset {
 
     @Shadow
-    public abstract SidebarType getType();
-
-    @Shadow
-    public abstract boolean supportsType(SidebarType type);
-
-    @Shadow
     public EmiScreenManager.ScreenSpace space;
 
     @Final
@@ -63,18 +57,51 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     @Shadow
     public SidebarTheme theme;
 
-    @Shadow
-    public List<EmiScreenManager.ScreenSpace> spaces;
-
     @Unique
     private ScrollbarWidget remi$scrollbar;
+
+    @Unique
+    private int remi$scrollOffsetRows = 0;
+
+    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollLeft")
+    private static int modifyScrollX(int scrollLeft) {
+        if (ReliableEmiConfig.scrollInsteadOfPagination) {
+            return scrollLeft - 18;
+        } else {
+            return scrollLeft;
+        }
+    }
+
+    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollWidth")
+    private static int modifyScrollWidth(int scrollWidth) {
+        if (ReliableEmiConfig.scrollInsteadOfPagination) {
+            return scrollWidth + 36;
+        } else {
+            return scrollWidth;
+        }
+    }
+
+    @Unique
+    private static void remi$drawIncrementalScrollBar(EmiDrawContext context, int x, int y, int width, int height, int filled, int total, int color) {
+        if (total <= 1) {
+            return;
+        }
+
+        int fillWidth = (int) Math.round((double) width * Math.min(filled, total) / total);
+        fillWidth = Math.max(fillWidth, Math.min(width, height));
+
+        context.fill(x, y, fillWidth, height, color);
+    }
+
+    @Shadow
+    public abstract SidebarType getType();
+
+    @Shadow
+    public abstract boolean supportsType(SidebarType type);
 
     public ScrollbarWidget remi$getScrollbarWidget() {
         return this.remi$scrollbar;
     }
-
-    @Unique
-    private int remi$scrollOffsetRows = 0;
 
     public int remi$getScrollOffset() {
         return this.remi$scrollOffsetRows * this.space.tw;
@@ -155,24 +182,27 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         }
     }
 
-    @WrapOperation(method="render", at = @At(value = "INVOKE", target="dev/emi/emi/screen/EmiScreenManager$ScreenSpace.render (Ldev/emi/emi/runtime/EmiDrawContext;IIFI)V", ordinal = 0, remap = true))
-    private void addScrollOffsetToScreen(EmiScreenManager.ScreenSpace space, EmiDrawContext cy, int stack, int xo, float yo, int hx, Operation<Void> original) {
+    @WrapOperation(method = "render", at = @At(value = "INVOKE", target = "dev/emi/emi/screen/EmiScreenManager$ScreenSpace.render (Ldev/emi/emi/runtime/EmiDrawContext;IIFI)V", ordinal = 0, remap = true))
+    private void addScrollOffsetToScreen(EmiScreenManager.ScreenSpace space, EmiDrawContext context, int mouseX, int mouseY, float delta, int startIndex, Operation<Void> original) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
-            original.call(space, cy, stack, xo, yo, this.remi$getScrollOffset());
+            original.call(space, context, mouseX, mouseY, delta, this.remi$getScrollOffset());
         } else {
-            original.call(space, cy, stack, xo, yo, hx);
+            original.call(space, context, mouseX, mouseY, delta, startIndex);
         }
     }
 
     @Inject(method = "drawHeader", at = @At("HEAD"))
     private void drawVerticalScrollbar(EmiDrawContext context, int mouseX, int mouseY, float delta, int page, int totalPages, CallbackInfo ci) {
+        if (!ReliableEmiConfig.isVerticalScrollbarEnabled()) {
+            return;
+        }
         this.remi$scrollbar.render(context.raw(), mouseX, mouseY, delta);
     }
 
-    @WrapOperation(method="drawHeader", at = @At(value = "INVOKE", target="Ldev/emi/emi/EmiRenderHelper;drawScroll(Ldev/emi/emi/runtime/EmiDrawContext;IIIIIII)V", remap = true))
+    @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/EmiRenderHelper;drawScroll(Ldev/emi/emi/runtime/EmiDrawContext;IIIIIII)V", remap = true))
     private void drawScrollBar(EmiDrawContext context, int x, int y, int width, int height, int progress, int total, int color, Operation<Void> original) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
-            if (ReliableEmiConfig.verticalScrollbar) {
+            if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
                 return;
             }
             progress = this.remi$getScrollOffsetRows();
@@ -197,24 +227,6 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
             remi$drawIncrementalScrollBar(context, x, y, width, height, progress + 1, total, color);
         } else {
             original.call(context, x, y, width, height, progress, total, color);
-        }
-    }
-
-    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollLeft")
-    private static int modifyScrollX(int scrollLeft) {
-        if (ReliableEmiConfig.scrollInsteadOfPagination) {
-            return scrollLeft - 18;
-        } else {
-            return scrollLeft;
-        }
-    }
-
-    @ModifyVariable(method = "drawHeader", at = @At(value = "STORE"), name = "scrollWidth")
-    private static int modifyScrollWidth(int scrollWidth) {
-        if (ReliableEmiConfig.scrollInsteadOfPagination) {
-            return scrollWidth + 36;
-        } else {
-            return scrollWidth;
         }
     }
 
@@ -253,7 +265,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;drawCenteredText(Lnet/minecraft/network/chat/Component;II)V"))
     private void verticalCenterHeaderText(EmiDrawContext instance, Component text, int x, int y, Operation<Void> original) {
-        if (ReliableEmiConfig.verticalScrollbar) {
+        if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
             y += 2;
         }
         original.call(instance, text, x, y);
@@ -261,21 +273,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;fill(IIIII)V"))
     private void hideHorizontalScrollbar(EmiDrawContext instance, int x, int y, int width, int height, int color, Operation<Void> original) {
-        if (!ReliableEmiConfig.verticalScrollbar) {
+        if (!ReliableEmiConfig.isVerticalScrollbarEnabled()) {
             original.call(instance, x, y, width, height, color);
         }
-    }
-
-    @Unique
-    private static void remi$drawIncrementalScrollBar(EmiDrawContext context, int x, int y, int width, int height, int filled, int total, int color) {
-        if (total <= 1) {
-            return;
-        }
-
-        int fillWidth = (int) Math.round((double) width * Math.min(filled, total) / total);
-        fillWidth = Math.max(fillWidth, Math.min(width, height));
-
-        context.fill(x, y, fillWidth, height, color);
     }
 
     @Inject(method = "wrapPage", at = @At("HEAD"), cancellable = true)
@@ -313,24 +313,26 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         }
     }
 
-    @Inject(method = "updateWidgetPosition", at = @At("TAIL"))
+    @Inject(method = "updateWidgetPosition", at = @At("HEAD"))
     public void updateScrollbarPosition(CallbackInfo ci) {
-        if (ReliableEmiConfig.verticalScrollbar) {
+        boolean enabled = ReliableEmiConfig.isVerticalScrollbarEnabled() && this.space != null;
+        this.remi$scrollbar.visible = enabled;
+        this.remi$scrollbar.active = enabled;
+        if (enabled) {
             int panelPadding = 1;
 
             int x = this.space.tx + this.space.tw * ENTRY_SIZE + panelPadding;
             int y = this.space.ty;
             int height = this.space.th * ENTRY_SIZE;
-            int width = 16;
 
             this.remi$scrollbar.setX(x);
             this.remi$scrollbar.setY(y);
-            this.remi$scrollbar.setWidth(width);
+            this.remi$scrollbar.setWidth(ScrollbarWidget.WIDTH);
             this.remi$scrollbar.setHeight(height);
         }
     }
 
-    @WrapOperation(method="<init>", at = @At(value="NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 0))
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 0))
     private SizedButtonWidget pageLeftButton(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, Button.OnPress action, Operation<SizedButtonWidget> original) {
         BooleanSupplier hasPrevPage = () -> {
             if (ReliableEmiConfig.disablePaginationWrapping) {
@@ -342,7 +344,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         return original.call(x, y, width, height, u, v, hasPrevPage, action);
     }
 
-    @WrapOperation(method="<init>", at = @At(value="NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 1))
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "dev/emi/emi/screen/widget/SizedButtonWidget", ordinal = 1))
     private SizedButtonWidget pageRightButton(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, Button.OnPress action, Operation<SizedButtonWidget> original) {
         BooleanSupplier hasNextPage = () -> {
             if (ReliableEmiConfig.disablePaginationWrapping) {
@@ -357,7 +359,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void addScrollbar(SidebarSide side, SidebarPages pages, CallbackInfo ci) {
-        this.remi$scrollbar = new ScrollbarWidget((EmiScreenManager.SidebarPanel)(Object)this);
+        this.remi$scrollbar = new ScrollbarWidget((EmiScreenManager.SidebarPanel) (Object) this);
     }
 
     @Inject(method = "updateWidgetPosition", at = @At("TAIL"))
@@ -419,14 +421,14 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
 
     @WrapOperation(method = "getBounds", at = @At(value = "NEW", target = "(IIII)Ldev/emi/emi/api/widget/Bounds;"))
     private Bounds addScrollbarToBounds(int x, int y, int width, int height, Operation<Bounds> original) {
-        if (ReliableEmiConfig.verticalScrollbar) {
-            width += this.remi$scrollbar.getWidth() - theme.horizontalPadding;
+        if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
+            width += ScrollbarWidget.WIDTH - theme.horizontalPadding;
         }
         return original.call(x, y, width, height);
     }
 
     @ModifyVariable(method = "drawBackground", at = @At(value = "STORE", ordinal = 0), name = "totalHeight")
-    private int fixSeperatorSpacingAlwaysAddedToHeight(int val) {
-        return val - 3;
+    private int fixSeperatorSpacingAlwaysAddedToHeight(int totalHeight) {
+        return totalHeight - 3;
     }
 }

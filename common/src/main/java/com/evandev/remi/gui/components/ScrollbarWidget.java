@@ -13,14 +13,13 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class ScrollbarWidget extends AbstractWidget {
-    private final EmiScreenManager.SidebarPanel panel;
-
+    public static final int WIDTH = 16;
     private static final ResourceLocation TRACK_SPRITES = ReliableEmi.res("widget/scrollbar_track");
     private static final ResourceLocation THUMB_SPRITES = ReliableEmi.res("widget/scrollbar_thumb");
     private static final ResourceLocation VANILLA_TRACK_SPRITES = ReliableEmi.res("widget/scrollbar_track_vanilla");
     private static final ResourceLocation VANILLA_THUMB_SPRITES = ReliableEmi.res("widget/scrollbar_thumb_vanilla");
     private static final ResourceLocation VANILLA_BACKGROUND_SPRITES = ReliableEmi.res("widget/scrollbar_background_vanilla");
-
+    private final EmiScreenManager.SidebarPanel panel;
     private boolean isDragging = false;
 
     public ScrollbarWidget(EmiScreenManager.SidebarPanel panel) {
@@ -117,7 +116,6 @@ public class ScrollbarWidget extends AbstractWidget {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
-
     }
 
     public void stopDragging() {
