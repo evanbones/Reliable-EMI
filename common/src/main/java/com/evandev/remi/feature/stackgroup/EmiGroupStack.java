@@ -4,8 +4,8 @@ import com.evandev.ReliableEmi;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.sodium.SodiumCompat;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.EmiPort;
-import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.config.EmiConfig;
@@ -30,8 +30,9 @@ import net.minecraft.world.item.ItemStack;
 import java.util.*;
 
 public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
-    private static final Component EXPANDED_INDICATOR = EmiPort.literal("-");
-    private static final Component COLLAPSED_INDICATOR = EmiPort.literal("+");
+    private static final ResourceLocation EXPANDED_TEXTURE = ReliableEmi.res("textures/gui/stack_group_expanded.png");
+    private static final ResourceLocation EXPANDED_INDICATOR_TEXTURE = ReliableEmi.res("textures/gui/stack_group_indicator_expanded.png");
+    private static final ResourceLocation COLLAPSED_INDICATOR_TEXTURE = ReliableEmi.res("textures/gui/stack_group_indicator_collapsed.png");
     private static int visibilityVersion = 0;
 
     public final StackGroup group;
@@ -154,11 +155,9 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
         int es = ScreenManager.ENTRY_SIZE;
 
         if (isExpanded) {
-            context.fill(x - 1, y - 1, 1, es, 0xFFFFFFFF);
-            context.fill(x - 1, y - 1, es, 1, 0xFFFFFFFF);
-            context.fill(x + es - 2, y - 1, 1, es, 0xFFFFFFFF);
-            context.fill(x - 1, y + es - 2, es, 1, 0xFFFFFFFF);
-            context.fill(x, y, es - 2, es - 2, 0x30FFFFFF);
+            RenderSystem.enableBlend();
+            context.drawTexture(EXPANDED_TEXTURE, x - 1, y - 1, 0, 0, 0, es, es, es, es);
+            RenderSystem.disableBlend();
         }
 
         if ((flags & RENDER_ICON) != 0) {
@@ -188,7 +187,9 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
             }
         }
 
-        EmiRenderHelper.renderAmount(context, x, y, isExpanded ? EXPANDED_INDICATOR : COLLAPSED_INDICATOR);
+        RenderSystem.enableBlend();
+        context.drawTexture(isExpanded ? EXPANDED_INDICATOR_TEXTURE : COLLAPSED_INDICATOR_TEXTURE, x - 1, y - 1, 200, 0, 0, es, es, es, es);
+        RenderSystem.disableBlend();
     }
 
     @Override

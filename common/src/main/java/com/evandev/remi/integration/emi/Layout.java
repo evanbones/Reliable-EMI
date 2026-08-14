@@ -1,22 +1,23 @@
 package com.evandev.remi.integration.emi;
 
+import com.evandev.ReliableEmi;
 import com.evandev.remi.feature.stackgroup.EmiGroupStack;
 import com.evandev.remi.feature.stackgroup.GroupedEmiStack;
 import com.evandev.remi.feature.stackgroup.StackGroupManager;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Layout {
-    private static final int HIGHLIGHT_COLOR = 0x66FFFFFF;
-    private static final int TILE_OFFSET_ADJUST = 17;
-
+    private static final ResourceLocation STACK_GROUP_TEXTURE = ReliableEmi.res("textures/gui/stack_group.png");
     public static boolean clean = true;
     public static boolean textureDirty = true;
 
@@ -43,22 +44,16 @@ public class Layout {
                 if (emiStack == null || currentGroup == null) continue;
 
                 Tile tile = new Tile(x, y, 0);
-                if (y == 0 || groupAt(y - 1, x, type) != currentGroup) tile.type |= TileType.TOP.bit;
-                if (x == 0 || groupAt(y, x - 1, type) != currentGroup) tile.type |= TileType.LEFT.bit;
-                if (y == screenSpace.th - 1 || groupAt(y + 1, x, type) != currentGroup)
-                    tile.type |= TileType.BOTTOM.bit;
-                if (x == screenSpace.tw - 1 || groupAt(y, x + 1, type) != currentGroup) tile.type |= TileType.RIGHT.bit;
+                if (groupAt(y - 1, x, type) == currentGroup) tile.type |= Connections.TOP.bit;
+                if (groupAt(y, x - 1, type) == currentGroup) tile.type |= Connections.LEFT.bit;
+                if (groupAt(y + 1, x, type) == currentGroup) tile.type |= Connections.BOTTOM.bit;
+                if (groupAt(y, x + 1, type) == currentGroup) tile.type |= Connections.RIGHT.bit;
+                if (groupAt(y - 1, x - 1, type) == currentGroup) tile.type |= Connections.TOP_LEFT.bit;
+                if (groupAt(y - 1, x + 1, type) == currentGroup) tile.type |= Connections.TOP_RIGHT.bit;
+                if (groupAt(y + 1, x - 1, type) == currentGroup) tile.type |= Connections.BOTTOM_LEFT.bit;
+                if (groupAt(y + 1, x + 1, type) == currentGroup) tile.type |= Connections.BOTTOM_RIGHT.bit;
 
-                if (groupAt(y - 1, x - 1, type) != currentGroup && groupAt(y - 1, x, type) == currentGroup && groupAt(y, x - 1, type) == currentGroup)
-                    tile.type |= TileType.TOP_LEFT.bit;
-                if (groupAt(y - 1, x + 1, type) != currentGroup && groupAt(y - 1, x, type) == currentGroup && groupAt(y, x + 1, type) == currentGroup)
-                    tile.type |= TileType.TOP_RIGHT.bit;
-                if (groupAt(y + 1, x - 1, type) != currentGroup && groupAt(y + 1, x, type) == currentGroup && groupAt(y, x - 1, type) == currentGroup)
-                    tile.type |= TileType.BOTTOM_LEFT.bit;
-                if (groupAt(y + 1, x + 1, type) != currentGroup && groupAt(y + 1, x, type) == currentGroup && groupAt(y, x + 1, type) == currentGroup)
-                    tile.type |= TileType.BOTTOM_RIGHT.bit;
-
-                if (tile.type != 0) tiles.add(tile);
+                tiles.add(tile);
             }
         }
         render(screenSpace, context, tiles);
@@ -66,18 +61,139 @@ public class Layout {
 
     public static void render(EmiScreenManager.ScreenSpace screenSpace, EmiDrawContext context, List<Tile> tiles) {
         int es = ScreenManager.ENTRY_SIZE;
+
+        RenderSystem.enableBlend();
         for (Tile tile : tiles) {
             int px = screenSpace.tx + tile.x * es;
             int py = screenSpace.ty + tile.y * es;
-            if (tile.check(TileType.TOP)) context.fill(px, py, es, 1, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.LEFT)) context.fill(px, py, 1, es, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.BOTTOM)) context.fill(px, py + TILE_OFFSET_ADJUST, es, 1, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.RIGHT)) context.fill(px + TILE_OFFSET_ADJUST, py, 1, es, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.TOP_LEFT)) context.fill(px, py, 1, 1, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.TOP_RIGHT)) context.fill(px + es - 1, py, 1, 1, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.BOTTOM_LEFT)) context.fill(px, py + es - 1, 1, 1, HIGHLIGHT_COLOR);
-            if (tile.check(TileType.BOTTOM_RIGHT)) context.fill(px + es - 1, py + es - 1, 1, 1, HIGHLIGHT_COLOR);
+            int[] uv = getTileUV(tile);
+            context.drawTexture(STACK_GROUP_TEXTURE, px, py, 0, uv[0] * es, uv[1] * es, es, es, 144, 108);
         }
+        RenderSystem.disableBlend();
+    }
+
+    protected static int[] getTileUV(Tile tile){
+        int[] uv;
+
+        /* UV Mapping adapted from Fusion (https://github.com/SuperMartijn642/Fusion) */
+        if (!tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM))
+            uv = new int[]{0, 0};
+        else {
+            if (tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM))
+                uv = new int[]{3, 0};
+            else if (!tile.check(Connections.LEFT) && tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM))
+                uv = new int[]{0, 3};
+            else if (!tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM))
+                uv = new int[]{1, 0};
+            else if (!tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && tile.check(Connections.BOTTOM))
+                uv = new int[]{0, 1};
+            else {
+                if (tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM))
+                    uv = new int[]{2, 0};
+                else if (!tile.check(Connections.LEFT) && tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && tile.check(Connections.BOTTOM))
+                    uv = new int[]{0, 2};
+                else if (tile.check(Connections.LEFT) && tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM)) {
+                    if (tile.check(Connections.TOP_LEFT))
+                        uv = new int[]{3, 3};
+                    else
+                        uv = new int[]{5, 1};
+                } else if (!tile.check(Connections.LEFT) && tile.check(Connections.TOP) && tile.check(Connections.RIGHT) && !tile.check(Connections.BOTTOM)) {
+                    if (tile.check(Connections.TOP_RIGHT))
+                        uv = new int[]{1, 3};
+                    else
+                        uv = new int[]{4, 1};
+                } else if (!tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && tile.check(Connections.RIGHT) && tile.check(Connections.BOTTOM)) {
+                    if (tile.check(Connections.BOTTOM_RIGHT))
+                        uv = new int[]{1, 1};
+                    else
+                        uv = new int[]{4, 0};
+                } else if (tile.check(Connections.LEFT) && !tile.check(Connections.TOP) && !tile.check(Connections.RIGHT) && tile.check(Connections.BOTTOM)) {
+                    if (tile.check(Connections.BOTTOM_LEFT))
+                        uv = new int[]{3, 1};
+                    else
+                        uv = new int[]{5, 0};
+                } else {
+                    if (!tile.check(Connections.LEFT)) {
+                        if (tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_RIGHT))
+                            uv = new int[]{1, 2};
+                        else if (tile.check(Connections.TOP_RIGHT))
+                            uv = new int[]{4, 2};
+                        else if (tile.check(Connections.BOTTOM_RIGHT))
+                            uv = new int[]{6, 2};
+                        else
+                            uv = new int[]{6, 0};
+                    } else if (!tile.check(Connections.TOP)) {
+                        if (tile.check(Connections.BOTTOM_LEFT) && tile.check(Connections.BOTTOM_RIGHT))
+                            uv = new int[]{2, 1};
+                        else if (tile.check(Connections.BOTTOM_LEFT))
+                            uv = new int[]{7, 2};
+                        else if (tile.check(Connections.BOTTOM_RIGHT))
+                            uv = new int[]{5, 2};
+                        else
+                            uv = new int[]{7, 0};
+                    } else if (!tile.check(Connections.RIGHT)) {
+                        if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.BOTTOM_LEFT))
+                            uv = new int[]{3, 2};
+                        else if (tile.check(Connections.TOP_LEFT))
+                            uv = new int[]{7, 3};
+                        else if (tile.check(Connections.BOTTOM_LEFT))
+                            uv = new int[]{5, 3};
+                        else
+                            uv = new int[]{7, 1};
+                    } else if (!tile.check(Connections.BOTTOM)) {
+                        if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT))
+                            uv = new int[]{2, 3};
+                        else if (tile.check(Connections.TOP_LEFT))
+                            uv = new int[]{4, 3};
+                        else if (tile.check(Connections.TOP_RIGHT))
+                            uv = new int[]{6, 3};
+                        else
+                            uv = new int[]{6, 1};
+                    } else {
+                        if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_LEFT) && tile.check(Connections.BOTTOM_RIGHT))
+                            uv = new int[]{2, 2};
+                        else {
+                            if (!tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_LEFT) && tile.check(Connections.BOTTOM_RIGHT))
+                                uv = new int[]{7, 5};
+                            else if (tile.check(Connections.TOP_LEFT) && !tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_LEFT) && tile.check(Connections.BOTTOM_RIGHT))
+                                uv = new int[]{6, 5};
+                            else if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && !tile.check(Connections.BOTTOM_LEFT) && tile.check(Connections.BOTTOM_RIGHT))
+                                uv = new int[]{7, 4};
+                            else if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_LEFT) && !tile.check(Connections.BOTTOM_RIGHT))
+                                uv = new int[]{6, 4};
+                            else {
+                                if (!tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && !tile.check(Connections.BOTTOM_RIGHT) && tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{0, 4};
+                                else if (tile.check(Connections.TOP_LEFT) && !tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_RIGHT) && !tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{0, 5};
+                                else if (!tile.check(Connections.TOP_LEFT) && !tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_RIGHT) && tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{3, 4};
+                                else if (tile.check(Connections.TOP_LEFT) && !tile.check(Connections.TOP_RIGHT) && !tile.check(Connections.BOTTOM_RIGHT) && tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{3, 5};
+                                else if (tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && !tile.check(Connections.BOTTOM_RIGHT) && !tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{2, 5};
+                                else if (!tile.check(Connections.TOP_LEFT) && tile.check(Connections.TOP_RIGHT) && tile.check(Connections.BOTTOM_RIGHT) && !tile.check(Connections.BOTTOM_LEFT))
+                                    uv = new int[]{2, 4};
+                                else {
+                                    if (tile.check(Connections.TOP_LEFT))
+                                        uv = new int[]{5, 5};
+                                    else if (tile.check(Connections.TOP_RIGHT))
+                                        uv = new int[]{4, 5};
+                                    else if (tile.check(Connections.BOTTOM_RIGHT))
+                                        uv = new int[]{4, 4};
+                                    else if (tile.check(Connections.BOTTOM_LEFT))
+                                        uv = new int[]{5, 4};
+                                    else
+                                        uv = new int[]{1, 4};
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return uv;
     }
 
     private static EmiStack getFromGrid(int y, int x) {
@@ -115,12 +231,12 @@ public class Layout {
         return getGroup(getFromGrid(y, x), type);
     }
 
-    public enum TileType {
+    public enum Connections {
         LEFT(1), TOP(2), RIGHT(4), BOTTOM(8),
         TOP_LEFT(16), TOP_RIGHT(32), BOTTOM_LEFT(64), BOTTOM_RIGHT(128);
         public final int bit;
 
-        TileType(int bit) {
+        Connections(int bit) {
             this.bit = bit;
         }
     }
@@ -135,7 +251,7 @@ public class Layout {
             this.type = type;
         }
 
-        public boolean check(TileType bit) {
+        public boolean check(Connections bit) {
             return (type & bit.bit) == bit.bit;
         }
     }
