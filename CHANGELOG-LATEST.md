@@ -1,7 +1,3 @@
-### Added
-
-- Added a config option for a vertical scrollbar (thanks, @Kobber!)
-
 ### Fixed
 
-- Workstation tab performance improvements.
+- Fixed the search widget being oversized and misaligned the first time the inventory was opened after starting the game.

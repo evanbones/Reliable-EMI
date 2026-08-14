@@ -3,10 +3,7 @@ package com.evandev.remi.integration.emi;
 import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
-import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.mixin.emi.EmiScreenManagerAccessor;
-import dev.emi.emi.config.SidebarSide;
-import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -46,7 +43,7 @@ public class ScreenManager {
 
         var target = ReliableEmiConfig.creativeTabSidebarTarget;
         for (var p : panels) {
-            if (p != null && p.space != null && target.matches(p)) {
+            if (target.matches(p)) {
                 return p;
             }
         }

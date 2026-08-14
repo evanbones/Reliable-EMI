@@ -9,6 +9,7 @@ import com.evandev.remi.gui.components.ImageButton;
 import com.evandev.remi.integration.emi.ScreenManager;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.HeaderType;
+import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarTheme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -69,18 +70,32 @@ public class CreativeModeTabGui {
             return TabTheme.VANILLA;
         }
         var panel = ScreenManager.getTargetCreativeTabPanel();
-        if (panel != null) {
-            return panel.theme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
-        }
-        return EmiConfig.rightSidebarTheme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
+        SidebarTheme theme = panel != null ? themeForSide(panel.side) : EmiConfig.rightSidebarTheme;
+        return theme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
     }
 
     private static boolean isHeaderVisible() {
         var panel = ScreenManager.getTargetCreativeTabPanel();
-        if (panel != null) {
-            return panel.header;
-        }
-        return EmiConfig.rightSidebarHeader == HeaderType.VISIBLE;
+        HeaderType header = panel != null ? headerForSide(panel.side) : EmiConfig.rightSidebarHeader;
+        return header == HeaderType.VISIBLE;
+    }
+
+    private static SidebarTheme themeForSide(SidebarSide side) {
+        return switch (side) {
+            case LEFT -> EmiConfig.leftSidebarTheme;
+            case RIGHT, NONE -> EmiConfig.rightSidebarTheme;
+            case TOP -> EmiConfig.topSidebarTheme;
+            case BOTTOM -> EmiConfig.bottomSidebarTheme;
+        };
+    }
+
+    private static HeaderType headerForSide(SidebarSide side) {
+        return switch (side) {
+            case LEFT -> EmiConfig.leftSidebarHeader;
+            case RIGHT, NONE -> EmiConfig.rightSidebarHeader;
+            case TOP -> EmiConfig.topSidebarHeader;
+            case BOTTOM -> EmiConfig.bottomSidebarHeader;
+        };
     }
 
     public static void onLayout() {
