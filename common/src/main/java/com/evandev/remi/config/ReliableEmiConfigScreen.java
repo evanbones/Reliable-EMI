@@ -130,6 +130,17 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.searchWidgetUseVanillaTexture, v -> ReliableEmiConfig.searchWidgetUseVanillaTexture = v));
 
 
+        ConfigCategory.Builder search = ConfigCategory.createBuilder()
+                .name(ReliableEmi.text("configuration.search"))
+                .option(createBoolOption("searchById", true,
+                        () -> ReliableEmiConfig.searchById, v -> ReliableEmiConfig.searchById = v))
+                .option(createBoolOption("searchModPrefix", true,
+                        () -> ReliableEmiConfig.searchModPrefix, v -> ReliableEmiConfig.searchModPrefix = v))
+                .option(createBoolOption("searchTagPrefix", true,
+                        () -> ReliableEmiConfig.searchTagPrefix, v -> ReliableEmiConfig.searchTagPrefix = v))
+                .option(createBoolOption("searchTooltipPrefix", true,
+                        () -> ReliableEmiConfig.searchTooltipPrefix, v -> ReliableEmiConfig.searchTooltipPrefix = v));
+
         ConfigCategory.Builder tags = ConfigCategory.createBuilder()
                 .name(ReliableEmi.text("configuration.tags"))
                 .option(createBoolOption("enableCategorizedTagPages", true,
@@ -142,6 +153,7 @@ public class ReliableEmiConfigScreen {
         return builder
                 .category(creativeModeTabs.build())
                 .category(stackGroups.build())
+                .category(search.build())
                 .category(tags.build())
                 .category(miscellaneous.build())
                 .category(searchWidget.build())

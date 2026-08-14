@@ -1,5 +1,6 @@
 package com.evandev.remi.mixin.emi;
 
+import com.evandev.remi.config.ReliableEmiConfig;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.search.NameQuery;
 import org.spongepowered.asm.mixin.Final;
@@ -18,6 +19,8 @@ public class NameQueryMixin {
 
     @Inject(method = "matchesUnbaked", at = @At("RETURN"), cancellable = true)
     private void matchesUnbakedIdFix(EmiStack stack, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(cir.getReturnValueZ() || stack.getId().getPath().contains(this.name));
+        if (ReliableEmiConfig.searchById) {
+            cir.setReturnValue(cir.getReturnValueZ() || stack.getId().getPath().contains(this.name));
+        }
     }
 }

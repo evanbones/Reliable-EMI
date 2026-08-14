@@ -9,6 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.EmiScreenManager;
+import dev.emi.emi.search.EmiSearch;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
@@ -60,6 +61,11 @@ public class ReliableEmiConfig {
     public static int searchWidgetSuggestionTextColor = 0xFF808080;
     public static int searchWidgetTextColor = 0xFFFFFFFF;
     public static boolean searchWidgetUseVanillaTexture = false;
+
+    public static boolean searchById = true;
+    public static boolean searchModPrefix = true;
+    public static boolean searchTagPrefix = true;
+    public static boolean searchTooltipPrefix = true;
 
     public static boolean isVerticalScrollbarEnabled() {
         return verticalScrollbar && scrollInsteadOfPagination;
@@ -168,6 +174,11 @@ public class ReliableEmiConfig {
                     searchWidgetSuggestionTextColor = data.searchWidgetSuggestionTextColor;
                     searchWidgetTextColor = data.searchWidgetTextColor;
                     searchWidgetUseVanillaTexture = data.searchWidgetUseVanillaTexture;
+
+                    searchById = data.searchById;
+                    searchModPrefix = data.searchModPrefix;
+                    searchTagPrefix = data.searchTagPrefix;
+                    searchTooltipPrefix = data.searchTooltipPrefix;
                 }
             } catch (IOException | JsonSyntaxException e) {
                 ReliableEmi.LOGGER.error("Failed to load config", e);
@@ -190,6 +201,10 @@ public class ReliableEmiConfig {
         var client = Minecraft.getInstance();
         if (client.screen != null && !EmiScreenManager.isDisabled()) {
             EmiScreenManager.addWidgets(client.screen);
+        }
+        if (EmiSearch.bakedStacks != null) {
+            EmiSearch.bake();
+            EmiSearch.update();
         }
     }
 
@@ -231,6 +246,10 @@ public class ReliableEmiConfig {
         data.searchWidgetSuggestionTextColor = searchWidgetSuggestionTextColor;
         data.searchWidgetTextColor = searchWidgetTextColor;
         data.searchWidgetUseVanillaTexture = searchWidgetUseVanillaTexture;
+        data.searchById = searchById;
+        data.searchModPrefix = searchModPrefix;
+        data.searchTagPrefix = searchTagPrefix;
+        data.searchTooltipPrefix = searchTooltipPrefix;
         return data;
     }
 
@@ -300,5 +319,11 @@ public class ReliableEmiConfig {
         int searchWidgetSuggestionTextColor = 0xFF808080;
         int searchWidgetTextColor = 0xFFFFFFFF;
         boolean searchWidgetUseVanillaTexture = false;
+
+        // Search
+        boolean searchById = true;
+        boolean searchModPrefix = true;
+        boolean searchTagPrefix = true;
+        boolean searchTooltipPrefix = true;
     }
 }

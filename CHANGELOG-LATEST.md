@@ -1,3 +1,3 @@
-### Changed
+### Added
 
-- Previously hardcoded stack group textures are now resource-pack based (thanks, @Kobber!)
+- Added various config options for toggling search behavior (prefixes, searching by id).
