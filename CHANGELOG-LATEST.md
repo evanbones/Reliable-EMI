@@ -1,3 +1,3 @@
-### Fixed
+### Changed
 
-- Fixed the search widget being oversized and misaligned the first time the inventory was opened after starting the game.
+- Previously hardcoded stack group textures are now resource-pack based (thanks, @Kobber!)
