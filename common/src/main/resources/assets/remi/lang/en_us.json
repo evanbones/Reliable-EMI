@@ -88,7 +88,7 @@
   "remi.configuration.stackGroups": "Stack Groups",
   "remi.configuration.search": "Search",
   "remi.configuration.searchById": "Search by Item ID",
-  "remi.configuration.searchById.tooltip": "Include item registry IDs (e.g. minecraft:stick) when searching item names. Disable to only match displayed item names, which prevents renamed items from showing up by their internal ID.",
+  "remi.configuration.searchById.tooltip": "Include item registry IDs (e.g. minecraft:stick) when searching item names. Disable to only match displayed item names.",
   "remi.configuration.searchModPrefix": "Mod Prefix (@)",
   "remi.configuration.searchModPrefix.tooltip": "Enable using the @ prefix in the search bar to filter items by mod name or mod ID.",
   "remi.configuration.searchTagPrefix": "Tag Prefix (#)",
