@@ -282,21 +282,17 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     public void clampScrollOffset(CallbackInfo ci) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
             ci.cancel();
-            if (remi$scrollOffsetRows >= this.remi$getTotalScrollRows()) {
-                remi$scrollOffsetRows = this.remi$getTotalScrollRows();
-                space.batcher.repopulate();
-            } else if (remi$scrollOffsetRows <= 0) {
-                remi$scrollOffsetRows = 0;
+            int clamped = Math.max(0, Math.min(remi$scrollOffsetRows, this.remi$getTotalScrollRows()));
+            if (clamped != remi$scrollOffsetRows) {
+                remi$scrollOffsetRows = clamped;
                 space.batcher.repopulate();
             }
         } else if (ReliableEmiConfig.disablePaginationWrapping) {
             ci.cancel();
             int totalPages = (space.getStacks().size() - 1) / space.pageSize + 1;
-            if (this.page >= totalPages) {
-                this.page = totalPages - 1;
-                space.batcher.repopulate();
-            } else if (this.page < 0) {
-                this.page = 0;
+            int clamped = Math.max(0, Math.min(this.page, totalPages - 1));
+            if (clamped != this.page) {
+                this.page = clamped;
                 space.batcher.repopulate();
             }
         }

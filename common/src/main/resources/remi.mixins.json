@@ -5,6 +5,7 @@
   "minVersion": "0.8",
   "client": [
     "emi.BoMScreenMixin",
+    "emi.EmiFavoritesMixin",
     "emi.EmiReloadManagerReloadWorkerMixin",
     "emi.EmiScreenManagerAccessor",
     "emi.EmiScreenManagerMixin",

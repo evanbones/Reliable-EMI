@@ -27,6 +27,15 @@ public class StackManager {
     private static List<EmiStack> groupedIndexStacks = List.of();
     private static List<EmiStack> lastRepopulatedDisplayedStacks;
     private static List<EmiStack> lastRepopulatedUnsearchedStacks;
+    private static int stacksVersion;
+
+    public static int getStacksVersion() {
+        return stacksVersion;
+    }
+
+    public static void invalidateStacks() {
+        stacksVersion++;
+    }
 
     public static boolean isGroupExpanded(SidebarType type, ResourceLocation groupId) {
         if (type == null) return false;
@@ -35,6 +44,7 @@ public class StackManager {
     }
 
     public static void reload() {
+        invalidateStacks();
         expandedStackGroups.clear();
         indexStacks = EmiStackList.filteredStacks;
         groupedIndexStacks = List.of();

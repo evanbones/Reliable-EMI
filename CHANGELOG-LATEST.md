@@ -1,3 +1,7 @@
+### Changed
+
+- Workstation stack groups now default to false.
+
 ### Fixed
 
-- Fixed stale cache issue on first EMI load.
+- Performance improvements.

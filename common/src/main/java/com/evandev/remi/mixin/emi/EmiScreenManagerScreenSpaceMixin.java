@@ -65,6 +65,36 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Unique
     private EmiSearch.CompiledQuery remi$compiledQuery;
 
+    @Unique
+    private List<? extends EmiIngredient> remi$cachedStacks;
+
+    @Unique
+    private List<? extends EmiIngredient> remi$cacheSource;
+
+    @Unique
+    private int remi$cacheSourceSize;
+
+    @Unique
+    private SidebarType remi$cacheType;
+
+    @Unique
+    private String remi$cacheSearch;
+
+    @Unique
+    private Object remi$cacheTab;
+
+    @Unique
+    private boolean remi$cacheEditMode;
+
+    @Unique
+    private boolean remi$cacheTabsEnabled;
+
+    @Unique
+    private boolean remi$cacheGroupsEnabled;
+
+    @Unique
+    private int remi$cacheVersion;
+
     @Shadow
     public abstract List<? extends EmiIngredient> getStacks();
 
@@ -96,10 +126,63 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             return;
         }
 
+        List<? extends EmiIngredient> source = remi$getSourceStacks(type);
+        String searchValue = this.search && EmiScreenManager.search != null ? EmiScreenManager.search.getValue() : "";
+        Object tab = CreativeModeTabManager.getCurrentTab();
+        boolean editMode = EmiConfig.editMode;
+        boolean tabsEnabled = ReliableEmiConfig.isCreativeTabsEnabled(type);
+        boolean groupsEnabled = ReliableEmiConfig.isStackGroupsEnabled(type);
+        int version = StackManager.getStacksVersion();
+
+        if (remi$cachedStacks != null
+                && remi$cacheVersion == version
+                && remi$cacheSource == source
+                && remi$cacheSourceSize == source.size()
+                && remi$cacheType == type
+                && remi$cacheTab == tab
+                && remi$cacheEditMode == editMode
+                && remi$cacheTabsEnabled == tabsEnabled
+                && remi$cacheGroupsEnabled == groupsEnabled
+                && searchValue.equals(remi$cacheSearch)) {
+            cir.setReturnValue(remi$cachedStacks);
+            return;
+        }
+
+        List<? extends EmiIngredient> stacks = remi$buildStacks(type, source, searchValue, tabsEnabled, groupsEnabled);
+
+        remi$cachedStacks = stacks;
+        remi$cacheVersion = StackManager.getStacksVersion();
+        remi$cacheSource = source;
+        remi$cacheSourceSize = source.size();
+        remi$cacheType = type;
+        remi$cacheTab = tab;
+        remi$cacheEditMode = editMode;
+        remi$cacheTabsEnabled = tabsEnabled;
+        remi$cacheGroupsEnabled = groupsEnabled;
+        remi$cacheSearch = searchValue;
+        cir.setReturnValue(stacks);
+    }
+
+    @Unique
+    private List<? extends EmiIngredient> remi$getSourceStacks(SidebarType type) {
         List<? extends EmiIngredient> stacks;
         if (type == SidebarType.INDEX) {
             stacks = this.search ? StackManager.displayedStacks : StackManager.unsearchedStacks;
-            if (!ReliableEmiConfig.isStackGroupsEnabled(SidebarType.INDEX)) {
+        } else if (WorkstationSidebarManager.WORKSTATION != null && type == WorkstationSidebarManager.WORKSTATION) {
+            stacks = WorkstationSidebarManager.workstationStacks;
+        } else {
+            stacks = EmiSidebars.getStacks(type);
+        }
+        return stacks == null ? List.of() : stacks;
+    }
+
+    @Unique
+    private List<? extends EmiIngredient> remi$buildStacks(SidebarType type, List<? extends EmiIngredient> source,
+                                                           String searchValue, boolean tabsEnabled,
+                                                           boolean groupsEnabled) {
+        List<? extends EmiIngredient> stacks = source;
+        if (type == SidebarType.INDEX) {
+            if (!groupsEnabled) {
                 List<EmiIngredient> ungrouped = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {
                     if (ing instanceof EmiGroupStack gs) {
@@ -111,14 +194,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                 stacks = ungrouped;
             }
         } else {
-            if (WorkstationSidebarManager.WORKSTATION != null && type == WorkstationSidebarManager.WORKSTATION) {
-                stacks = WorkstationSidebarManager.workstationStacks;
-            } else {
-                stacks = EmiSidebars.getStacks(type);
-            }
-            if (stacks == null) stacks = List.of();
-
-            if (ReliableEmiConfig.isCreativeTabsEnabled(type)) {
+            if (tabsEnabled) {
                 List<EmiIngredient> tabFiltered = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {
                     if (CreativeModeTabManager.isIngredientInCurrentTab(ing)) {
@@ -129,7 +205,6 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
             }
 
             if (this.search && EmiScreenManager.search != null) {
-                String searchValue = EmiScreenManager.search.getValue();
                 if (!Objects.equals(searchValue, remi$lastSearchValue)) {
                     remi$lastSearchValue = searchValue;
                     remi$compiledQuery = searchValue.isEmpty() ? null : new EmiSearch.CompiledQuery(searchValue);
@@ -149,11 +224,11 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                 }
             }
 
-            if (ReliableEmiConfig.isStackGroupsEnabled(type)) {
+            if (groupsEnabled) {
                 stacks = StackGroupManager.buildGroupedIngredients(stacks, type);
             }
         }
-        cir.setReturnValue(stacks);
+        return stacks;
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))

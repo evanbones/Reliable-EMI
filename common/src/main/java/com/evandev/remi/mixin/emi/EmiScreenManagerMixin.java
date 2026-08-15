@@ -104,6 +104,11 @@ public abstract class EmiScreenManagerMixin {
         return searchPanel;
     }
 
+    @Inject(method = "repopulatePanels", at = @At("HEAD"))
+    private static void remi$invalidateStackCache(SidebarType type, CallbackInfo ci) {
+        StackManager.invalidateStacks();
+    }
+
     @Inject(method = "recalculate", at = @At("HEAD"))
     private static void remi$updateWorkstationCraftables(CallbackInfo ci) {
         WorkstationSidebarManager.updateWorkstationCraftables();

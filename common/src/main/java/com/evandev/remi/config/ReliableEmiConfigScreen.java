@@ -54,7 +54,7 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.stackGroupsIndex, v -> ReliableEmiConfig.stackGroupsIndex = v))
                 .option(createBoolOption("stackGroupsCraftables", true,
                         () -> ReliableEmiConfig.stackGroupsCraftables, v -> ReliableEmiConfig.stackGroupsCraftables = v))
-                .option(createBoolOption("stackGroupsWorkstation", true,
+                .option(createBoolOption("stackGroupsWorkstation", false,
                         () -> ReliableEmiConfig.stackGroupsWorkstation, v -> ReliableEmiConfig.stackGroupsWorkstation = v))
                 .option(createBoolOption("stackGroupsFavorites", false,
                         () -> ReliableEmiConfig.stackGroupsFavorites, v -> ReliableEmiConfig.stackGroupsFavorites = v))

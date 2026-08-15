@@ -2,6 +2,7 @@ package com.evandev.remi.config;
 
 import com.evandev.ReliableEmi;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
+import com.evandev.remi.integration.emi.StackManager;
 import com.evandev.remi.platform.Services;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,7 +38,7 @@ public class ReliableEmiConfig {
     public static List<String> disabledStackGroups = new ArrayList<>();
     public static boolean stackGroupsIndex = true;
     public static boolean stackGroupsCraftables = true;
-    public static boolean stackGroupsWorkstation = true;
+    public static boolean stackGroupsWorkstation = false;
     public static boolean stackGroupsFavorites = false;
     public static boolean enableCategorizedTagPages = true;
     public static boolean enableEntityTags = true;
@@ -188,6 +189,7 @@ public class ReliableEmiConfig {
     }
 
     public static void save() {
+        StackManager.invalidateStacks();
         Path path = getConfigPath();
         try {
             Files.createDirectories(path.getParent());

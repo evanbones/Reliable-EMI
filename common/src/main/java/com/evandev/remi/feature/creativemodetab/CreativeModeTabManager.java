@@ -138,6 +138,7 @@ public class CreativeModeTabManager {
         creativeModeTabs.addAll(getVisibleCreativeModeTabs());
         tabCache.clear();
         tabItemCache.clear();
+        StackManager.invalidateStacks();
         scrollOffset = Math.min(scrollOffset, getMaxScroll());
     }
 
@@ -145,8 +146,7 @@ public class CreativeModeTabManager {
         if (!checkedRecreativeMethod) {
             try {
                 recreativeIconMethod = CreativeModeTab.class.getMethod("recreative$getCustomIcon");
-            } catch (Exception e) {
-                // Ignore
+            } catch (Exception ignored) {
             }
             checkedRecreativeMethod = true;
         }

@@ -205,6 +205,7 @@ public class StackGroupManager {
     }
 
     public static void reload() {
+        StackManager.invalidateStacks();
         stackGroups.clear();
         if (!ReliableEmiConfig.enableStackGroups) return;
 
