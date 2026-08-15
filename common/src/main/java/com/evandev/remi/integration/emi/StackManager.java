@@ -20,9 +20,13 @@ public class StackManager {
     public static List<EmiStack> sourceStacks = List.of();
     public static List<EmiStack> searchedStacks = List.of();
     public static List<EmiStack> displayedStacks = new ArrayList<>();
+    public static List<EmiStack> unsearchedStacks = new ArrayList<>();
     public static EmiStack[][] stackGrid = new EmiStack[0][0];
     private static List<EmiStack> groupedStacks = List.of();
+    private static List<EmiStack> groupedUnsearchedStacks = List.of();
     private static List<EmiStack> groupedIndexStacks = List.of();
+    private static List<EmiStack> lastRepopulatedDisplayedStacks;
+    private static List<EmiStack> lastRepopulatedUnsearchedStacks;
 
     public static boolean isGroupExpanded(SidebarType type, ResourceLocation groupId) {
         if (type == null) return false;
@@ -38,51 +42,69 @@ public class StackManager {
         updateSourceStacks(indexStacks);
     }
 
+    public static void repopulateIndexPanelsIfDirty() {
+        if (lastRepopulatedDisplayedStacks == displayedStacks && lastRepopulatedUnsearchedStacks == unsearchedStacks) {
+            return;
+        }
+        lastRepopulatedDisplayedStacks = displayedStacks;
+        lastRepopulatedUnsearchedStacks = unsearchedStacks;
+        EmiScreenManager.repopulatePanels(SidebarType.INDEX);
+    }
+
     public static void updateSourceStacks(List<EmiStack> src) {
         sourceStacks = src;
         buildStacks(src);
+        groupedUnsearchedStacks = groupedStacks;
+        unsearchedStacks = displayedStacks;
     }
 
     public static void search(List<EmiStack> src, String keyword) {
         sourceStacks = src;
+        groupedUnsearchedStacks = buildGroupedStacks(filterHidden(src));
+        unsearchedStacks = buildDisplayedStacks(groupedUnsearchedStacks);
         EmiSearch.search(keyword);
     }
 
     public static void buildStacks(List<EmiStack> searched) {
-        if (EmiConfig.editMode) {
-            searchedStacks = searched;
-        } else {
-            List<EmiStack> filtered = new ArrayList<>(searched.size());
-            for (EmiStack s : searched) {
-                if (!EmiHidden.isHidden(s)) filtered.add(s);
-            }
-            searchedStacks = filtered;
-        }
-        buildGroupedStacks();
-        buildDisplayedStacks();
+        searchedStacks = filterHidden(searched);
+        groupedStacks = buildGroupedStacks(searchedStacks);
+        displayedStacks = buildDisplayedStacks(groupedStacks);
     }
 
-    private static void buildGroupedStacks() {
-        boolean isFullIndex = searchedStacks.size() == indexStacks.size();
+    private static List<EmiStack> filterHidden(List<EmiStack> stacks) {
+        if (EmiConfig.editMode) {
+            return stacks;
+        }
+        List<EmiStack> filtered = new ArrayList<>(stacks.size());
+        for (EmiStack s : stacks) {
+            if (!EmiHidden.isHidden(s)) filtered.add(s);
+        }
+        return filtered;
+    }
+
+    private static List<EmiStack> buildGroupedStacks(List<EmiStack> stacks) {
+        boolean isFullIndex = stacks.size() == indexStacks.size();
+        List<EmiStack> grouped;
         if (isFullIndex && !groupedIndexStacks.isEmpty()) {
-            groupedStacks = groupedIndexStacks;
+            grouped = groupedIndexStacks;
         } else {
-            groupedStacks = StackGroupManager.buildGroupedStacks(searchedStacks);
+            grouped = StackGroupManager.buildGroupedStacks(stacks);
             if (isFullIndex) {
-                groupedIndexStacks = groupedStacks;
+                groupedIndexStacks = grouped;
             }
         }
 
-        for (EmiStack s : groupedStacks) {
+        for (EmiStack s : grouped) {
             if (s instanceof EmiGroupStack gs) {
                 gs.isExpanded = isGroupExpanded(SidebarType.INDEX, gs.group.getId());
             }
         }
+        return grouped;
     }
 
-    private static void buildDisplayedStacks() {
-        List<EmiStack> result = new ArrayList<>(groupedStacks.size());
-        for (EmiStack s : groupedStacks) {
+    private static List<EmiStack> buildDisplayedStacks(List<EmiStack> grouped) {
+        List<EmiStack> result = new ArrayList<>(grouped.size());
+        for (EmiStack s : grouped) {
             if (s instanceof EmiGroupStack gs) {
                 var items = gs.getItems();
                 if (items.size() == 1) {
@@ -97,7 +119,7 @@ public class StackManager {
                 result.add(s);
             }
         }
-        displayedStacks = result;
+        return result;
     }
 
     public static void onStackInteraction(EmiIngredient ingredient, SidebarType type) {
@@ -117,7 +139,10 @@ public class StackManager {
         gs.isExpanded = isExpanded;
 
         if (type == SidebarType.INDEX) {
-            buildDisplayedStacks();
+            displayedStacks = buildDisplayedStacks(groupedStacks);
+            unsearchedStacks = groupedUnsearchedStacks == groupedStacks
+                    ? displayedStacks
+                    : buildDisplayedStacks(groupedUnsearchedStacks);
         }
         EmiScreenManager.repopulatePanels(type);
         EmiScreenManager.recalculate();

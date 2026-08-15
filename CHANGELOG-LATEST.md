@@ -1,3 +1,3 @@
-### Added
+### Fixed
 
-- Added various config options for toggling search behavior (prefixes, searching by id).
+- Fixed stale cache issue on first EMI load.

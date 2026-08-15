@@ -98,7 +98,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
 
         List<? extends EmiIngredient> stacks;
         if (type == SidebarType.INDEX) {
-            stacks = this.search ? StackManager.displayedStacks : StackManager.sourceStacks;
+            stacks = this.search ? StackManager.displayedStacks : StackManager.unsearchedStacks;
             if (!ReliableEmiConfig.isStackGroupsEnabled(SidebarType.INDEX)) {
                 List<EmiIngredient> ungrouped = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {
