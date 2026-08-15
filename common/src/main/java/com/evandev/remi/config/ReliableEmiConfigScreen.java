@@ -98,6 +98,8 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.dragCheatToInventory, v -> ReliableEmiConfig.dragCheatToInventory = v))
                 .option(createBoolOption("emiOnlyInRecipeBook", false,
                         () -> ReliableEmiConfig.emiOnlyInRecipeBook, v -> ReliableEmiConfig.emiOnlyInRecipeBook = v))
+                .option(createBoolOption("disableEmiGlobalConfig", false,
+                        () -> ReliableEmiConfig.disableEmiGlobalConfig, v -> ReliableEmiConfig.disableEmiGlobalConfig = v))
                 .option(createBoolOption("disablePaginationWrapping", false,
                         () -> ReliableEmiConfig.disablePaginationWrapping, v -> ReliableEmiConfig.disablePaginationWrapping = v))
                 .option(scrollInsteadOfPagination)

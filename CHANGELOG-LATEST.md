@@ -1,7 +1,3 @@
-### Changed
+### Added
 
-- Workstation stack groups now default to false.
-
-### Fixed
-
-- Performance improvements.
+- Added a config option to disable the EMI global config styling.

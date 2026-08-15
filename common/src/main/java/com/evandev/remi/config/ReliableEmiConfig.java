@@ -7,6 +7,7 @@ import com.evandev.remi.platform.Services;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.screen.EmiScreenManager;
@@ -45,6 +46,7 @@ public class ReliableEmiConfig {
     public static boolean enableTagSearchEnhancements = true;
     public static boolean emiOnlyInRecipeBook = false;
     public static boolean emiOnlyInRecipeBookState = false;
+    public static boolean disableEmiGlobalConfig = false;
     public static boolean dragCheatToInventory = true;
     public static boolean disablePaginationWrapping = false;
     public static boolean scrollInsteadOfPagination = false;
@@ -67,6 +69,12 @@ public class ReliableEmiConfig {
     public static boolean searchModPrefix = true;
     public static boolean searchTagPrefix = true;
     public static boolean searchTooltipPrefix = true;
+
+    private static boolean loaded = false;
+
+    public static boolean isLoaded() {
+        return loaded;
+    }
 
     public static boolean isVerticalScrollbarEnabled() {
         return verticalScrollbar && scrollInsteadOfPagination;
@@ -158,6 +166,7 @@ public class ReliableEmiConfig {
 
                     emiOnlyInRecipeBook = data.emiOnlyInRecipeBook;
                     emiOnlyInRecipeBookState = data.emiOnlyInRecipeBookState;
+                    disableEmiGlobalConfig = data.disableEmiGlobalConfig;
                     dragCheatToInventory = data.dragCheatToInventory;
                     disablePaginationWrapping = data.disablePaginationWrapping;
                     scrollInsteadOfPagination = data.scrollInsteadOfPagination;
@@ -185,6 +194,7 @@ public class ReliableEmiConfig {
                 ReliableEmi.LOGGER.error("Failed to load config", e);
             }
         }
+        loaded = true;
         save();
     }
 
@@ -199,6 +209,11 @@ public class ReliableEmiConfig {
         } catch (IOException | JsonSyntaxException e) {
             ReliableEmi.LOGGER.error("Failed to save config", e);
         }
+
+        if (disableEmiGlobalConfig) {
+            EmiConfig.useGlobalConfig = false;
+        }
+        EmiConfig.loadConfig();
 
         var client = Minecraft.getInstance();
         if (client.screen != null && !EmiScreenManager.isDisabled()) {
@@ -231,6 +246,7 @@ public class ReliableEmiConfig {
         data.enableTagSearchEnhancements = enableTagSearchEnhancements;
         data.emiOnlyInRecipeBook = emiOnlyInRecipeBook;
         data.emiOnlyInRecipeBookState = emiOnlyInRecipeBookState;
+        data.disableEmiGlobalConfig = disableEmiGlobalConfig;
         data.dragCheatToInventory = dragCheatToInventory;
         data.stackGroupItemOrder = new HashMap<>(stackGroupItemOrder);
         data.disablePaginationWrapping = disablePaginationWrapping;
@@ -296,6 +312,7 @@ public class ReliableEmiConfig {
         Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
         boolean emiOnlyInRecipeBook = false;
         boolean emiOnlyInRecipeBookState = false;
+        boolean disableEmiGlobalConfig = false;
         boolean dragCheatToInventory = true;
 
         // Tags

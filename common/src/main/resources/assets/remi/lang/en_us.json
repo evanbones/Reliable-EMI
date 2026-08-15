@@ -141,6 +141,8 @@
   "remi.configuration.dragCheatToInventory.tooltip": "When in Cheat Mode, dragging items from the sidebar directly into an inventory screen will cheat them into your inventory. Shift drag to copy entire stacks.",
   "remi.configuration.emiOnlyInRecipeBook": "EMI Only In Recipe Book",
   "remi.configuration.emiOnlyInRecipeBook.tooltip": "When enabled, EMI will only be active when the vanilla Recipe Book is toggled open.",
+  "remi.configuration.disableEmiGlobalConfig": "Disable EMI Global Config",
+  "remi.configuration.disableEmiGlobalConfig.tooltip": "Prevents EMI from applying settings from the global config file (~/.minecraft/global/emi/global.css), forcing it to use the instance config.",
   "remi.configuration.disablePaginationWrapping": "Disable Pagination Wrapping",
   "remi.configuration.disablePaginationWrapping.tooltip": "Don't wrap around to the first/last page.",
   "remi.configuration.scrollInsteadOfPagination": "Enable Scroll Mode",

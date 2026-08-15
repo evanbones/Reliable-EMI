@@ -38,6 +38,7 @@
     "emi.SizedButtonWidgetAccessor",
     "emi.TagEmiIngredientMixin",
     "emi.TagQueryMixin",
-    "emi.VanillaPluginMixin"
+    "emi.VanillaPluginMixin",
+    "emi.EmiConfigMixin"
   ]
 }
