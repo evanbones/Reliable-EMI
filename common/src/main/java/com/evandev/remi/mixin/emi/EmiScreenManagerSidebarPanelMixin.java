@@ -117,6 +117,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     }
 
     public int remi$getTotalScrollRows() {
+        if (space.tw <= 0) {
+            return 0;
+        }
         return Math.max((space.getStacks().size() - 1) / space.tw + 1 - space.th, 0);
     }
 

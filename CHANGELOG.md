@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a config option to disable the EMI global config styling.
 
+### Fixed
+
+- Fixed possible divide by 0 crash.
+
 ## [4.4.5] - 2026-08-14
 
 ### Changed
