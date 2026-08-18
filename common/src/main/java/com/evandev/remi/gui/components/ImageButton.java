@@ -48,7 +48,7 @@ public class ImageButton extends SizedButtonWidget {
         if (matchScreenManagerVisibility && EmiScreenManager.isDisabled()) return;
 
         this.active = isActiveSupplier.getAsBoolean();
-        int currentV = !this.active ? baseV + height : baseV;
+        int currentV = baseV + (!this.active ? height * 2 : isMouseOver(mouseX, mouseY) ? height : 0);
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();

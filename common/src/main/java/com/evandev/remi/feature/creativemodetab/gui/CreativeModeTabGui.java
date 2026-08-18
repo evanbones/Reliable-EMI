@@ -6,9 +6,9 @@ import com.evandev.remi.feature.creativemodetab.CreativeModeTabManager;
 import com.evandev.remi.feature.creativemodetab.gui.itemtab.ItemTabManager;
 import com.evandev.remi.feature.creativemodetab.gui.itemtab.ItemTabNavigationBar;
 import com.evandev.remi.gui.components.ImageButton;
+import com.evandev.remi.gui.components.ScrollbarWidget;
 import com.evandev.remi.integration.emi.ScreenManager;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.config.HeaderType;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarTheme;
 import net.minecraft.client.Minecraft;
@@ -16,32 +16,25 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 
-public class CreativeModeTabGui {
-    public static final int CREATIVE_MODE_TAB_HEIGHT = 18;
-    public static final int VERTICAL_TAB_WIDTH = 35;
+import static com.evandev.remi.feature.creativemodetab.CreativeModeTabManager.getTotalTabCount;
 
+public class CreativeModeTabGui {
     private static final int EMI_HEADER_HEIGHT = 18;
-    private static final int VANILLA_TAB_HEIGHT = 27;
-    private static final int VERTICAL_MARGIN = 8;
-    private static final int HORIZONTAL_OFFSET = 8;
-    private static final int BUTTON_SCROLL_OFFSET_X = 13;
-    private static final int BUTTON_SCROLL_OFFSET_Y = 6;
-    private static final int MAX_TAB_COUNT_DEFAULT = 254;
-    private static final int MAX_TAB_COUNT_VANILLA = 11;
+    private static final int BUTTON_SCROLL_OFFSET_Y = 2;
+    private static final int BUTTON_SCROLL_OFFSET_X = 2;
 
     private static final ImageButton buttonScrollDown;
     private static final ImageButton buttonScrollUp;
+    private static final ImageButton buttonPrevious;
+    private static final ImageButton buttonNext;
     public static int tabCount = 0;
+    public static boolean showScrollButtons = false;
     private static Screen screen;
     private static final ItemTabManager tabManager = new ItemTabManager(
             it -> screen.addRenderableWidget(it),
             it -> screen.removeWidget(it));
     public static final ItemTabNavigationBar topTabNavigationBar = new ItemTabNavigationBar(tabManager, false, false);
     public static final ItemTabNavigationBar leftTabNavigationBar = new ItemTabNavigationBar(tabManager, true, false);
-    private static final ImageButton buttonPrevious = new ImageButton(16, 16, 0, 0, () -> true,
-            b -> CreativeModeTabManager.previousPage());
-    private static final ImageButton buttonNext = new ImageButton(16, 16, 16, 0, () -> true,
-            b -> CreativeModeTabManager.nextPage());
     public static final ItemTabNavigationBar rightTabNavigationBar = new ItemTabNavigationBar(tabManager, true, true);
     private static double scrollAccumulator = 0.0;
 
@@ -50,34 +43,34 @@ public class CreativeModeTabGui {
     }
 
     static {
+        buttonPrevious = new ImageButton(12, 12, 0, 0, () -> CreativeModeTabManager.scrollOffset > 0,
+                b -> CreativeModeTabManager.previousPage());
         buttonPrevious.matchScreenManagerVisibility();
+        buttonPrevious.withTexture(ReliableEmi.res("textures/gui/scroll_left.png"), 12, 36);
+        buttonNext = new ImageButton(12, 12, 0, 0, () -> CreativeModeTabManager.scrollOffset < CreativeModeTabManager.getMaxScroll(),
+                b -> CreativeModeTabManager.nextPage());
         buttonNext.matchScreenManagerVisibility();
-        buttonScrollDown = new ImageButton(8, 4, 0, 0, () -> CreativeModeTabManager.scrollOffset < CreativeModeTabManager.getMaxScroll(),
+        buttonNext.withTexture(ReliableEmi.res("textures/gui/scroll_right.png"), 12, 36);
+        buttonScrollDown = new ImageButton(12, 12, 0, 0, () -> CreativeModeTabManager.scrollOffset < CreativeModeTabManager.getMaxScroll(),
                 b -> CreativeModeTabManager.nextPage());
         buttonScrollDown.matchScreenManagerVisibility();
-        buttonScrollDown.withTexture(ReliableEmi.res("textures/gui/scroll_down.png"), 8, 8);
-        buttonScrollUp = new ImageButton(8, 4, 0, 0, () -> CreativeModeTabManager.scrollOffset > 0,
+        buttonScrollDown.withTexture(ReliableEmi.res("textures/gui/scroll_down.png"), 12, 36);
+        buttonScrollUp = new ImageButton(12, 12, 0, 0, () -> CreativeModeTabManager.scrollOffset > 0,
                 b -> CreativeModeTabManager.previousPage());
         buttonScrollUp.matchScreenManagerVisibility();
-        buttonScrollUp.withTexture(ReliableEmi.res("textures/gui/scroll_up.png"), 8, 8);
+        buttonScrollUp.withTexture(ReliableEmi.res("textures/gui/scroll_up.png"), 12, 36);
     }
 
     public static TabTheme currentTheme() {
-        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.MODERN) {
-            return TabTheme.DEFAULT;
+        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.HORIZONTAL) {
+            return TabTheme.HORIZONTAL;
         }
-        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.VANILLA) {
-            return TabTheme.VANILLA;
+        if (ReliableEmiConfig.creativeTabTheme == ReliableEmiConfig.CreativeTabTheme.VERTICAL) {
+            return TabTheme.VERTICAL;
         }
         var panel = ScreenManager.getTargetCreativeTabPanel();
         SidebarTheme theme = panel != null ? themeForSide(panel.side) : EmiConfig.rightSidebarTheme;
-        return theme == SidebarTheme.VANILLA ? TabTheme.VANILLA : TabTheme.DEFAULT;
-    }
-
-    private static boolean isHeaderVisible() {
-        var panel = ScreenManager.getTargetCreativeTabPanel();
-        HeaderType header = panel != null ? headerForSide(panel.side) : EmiConfig.rightSidebarHeader;
-        return header == HeaderType.VISIBLE;
+        return theme == SidebarTheme.VANILLA ? TabTheme.VERTICAL : TabTheme.HORIZONTAL;
     }
 
     private static SidebarTheme themeForSide(SidebarSide side) {
@@ -89,18 +82,13 @@ public class CreativeModeTabGui {
         };
     }
 
-    private static HeaderType headerForSide(SidebarSide side) {
-        return switch (side) {
-            case LEFT -> EmiConfig.leftSidebarHeader;
-            case RIGHT, NONE -> EmiConfig.rightSidebarHeader;
-            case TOP -> EmiConfig.topSidebarHeader;
-            case BOTTOM -> EmiConfig.bottomSidebarHeader;
-        };
-    }
-
     public static void onLayout() {
         var indexScreenSpace = ScreenManager.getActiveCreativeTabScreenSpace();
+        var panel = ScreenManager.getTargetCreativeTabPanel();
+        SidebarTheme panelTheme = panel != null ? panel.theme : SidebarTheme.TRANSPARENT;
         TabTheme theme = currentTheme();
+        boolean hasHeader = panel != null && panel.header;
+        int totalTabCount = getTotalTabCount();
 
         buttonPrevious.visible = false;
         buttonNext.visible = false;
@@ -109,45 +97,103 @@ public class CreativeModeTabGui {
         topTabNavigationBar.visible = false;
         leftTabNavigationBar.visible = false;
         rightTabNavigationBar.visible = false;
+        tabCount = ReliableEmiConfig.maxSidebarTabs;
+        showScrollButtons = false;
 
         if (indexScreenSpace == null) return;
 
-        if (theme == TabTheme.DEFAULT) {
-            int startX = indexScreenSpace.tx;
-            int startY = indexScreenSpace.ty - (isHeaderVisible() ? EMI_HEADER_HEIGHT : 0) - CREATIVE_MODE_TAB_HEIGHT;
-            int tileW = indexScreenSpace.tw;
-            tabCount = ReliableEmiConfig.maxSidebarTabs > 0 ? ReliableEmiConfig.maxSidebarTabs : Math.max(1, Math.min(MAX_TAB_COUNT_DEFAULT, tileW - 2));
+        if (theme == TabTheme.HORIZONTAL) {
+            int startX = indexScreenSpace.tx - panelTheme.horizontalPadding;
+            int startY = indexScreenSpace.ty - (hasHeader ? EMI_HEADER_HEIGHT : 0) - ReliableEmiConfig.horizontalTabsHeight - panelTheme.verticalPadding;
 
-            buttonPrevious.visible = true;
-            buttonPrevious.setX(startX);
-            buttonPrevious.setY(startY + 2);
+            int availableWidth = indexScreenSpace.tw * ScreenManager.ENTRY_SIZE + panelTheme.horizontalPadding * 2;
+            int availableWidthWhenScrolling = availableWidth - (buttonScrollUp.getHeight() + buttonScrollDown.getHeight() + BUTTON_SCROLL_OFFSET_Y * 2);
 
-            topTabNavigationBar.visible = true;
-            topTabNavigationBar.pos(startX + buttonPrevious.getWidth(), startY);
-
-            buttonNext.visible = true;
-            buttonNext.setX(topTabNavigationBar.getX() + topTabNavigationBar.getWidth());
-            buttonNext.setY(startY + 2);
-        } else {
-            int startY = indexScreenSpace.ty - VANILLA_TAB_HEIGHT;
-            int leftX = indexScreenSpace.tx - VERTICAL_TAB_WIDTH - VERTICAL_MARGIN + HORIZONTAL_OFFSET;
-
-            if (theme == TabTheme.VANILLA) {
-                int availableHeight = (indexScreenSpace.th * ScreenManager.ENTRY_SIZE) + (VANILLA_TAB_HEIGHT - 1);
-                tabCount = ReliableEmiConfig.maxSidebarTabs > 0 ? ReliableEmiConfig.maxSidebarTabs : Math.max(1, availableHeight / VANILLA_TAB_HEIGHT);
-                leftTabNavigationBar.visible = true;
-                leftTabNavigationBar.pos(leftX, startY);
-                buttonScrollUp.visible = true;
-                buttonScrollUp.setX(leftX + BUTTON_SCROLL_OFFSET_X);
-                buttonScrollUp.setY(startY - BUTTON_SCROLL_OFFSET_Y - 4);
-                buttonScrollDown.visible = true;
-                buttonScrollDown.setX(leftX + BUTTON_SCROLL_OFFSET_X);
-                buttonScrollDown.setY(startY + (tabCount * VANILLA_TAB_HEIGHT) + BUTTON_SCROLL_OFFSET_Y);
-            } else {
-                tabCount = ReliableEmiConfig.maxSidebarTabs > 0 ? ReliableEmiConfig.maxSidebarTabs : MAX_TAB_COUNT_VANILLA;
-                leftTabNavigationBar.visible = true;
-                leftTabNavigationBar.pos(leftX, startY);
+            if (panelTheme == SidebarTheme.VANILLA && ReliableEmiConfig.verticalScrollbar) {
+                availableWidth += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
+                availableWidthWhenScrolling += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
             }
+
+            if (ReliableEmiConfig.maxSidebarTabs == 0) {
+                tabCount = Math.clamp(availableWidth / ReliableEmiConfig.horizontalTabsWidth, 1, totalTabCount);
+
+                if (totalTabCount > tabCount) {
+                    tabCount = Math.max(1, availableWidthWhenScrolling / ReliableEmiConfig.horizontalTabsWidth);
+                }
+            }
+
+            if (totalTabCount > tabCount) {
+                startX += buttonPrevious.getWidth() + BUTTON_SCROLL_OFFSET_X;
+                showScrollButtons = true;
+                availableWidth = availableWidthWhenScrolling;
+            }
+
+            int tabBarWidth = tabCount * ReliableEmiConfig.horizontalTabsWidth;
+            if (ReliableEmiConfig.tabAlignment == TabAlignment.STRETCH) {
+                tabBarWidth = availableWidth;
+            } else if (ReliableEmiConfig.tabAlignment == TabAlignment.END) {
+                startX += availableWidth - tabBarWidth;
+            } else if (ReliableEmiConfig.tabAlignment == TabAlignment.MIDDLE) {
+                startX += (availableWidth - tabBarWidth) / 2;
+            }
+
+            topTabNavigationBar.setWidth(tabBarWidth);
+            topTabNavigationBar.visible = true;
+            topTabNavigationBar.pos(startX, startY);
+            if (showScrollButtons) {
+                int buttonY = startY + (ReliableEmiConfig.horizontalTabsHeight - 12 + panelTheme.verticalPadding / 2) / 2;
+                buttonPrevious.visible = true;
+                buttonPrevious.setX(startX - buttonPrevious.getWidth() - BUTTON_SCROLL_OFFSET_X);
+                buttonPrevious.setY(buttonY);
+                buttonNext.visible = true;
+                buttonNext.setX(startX + tabBarWidth + BUTTON_SCROLL_OFFSET_X);
+                buttonNext.setY(buttonY);
+            }
+        } else if (theme == TabTheme.VERTICAL){
+            int headerHeight = (hasHeader && panelTheme == SidebarTheme.VANILLA ? EMI_HEADER_HEIGHT : 0) + panelTheme.verticalPadding;
+            int startY = indexScreenSpace.ty - headerHeight;
+            int leftX = indexScreenSpace.tx - ReliableEmiConfig.verticalTabsWidth - panelTheme.horizontalPadding;
+
+            int availableHeight = indexScreenSpace.th * ScreenManager.ENTRY_SIZE + headerHeight + panelTheme.verticalPadding;
+            int availableHeightWhenScrolling = availableHeight - (buttonScrollUp.getHeight() + buttonScrollDown.getHeight() + BUTTON_SCROLL_OFFSET_Y * 2);
+
+            if (ReliableEmiConfig.maxSidebarTabs == 0) {
+                tabCount = Math.clamp(availableHeight / ReliableEmiConfig.verticalTabsHeight, 1, totalTabCount);
+
+                if (totalTabCount > tabCount) {
+                    tabCount = Math.max(1, availableHeightWhenScrolling / ReliableEmiConfig.verticalTabsHeight);
+                }
+            }
+
+            if (totalTabCount > tabCount) {
+                startY += buttonScrollUp.getHeight() + BUTTON_SCROLL_OFFSET_Y;
+                showScrollButtons = true;
+                availableHeight = availableHeightWhenScrolling;
+            }
+
+            int tabBarHeight = tabCount * ReliableEmiConfig.verticalTabsHeight;
+
+            if (ReliableEmiConfig.tabAlignment == TabAlignment.STRETCH) {
+                tabBarHeight = availableHeight;
+            } else if (ReliableEmiConfig.tabAlignment == TabAlignment.END) {
+                startY += availableHeight - tabBarHeight;
+            } else if (ReliableEmiConfig.tabAlignment == TabAlignment.MIDDLE) {
+                startY += (availableHeight - tabBarHeight) / 2;
+            }
+
+            leftTabNavigationBar.setHeight(tabBarHeight);
+
+            if (showScrollButtons) {
+                buttonScrollUp.visible = true;
+                buttonScrollUp.setX(leftX + (ReliableEmiConfig.verticalTabsWidth - buttonScrollUp.getWidth() + (panelTheme.horizontalPadding / 2)) / 2);
+                buttonScrollUp.setY(startY - buttonScrollUp.getHeight() - BUTTON_SCROLL_OFFSET_Y);
+                buttonScrollDown.visible = true;
+                buttonScrollDown.setX(leftX + (ReliableEmiConfig.verticalTabsWidth - buttonScrollUp.getWidth() + (panelTheme.horizontalPadding / 2)) / 2);
+                buttonScrollDown.setY(startY + tabBarHeight + BUTTON_SCROLL_OFFSET_Y);
+            }
+
+            leftTabNavigationBar.visible = true;
+            leftTabNavigationBar.pos(leftX, startY);
         }
     }
 
@@ -193,7 +239,7 @@ public class CreativeModeTabGui {
     }
 
     public static void selectTab(int tabIndex, boolean playClickSound) {
-        ItemTabNavigationBar targetBar = currentTheme() == TabTheme.VANILLA
+        ItemTabNavigationBar targetBar = currentTheme() == TabTheme.VERTICAL
                 ? leftTabNavigationBar : topTabNavigationBar;
         if (tabIndex >= 0 && tabIndex < targetBar.tabButtons.size()) {
             var selectedButton = targetBar.tabButtons.get(tabIndex);
@@ -203,5 +249,6 @@ public class CreativeModeTabGui {
         }
     }
 
-    public enum TabTheme {DEFAULT, VANILLA}
+    public enum TabTheme {HORIZONTAL, VERTICAL}
+    public enum TabAlignment {START, MIDDLE, END, STRETCH}
 }

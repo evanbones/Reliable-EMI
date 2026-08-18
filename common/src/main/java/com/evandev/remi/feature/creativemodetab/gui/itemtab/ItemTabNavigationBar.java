@@ -1,10 +1,11 @@
 package com.evandev.remi.feature.creativemodetab.gui.itemtab;
 
 import com.evandev.ReliableEmi;
+import com.evandev.remi.config.ReliableEmiConfig;
+import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
-import dev.emi.emi.runtime.EmiDrawContext;
+import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -13,19 +14,16 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ItemTabNavigationBar extends AbstractWidget {
-    private static final ResourceLocation TEXTURE = ReliableEmi.res("textures/gui/buttons.png");
-
     private final ItemTabManager tabManager;
     private final boolean isVertical;
     private final boolean isRightSide;
-    public List<TabButton> tabButtons = new ArrayList<>();
+    public List<ItemTabButton> tabButtons = new ArrayList<>();
     public List<ItemTab> visibleTabs = new ArrayList<>();
     private GridLayout layout = new GridLayout();
     private GuiEventListener focusedChild;
@@ -47,15 +45,49 @@ public class ItemTabNavigationBar extends AbstractWidget {
         this.visibleTabs = new ArrayList<>(tabs);
         GridLayout newLayout = new GridLayout();
         newLayout.defaultCellSetting().padding(0);
+        EmiScreenManager.SidebarPanel panel = ScreenManager.getTargetCreativeTabPanel();
+        SidebarTheme panelTheme = panel != null ? panel.theme : SidebarTheme.TRANSPARENT;
+        ImmutableList.Builder<ItemTabButton> buttonBuilder = ImmutableList.builder();
 
-        ImmutableList.Builder<TabButton> buttonBuilder = ImmutableList.builder();
+        int leftoverHeight = height % tabs.size();
+        int leftoverWidth = width % tabs.size();
+
         for (int i = 0; i < tabs.size(); i++) {
             ItemTab tab = tabs.get(i);
             ItemTabButton.ButtonStyle buttonStyle = !isVertical ? ItemTabButton.ButtonStyle.TOP
                     : isRightSide ? ItemTabButton.ButtonStyle.RIGHT : ItemTabButton.ButtonStyle.LEFT;
-            int w = isVertical ? 35 : ScreenManager.ENTRY_SIZE;
-            int h = isVertical ? 27 : ScreenManager.ENTRY_SIZE;
-            ItemTabButton button = new ItemTabButton(tabManager, tab, w, h, buttonStyle, i == 0);
+            int w = isVertical ? ReliableEmiConfig.verticalTabsWidth + (panel != null ? panel.theme.horizontalPadding : 0) : ReliableEmiConfig.horizontalTabsWidth;
+            int h = isVertical ? ReliableEmiConfig.verticalTabsHeight : ReliableEmiConfig.horizontalTabsHeight + (panel != null ? panel.theme.verticalPadding : 0);
+
+            if (ReliableEmiConfig.tabAlignment == CreativeModeTabGui.TabAlignment.STRETCH) {
+                if (isVertical) {
+                    h = height / tabs.size();
+                    if (leftoverHeight > 0) {
+                        h += 1;
+                        leftoverHeight--;
+                    }
+                } else {
+                    w = width / tabs.size();
+                    if (leftoverWidth > 0) {
+                        w += 1;
+                        leftoverWidth--;
+                    }
+                }
+            }
+
+            ItemTabButton.TabPosition tabPosition = ItemTabButton.TabPosition.MIDDLE;
+
+            // Soooo many conditions. This could be nicer but I'm tired and it works!
+            if (!CreativeModeTabGui.showScrollButtons || panelTheme != SidebarTheme.VANILLA) {
+                if (i == 0 && (panelTheme != SidebarTheme.VANILLA || ReliableEmiConfig.tabAlignment == CreativeModeTabGui.TabAlignment.STRETCH || ReliableEmiConfig.tabAlignment == CreativeModeTabGui.TabAlignment.START)) {
+                    tabPosition = ItemTabButton.TabPosition.FIRST;
+                }
+                if (i == tabs.size() - 1 && (panelTheme != SidebarTheme.VANILLA || ReliableEmiConfig.tabAlignment == CreativeModeTabGui.TabAlignment.STRETCH || ReliableEmiConfig.tabAlignment == CreativeModeTabGui.TabAlignment.END)) {
+                    tabPosition = ItemTabButton.TabPosition.LAST;
+                }
+            }
+
+            ItemTabButton button = new ItemTabButton(tabManager, tab, w, h, buttonStyle, tabPosition);
             buttonBuilder.add(button);
             if (isVertical) newLayout.addChild(button, i, 0);
             else newLayout.addChild(button, 0, i);
@@ -66,32 +98,21 @@ public class ItemTabNavigationBar extends AbstractWidget {
     }
 
     public void arrangeElements() {
-        if (!isVertical) {
-            tabButtons.forEach(b -> b.setWidth(ScreenManager.ENTRY_SIZE));
-        }
-        layout.setX(isVertical ? getX() : getX() + 2);
+        EmiScreenManager.SidebarPanel panel = ScreenManager.getTargetCreativeTabPanel();
+
+        layout.setX(getX());
         layout.setY(getY());
         layout.arrangeElements();
         if (isVertical) {
-            width = 35;
+            width = ReliableEmiConfig.verticalTabsWidth + (panel != null ? panel.theme.horizontalPadding : 0);
         } else {
-            width = layout.getWidth() + 4;
+            height = ReliableEmiConfig.horizontalTabsHeight + (panel != null ? panel.theme.verticalPadding : 0);
         }
-        height = layout.getHeight();
     }
 
     @Override
     public void renderWidget(@NotNull GuiGraphics raw, int mouseX, int mouseY, float partialTick) {
         if (EmiScreenManager.isDisabled()) return;
-        if (!isVertical) {
-            RenderSystem.enableBlend();
-            EmiDrawContext ctx = EmiDrawContext.wrap(raw);
-            ctx.drawTexture(TEXTURE, getX(), getY() + 2, 32, 0, 1, 16);
-            ctx.drawTexture(TEXTURE, getX() + 1, getY() + 2, 32, 0, 1, 16);
-            ctx.drawTexture(TEXTURE, getX() + width - 1, getY() + 2, 32, 0, 1, 16);
-            ctx.drawTexture(TEXTURE, getX() + width - 2, getY() + 2, 32, 0, 1, 16);
-            RenderSystem.disableBlend();
-        }
         tabButtons.forEach(b -> b.render(raw, mouseX, mouseY, partialTick));
     }
 
