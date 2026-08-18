@@ -4,9 +4,9 @@ import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.stackgroup.EmiGroupStack;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
+import com.evandev.remi.gui.components.ScrollbarWidget;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.ScreenManager;
-import com.evandev.remi.gui.components.ScrollbarWidget;
 import com.evandev.remi.integration.emi.StackManager;
 import com.evandev.remi.mixin.minecraft.AbstractContainerScreenAccessor;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
@@ -18,10 +18,7 @@ import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
-import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.config.SidebarSide;
-import dev.emi.emi.config.SidebarTheme;
-import dev.emi.emi.config.SidebarType;
+import dev.emi.emi.config.*;
 import dev.emi.emi.network.CreateItemC2SPacket;
 import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.platform.EmiClient;
@@ -51,13 +48,18 @@ import java.util.List;
 @Mixin(value = EmiScreenManager.class, remap = false)
 public abstract class EmiScreenManagerMixin {
 
+    @Unique
+    private static final int REMI_SEARCH_HEIGHT = 18;
+    @Unique
+    private static final int REMI_VANILLA_BACKGROUND_OFFSET = 11;
+    @Unique
+    private static final int REMI_CORNER_BUTTON_SPACE = 22;
     @Shadow
     public static EmiSearchWidget search;
     @Shadow
     private static List<? extends EmiIngredient> searchedStacks;
     @Shadow
     private static List<EmiScreenManager.SidebarPanel> panels;
-
     @Final
     @Shadow
     private static int ENTRY_SIZE, SUBPANEL_SEPARATOR_SIZE;
@@ -102,6 +104,95 @@ public abstract class EmiScreenManagerMixin {
             }
         }
         return searchPanel;
+    }
+
+    @Unique
+    private static EmiScreenManager.SidebarPanel remi$getSearchAnchorPanel() {
+        EmiScreenManager.SidebarPanel searchPanel = getSearchPanel();
+        if (searchPanel == null) {
+            return null;
+        }
+        if (searchPanel.getType() == SidebarType.INDEX) {
+            return searchPanel;
+        }
+        for (EmiScreenManager.SidebarPanel p : panels) {
+            if (p.getType() == SidebarType.INDEX) {
+                return p;
+            }
+        }
+        return searchPanel;
+    }
+
+    @Unique
+    private static boolean remi$areCornerButtonsVisible() {
+        boolean visible = !EmiScreenManager.isDisabled();
+        return EmiConfig.emiConfigButtonVisibility.resolve(visible)
+                || EmiConfig.recipeTreeButtonVisibility.resolve(visible);
+    }
+
+    @Unique
+    private static int remi$getAlignedSearchHeight() {
+        return SUBPANEL_SEPARATOR_SIZE + 2 + REMI_SEARCH_HEIGHT
+                + Math.max(0, ReliableEmiConfig.searchWidgetVerticalPadding - 1)
+                + Math.max(0, ReliableEmiConfig.searchWidgetTopOffset);
+    }
+
+    @Unique
+    private static int remi$getBottomReserve(EmiScreenManager.SidebarPanel panel, SidebarSettings settings) {
+        SidebarTheme theme = panel.getType() == SidebarType.CHESS ? SidebarTheme.MODERN : settings.theme();
+        boolean anchor = remi$getSearchAnchorPanel() == panel;
+        int buttonSpace = panel.side == SidebarSide.LEFT && remi$areCornerButtonsVisible()
+                ? REMI_CORNER_BUTTON_SPACE
+                : 0;
+
+        int below;
+        if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
+            below = anchor ? remi$getAlignedSearchHeight() + buttonSpace : buttonSpace;
+        } else if (anchor && !EmiConfig.centerSearchBar
+                && (panel.side == SidebarSide.LEFT || panel.side == SidebarSide.RIGHT)) {
+            int barSpace = (panel.side == SidebarSide.RIGHT ? 21 : 21 + 21)
+                    + Math.max(0, ReliableEmiConfig.searchWidgetTopOffset);
+            below = Math.max(buttonSpace, barSpace);
+        } else {
+            below = buttonSpace;
+        }
+
+        if (below <= 0) {
+            return 0;
+        }
+        below += theme == SidebarTheme.VANILLA ? REMI_VANILLA_BACKGROUND_OFFSET : 0;
+        return Math.max(0, below - settings.margins().bottom() - theme.verticalPadding);
+    }
+
+    @Unique
+    private static boolean remi$applySearchWidgetLayout() {
+        if (!ReliableEmiConfig.searchWidgetAlignWithPanel && EmiConfig.centerSearchBar) {
+            return false;
+        }
+        EmiScreenManager.SidebarPanel panel = remi$getSearchAnchorPanel();
+        if (panel == null || panel.space == null) {
+            return false;
+        }
+        Screen screen = Minecraft.getInstance().screen;
+        if (screen == null) {
+            return false;
+        }
+
+        search.setX(panel.space.tx - 5 + ReliableEmiConfig.searchWidgetLeftOffset);
+        search.setWidth(Math.max(1, panel.space.tw * ENTRY_SIZE + 10 + ReliableEmiConfig.searchWidgetWidth));
+
+        if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
+            int totalHeight = panel.theme == SidebarTheme.VANILLA ? REMI_VANILLA_BACKGROUND_OFFSET : 0;
+            for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
+                totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
+            }
+            search.setY(panel.space.ty + totalHeight + 2 + ReliableEmiConfig.searchWidgetTopOffset);
+        } else if (panel.side == SidebarSide.RIGHT) {
+            search.setY(screen.height - 21 + ReliableEmiConfig.searchWidgetTopOffset);
+        } else {
+            search.setY(screen.height - 21 - 21 + ReliableEmiConfig.searchWidgetTopOffset);
+        }
+        return true;
     }
 
     @Inject(method = "repopulatePanels", at = @At("HEAD"))
@@ -310,18 +401,23 @@ public abstract class EmiScreenManagerMixin {
     }
 
     @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)
-    private static Bounds modifyEmixxBounds(Bounds bounds, EmiScreenManager.SidebarPanel panel) {
+    private static Bounds modifyEmixxBounds(Bounds bounds, @Local(ordinal = 0, argsOnly = true) EmiScreenManager.SidebarPanel panel,
+                                            @Local(ordinal = 0, argsOnly = true) SidebarSettings settings) {
         if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
             EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
             if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA) {
                 int tabSpace = 35;
-                return new Bounds(
+                bounds = new Bounds(
                         bounds.x() + tabSpace,
                         bounds.y(),
                         Math.max(0, bounds.width() - tabSpace),
                         bounds.height()
                 );
             }
+        }
+        int reserve = remi$getBottomReserve(panel, settings);
+        if (reserve > 0) {
+            bounds = new Bounds(bounds.x(), bounds.y(), bounds.width(), Math.max(0, bounds.height() - reserve));
         }
         return bounds;
     }
@@ -337,31 +433,16 @@ public abstract class EmiScreenManagerMixin {
 
     @Inject(method = "addWidgets", at = @At("TAIL"))
     private static void searchWidgetVerticalAlign(Screen screen, CallbackInfo ci) {
-        if (ReliableEmiConfig.searchWidgetAlignWithPanel || !EmiConfig.centerSearchBar) {
-            EmiScreenManager.SidebarPanel panel = remi$getEffectiveSearchPanel();
-            if (panel != null && panel.space != null) {
-                search.setX(panel.space.tx - 5 + ReliableEmiConfig.searchWidgetLeftOffset);
-                int width = Math.max(1, panel.space.tw * ENTRY_SIZE + 10 + ReliableEmiConfig.searchWidgetWidth);
-                search.setWidth(width);
-
-                if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
-                    int totalHeight = panel.theme == SidebarTheme.VANILLA ? 11 : 0;
-                    for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
-                        totalHeight += space.th * ENTRY_SIZE + SUBPANEL_SEPARATOR_SIZE;
-                    }
-                    search.setY(panel.space.ty + totalHeight + 2 + ReliableEmiConfig.searchWidgetTopOffset);
-                } else {
-                    if (panel.side == SidebarSide.RIGHT) {
-                        search.setY(screen.height - 21 + ReliableEmiConfig.searchWidgetTopOffset);
-                    } else {
-                        search.setY(screen.height - 21 - 21 + ReliableEmiConfig.searchWidgetTopOffset);
-                    }
-                }
-                return;
-            }
+        if (remi$applySearchWidgetLayout()) {
+            return;
         }
         search.setY(search.getY() + ReliableEmiConfig.searchWidgetTopOffset);
         search.setX(search.getX() + ReliableEmiConfig.searchWidgetLeftOffset);
+    }
+
+    @Inject(method = "recalculate", at = @At("TAIL"))
+    private static void remi$realignSearchWidget(CallbackInfo ci) {
+        remi$applySearchWidgetLayout();
     }
 
     @Inject(method = "mouseClicked", at = @At("TAIL"), cancellable = true)

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.1] - 2026-08-17
+
+### Fixed
+
+- Fixed EMI's sidebar not making room for the search bar, causing it to be pushed off screen on short windows.
+- Fixed the search bar being invisible until the screen was refreshed when it is aligned below the sidebar, caused by it only being positioned when the screen was first opened instead of after every layout.
+- Fixed EMI's sidebar not making room for the config and recipe tree buttons in the bottom left corner.
+- Fixed the vertical scrollbar's hitbox staying active on panels that have nothing to scroll, silently swallowing clicks meant for other buttons (e.g. the recipe view's next page arrow) when two panels used it at once.
+
 ## [4.5.0] - 2026-08-15
 
 ### Added

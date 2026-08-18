@@ -315,8 +315,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     @Inject(method = "updateWidgetPosition", at = @At("HEAD"))
     public void updateScrollbarPosition(CallbackInfo ci) {
         boolean enabled = ReliableEmiConfig.isVerticalScrollbarEnabled() && this.space != null;
-        this.remi$scrollbar.visible = enabled;
-        this.remi$scrollbar.active = enabled;
+        boolean interactive = enabled && this.remi$getTotalScrollRows() > 0;
+        this.remi$scrollbar.visible = interactive;
+        this.remi$scrollbar.active = interactive;
         if (enabled) {
             int panelPadding = 1;
 
