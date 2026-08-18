@@ -401,8 +401,7 @@ public abstract class EmiScreenManagerMixin {
     }
 
     @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)
-    private static Bounds modifyEmixxBounds(Bounds bounds, @Local(ordinal = 0, argsOnly = true) EmiScreenManager.SidebarPanel panel,
-                                            @Local(ordinal = 0, argsOnly = true) SidebarSettings settings) {
+    private static Bounds modifyEmixxBounds(Bounds bounds, @Local(ordinal = 0, argsOnly = true) EmiScreenManager.SidebarPanel panel) {
         if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
             EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
             if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA) {
@@ -415,11 +414,21 @@ public abstract class EmiScreenManagerMixin {
                 );
             }
         }
-        int reserve = remi$getBottomReserve(panel, settings);
-        if (reserve > 0) {
-            bounds = new Bounds(bounds.x(), bounds.y(), bounds.width(), Math.max(0, bounds.height() - reserve));
-        }
         return bounds;
+    }
+
+    @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)
+    private static List<Bounds> remi$reserveBottomSpace(List<Bounds> exclusion,
+                                                        @Local(ordinal = 0, argsOnly = true) EmiScreenManager.SidebarPanel panel,
+                                                        @Local(ordinal = 0, argsOnly = true) Bounds bounds,
+                                                        @Local(ordinal = 0, argsOnly = true) SidebarSettings settings) {
+        int reserve = remi$getBottomReserve(panel, settings);
+        if (reserve <= 0) {
+            return exclusion;
+        }
+        List<Bounds> withReserve = new java.util.ArrayList<>(exclusion);
+        withReserve.add(new Bounds(bounds.x(), bounds.bottom() - reserve, bounds.width(), reserve));
+        return withReserve;
     }
 
     @ModifyVariable(method = "getHoveredStack(IIZZ)Ldev/emi/emi/api/stack/EmiStackInteraction;", at = @At(value = "STORE", ordinal = 1), name = "n")
