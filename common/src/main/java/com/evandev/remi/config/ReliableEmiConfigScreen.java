@@ -2,6 +2,7 @@ package com.evandev.remi.config;
 
 import com.evandev.ReliableEmi;
 import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabConfigScreen;
+import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.stackgroup.gui.StackGroupConfigScreen;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
@@ -33,6 +34,19 @@ public class ReliableEmiConfigScreen {
                 .option(createEnumOption("creativeTabTheme", ReliableEmiConfig.CreativeTabTheme.SYNCED,
                         ReliableEmiConfig.CreativeTabTheme.class,
                         () -> ReliableEmiConfig.creativeTabTheme, v -> ReliableEmiConfig.creativeTabTheme = v))
+                .option(createEnumOption("tabAlignment", CreativeModeTabGui.TabAlignment.STRETCH,
+                        CreativeModeTabGui.TabAlignment.class,
+                        () -> ReliableEmiConfig.tabAlignment, v -> ReliableEmiConfig.tabAlignment = v))
+                .option(createIntegerOption("verticalTabsWidth", 28,
+                        () -> ReliableEmiConfig.verticalTabsWidth, v -> ReliableEmiConfig.verticalTabsWidth = v))
+                .option(createIntegerOption("verticalTabsHeight", 24,
+                        () -> ReliableEmiConfig.verticalTabsHeight, v -> ReliableEmiConfig.verticalTabsHeight = v))
+                .option(createIntegerOption("horizontalTabsWidth", 22,
+                        () -> ReliableEmiConfig.horizontalTabsWidth, v -> ReliableEmiConfig.horizontalTabsWidth = v))
+                .option(createIntegerOption("horizontalTabsHeight", 24,
+                        () -> ReliableEmiConfig.horizontalTabsHeight, v -> ReliableEmiConfig.horizontalTabsHeight = v))
+                .option(createIntegerOption("tabIconSize", 16,
+                        () -> ReliableEmiConfig.tabIconSize, v -> ReliableEmiConfig.tabIconSize = v))
                 .option(createBoolOption("syncSelectedCreativeModeTab", true,
                         () -> ReliableEmiConfig.syncSelectedCreativeModeTab, v -> ReliableEmiConfig.syncSelectedCreativeModeTab = v))
                 .option(createBoolOption("showCreativeTabNameInSearchbar", true,

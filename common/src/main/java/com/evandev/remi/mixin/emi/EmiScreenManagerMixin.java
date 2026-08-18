@@ -71,11 +71,11 @@ public abstract class EmiScreenManagerMixin {
 
     @ModifyVariable(at = @At(value = "STORE", ordinal = 0), method = "createScreenSpace", name = "headerOffset")
     private static int modifyHeaderOffset(int headerOffset, EmiScreenManager.SidebarPanel panel, Screen screen,
-                                          List<Bounds> exclusion) {
+                                          List<Bounds> exclusion, @Local(name = "theme") SidebarTheme theme) {
         if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
             EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
-            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT) {
-                return headerOffset + CreativeModeTabGui.CREATIVE_MODE_TAB_HEIGHT;
+            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.HORIZONTAL) {
+                return headerOffset + ReliableEmiConfig.horizontalTabsHeight + theme.verticalPadding;
             }
         }
         return headerOffset;
@@ -178,8 +178,9 @@ public abstract class EmiScreenManagerMixin {
             return false;
         }
 
-        search.setX(panel.space.tx - 5 + ReliableEmiConfig.searchWidgetLeftOffset);
-        search.setWidth(Math.max(1, panel.space.tw * ENTRY_SIZE + 10 + ReliableEmiConfig.searchWidgetWidth));
+        int panelWidth = panel.space.tw * ENTRY_SIZE + (panel.theme.horizontalPadding * 2) + (ReliableEmiConfig.verticalScrollbar && panel.theme == SidebarTheme.VANILLA ? ScrollbarWidget.WIDTH - panel.theme.horizontalPadding : 0);
+        search.setX(panel.space.tx - panel.theme.horizontalPadding + ReliableEmiConfig.searchWidgetLeftOffset + ReliableEmiConfig.searchWidgetHorizontalPadding);
+        search.setWidth(Math.max(1, panelWidth + ReliableEmiConfig.searchWidgetWidth - ReliableEmiConfig.searchWidgetHorizontalPadding * 2));
 
         if (ReliableEmiConfig.searchWidgetAlignWithPanel) {
             int totalHeight = panel.theme == SidebarTheme.VANILLA ? REMI_VANILLA_BACKGROUND_OFFSET : 0;
@@ -404,7 +405,7 @@ public abstract class EmiScreenManagerMixin {
     private static Bounds modifyEmixxBounds(Bounds bounds, @Local(ordinal = 0, argsOnly = true) EmiScreenManager.SidebarPanel panel) {
         if (ReliableEmiConfig.isCreativeTabsEnabled(panel.getType())) {
             EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
-            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA) {
+            if (targetPanel == panel && CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VERTICAL) {
                 int tabSpace = 35;
                 bounds = new Bounds(
                         bounds.x() + tabSpace,

@@ -92,6 +92,10 @@ public class CreativeModeTabManager {
         return Math.max(0, creativeModeTabs.size() - CreativeModeTabGui.tabCount);
     }
 
+    public static int getTotalTabCount() {
+        return creativeModeTabs.size();
+    }
+
     public static List<CreativeModeTab> loadDisabledTabs() {
         List<CreativeModeTab> result = new ArrayList<>();
         for (String s : ReliableEmiConfig.disabledCreativeModeTabs) {
@@ -121,7 +125,7 @@ public class CreativeModeTabManager {
 
         if (currentTab == null) {
             CreativeModeTabGui.selectTab(0, false);
-            var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT
+            var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.HORIZONTAL
                     ? CreativeModeTabGui.topTabNavigationBar : CreativeModeTabGui.leftTabNavigationBar;
             if (!bar.visibleTabs.isEmpty()) onTabSelected(bar.visibleTabs.getFirst());
         }
@@ -191,7 +195,7 @@ public class CreativeModeTabManager {
             ScreenManager.setCustomIndexTitle(title);
         }
 
-        var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.DEFAULT
+        var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.HORIZONTAL
                 ? CreativeModeTabGui.topTabNavigationBar : CreativeModeTabGui.leftTabNavigationBar;
         bar.tabButtons.forEach(b -> b.setFocused(false));
         for (var btn : bar.tabButtons) {
@@ -233,7 +237,7 @@ public class CreativeModeTabManager {
                 .map(tab -> tabCache.computeIfAbsent(tab, ItemTab::new))
                 .collect(Collectors.toList());
 
-        var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VANILLA
+        var bar = CreativeModeTabGui.currentTheme() == CreativeModeTabGui.TabTheme.VERTICAL
                 ? CreativeModeTabGui.leftTabNavigationBar : CreativeModeTabGui.topTabNavigationBar;
         bar.setTabs(pageTabs);
 

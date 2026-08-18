@@ -1,6 +1,7 @@
 package com.evandev.remi.config;
 
 import com.evandev.ReliableEmi;
+import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.StackManager;
 import com.evandev.remi.platform.Services;
@@ -32,6 +33,12 @@ public class ReliableEmiConfig {
     public static boolean syncSelectedCreativeModeTab = true;
     public static boolean showCreativeTabNameInSearchbar = true;
     public static int maxSidebarTabs = 0;
+    public static int verticalTabsWidth = 28;
+    public static int verticalTabsHeight = 24;
+    public static int horizontalTabsWidth = 22;
+    public static int horizontalTabsHeight = 24;
+    public static int tabIconSize = 16;
+    public static CreativeModeTabGui.TabAlignment tabAlignment = CreativeModeTabGui.TabAlignment.STRETCH;
     public static List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
     public static Map<String, List<String>> stackGroupItemOrder = new HashMap<>();
     public static boolean enableStackGroups = true;
@@ -291,7 +298,7 @@ public class ReliableEmiConfig {
     }
 
     public enum CreativeTabTheme {
-        SYNCED, MODERN, VANILLA
+        SYNCED, HORIZONTAL, VERTICAL
     }
 
     private static class ConfigData {

@@ -5,7 +5,9 @@ import com.evandev.remi.config.ReliableEmiConfig;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.util.GuiGraphicsUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.runtime.EmiDrawContext;
+import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.TabButton;
@@ -17,9 +19,38 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Method;
 
 public class ItemTabButton extends TabButton {
-    private static final ResourceLocation TEXTURE_DEFAULT = ReliableEmi.res("textures/gui/buttons.png");
-    private static final ResourceLocation TEXTURE_LEFT = ReliableEmi.res("textures/gui/tab_button.png");
-    private static final ResourceLocation TEXTURE_RIGHT = ReliableEmi.res("textures/gui/tab_button_right.png");
+    private static final TabSprites VERTICAL_SPRITES = new TabSprites(
+            ReliableEmi.res("widget/tabs/vertical_modern"),
+            ReliableEmi.res("widget/tabs/vertical_modern_first"),
+            ReliableEmi.res("widget/tabs/vertical_modern_last"),
+            ReliableEmi.res("widget/tabs/vertical_modern_selected"),
+            ReliableEmi.res("widget/tabs/vertical_modern_first_selected"),
+            ReliableEmi.res("widget/tabs/vertical_modern_last_selected")
+    );
+    private static final TabSprites HORIZONTAL_SPRITES = new TabSprites(
+            ReliableEmi.res("widget/tabs/horizontal_modern"),
+            ReliableEmi.res("widget/tabs/horizontal_modern_first"),
+            ReliableEmi.res("widget/tabs/horizontal_modern_last"),
+            ReliableEmi.res("widget/tabs/horizontal_modern_selected"),
+            ReliableEmi.res("widget/tabs/horizontal_modern_first_selected"),
+            ReliableEmi.res("widget/tabs/horizontal_modern_last_selected")
+    );
+    private static final TabSprites VERTICAL_VANILLA_SPRITES = new TabSprites(
+            ReliableEmi.res("widget/tabs/vertical_vanilla"),
+            ReliableEmi.res("widget/tabs/vertical_vanilla_first"),
+            ReliableEmi.res("widget/tabs/vertical_vanilla_last"),
+            ReliableEmi.res("widget/tabs/vertical_vanilla_selected"),
+            ReliableEmi.res("widget/tabs/vertical_vanilla_first_selected"),
+            ReliableEmi.res("widget/tabs/vertical_vanilla_last_selected")
+    );
+    private static final TabSprites HORIZONTAL_VANILLA_SPRITES = new TabSprites(
+            ReliableEmi.res("widget/tabs/horizontal_vanilla"),
+            ReliableEmi.res("widget/tabs/horizontal_vanilla_first"),
+            ReliableEmi.res("widget/tabs/horizontal_vanilla_last"),
+            ReliableEmi.res("widget/tabs/horizontal_vanilla_selected"),
+            ReliableEmi.res("widget/tabs/horizontal_vanilla_first_selected"),
+            ReliableEmi.res("widget/tabs/horizontal_vanilla_last_selected")
+    );
 
     private static Method recreativeIconMethod = null;
     private static boolean checkedRecreativeMethod = false;
@@ -27,18 +58,18 @@ public class ItemTabButton extends TabButton {
     private final ItemTabManager tabManager;
     private final ItemTab tab;
     private final ButtonStyle style;
-    private final boolean isFirst;
     private final Component title;
     private ResourceLocation customIcon;
     private Component lastDisplayTitle;
+    private final TabPosition position;
 
     public ItemTabButton(ItemTabManager tabManager, ItemTab tab, int width, int height,
-                         ButtonStyle style, boolean isFirst) {
+                         ButtonStyle style, TabPosition tabPosition) {
         super(tabManager, tab, width, height);
         this.tabManager = tabManager;
         this.tab = tab;
         this.style = style;
-        this.isFirst = isFirst;
+        this.position = tabPosition;
         this.title = tab.creativeModeTab() != null ? tab.creativeModeTab().getDisplayName() : null;
         this.customIcon = fetchRecreativeIcon(tab.creativeModeTab());
     }
@@ -82,71 +113,79 @@ public class ItemTabButton extends TabButton {
 
     @Override
     public void renderWidget(@NotNull GuiGraphics raw, int mouseX, int mouseY, float partialTick) {
+        if (!isVisible()) return;
+
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
         EmiDrawContext context = EmiDrawContext.wrap(raw);
+        EmiScreenManager.SidebarPanel panel = ScreenManager.getTargetCreativeTabPanel();
+        boolean isVanillaTheme = panel != null && panel.theme == SidebarTheme.VANILLA;
 
-        if (isVisible()) {
-            ResourceLocation icon = getCustomIcon();
+        ResourceLocation icon = getCustomIcon();
 
-            if (style == ButtonStyle.TOP) {
-                float yOff;
-                if (isSelected()) {
-                    context.drawTexture(TEXTURE_DEFAULT, getX(), getY(), 32, isHoveredOrFocused() ? 50 : 32, getWidth(), 18);
-                    yOff = 4F;
-                } else {
-                    context.drawTexture(TEXTURE_DEFAULT, getX(), getY() + 2, 32, isHoveredOrFocused() ? 16 : 0, getWidth(), 16);
-                    yOff = 5F;
-                }
+        int iconSize = ReliableEmiConfig.tabIconSize;
+        int iconX = getX() + (getWidth() - iconSize) / 2;
+        int iconY = getY() + (getHeight() - iconSize) / 2;
 
-                if (icon != null) {
-                    raw.pose().pushPose();
-                    raw.pose().translate(getX() + 4.0, getY() + yOff, 150.0);
-                    raw.pose().scale(10f / 16f, 10f / 16f, 1f);
-                    raw.blit(icon, 0, 0, 0f, 0f, 16, 16, 16, 16);
-                    raw.pose().popPose();
-                } else if (tab.creativeModeTab() != null) {
-                    GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab().getIconItem(), getX() + 4F, getY() + yOff, 10F);
-                }
-            } else {
-                int u = isSelected() ? 188 : 152;
-                int v = (isSelected() && isFirst) ? 29 : 2;
-                ResourceLocation texture = (style == ButtonStyle.RIGHT) ? TEXTURE_RIGHT : TEXTURE_LEFT;
-                raw.pose().pushPose();
-                raw.pose().translate(0.0, 0.0, isSelected() ? 100.0 : 0.0);
-                context.drawTexture(texture, getX(), getY(), u, v, getWidth(), getHeight());
-                raw.pose().popPose();
+        raw.pose().pushPose();
+        raw.pose().translate(0.0, 0.0, isSelected() ? 100.0 : 0.0);
 
-                float iconX = (style == ButtonStyle.RIGHT) ? getX() + 6F : getX() + 8F;
-                if (icon != null) {
-                    raw.pose().pushPose();
-                    raw.pose().translate(iconX, getY() + 5.0, 150.0);
-                    raw.blit(icon, 0, 0, 0f, 0f, 16, 16, 16, 16);
-                    raw.pose().popPose();
-                } else if (tab.creativeModeTab() != null) {
-                    GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab().getIconItem(), iconX, getY() + 5F, 16F);
-                }
+        TabSprites sprites = isVanillaTheme ? HORIZONTAL_VANILLA_SPRITES : HORIZONTAL_SPRITES;
+
+        if (style == ButtonStyle.TOP) {
+            iconY -= (panel != null ? panel.theme.verticalPadding : 0) / 4;
+        } else {
+            iconX -= (panel != null ? panel.theme.verticalPadding: 0) / 4;
+            sprites = isVanillaTheme ? VERTICAL_VANILLA_SPRITES : VERTICAL_SPRITES;
+        }
+
+        raw.blitSprite(sprites.get(isSelected(), position), getX(), getY(), getWidth(), getHeight());
+        raw.pose().popPose();
+
+        if (icon != null) {
+            raw.pose().pushPose();
+            raw.pose().translate(iconX, iconY, 150.0);
+            raw.pose().scale(iconSize / 16f, iconSize / 16f, 1f);
+            raw.blit(icon, 0, 0, 0f, 0f, 16, 16, 16, 16);
+            raw.pose().popPose();
+        } else if (tab.creativeModeTab() != null) {
+            GuiGraphicsUtils.renderItem(raw, tab.creativeModeTab().getIconItem(), iconX, iconY, iconSize);
+        }
+
+        if (isHovered && title != null) {
+            if (ReliableEmiConfig.showCreativeTabNameInSearchbar && !ReliableEmiConfig.showTitleInsteadOfPageNumbers) {
+                ScreenManager.setCustomIndexTitle(title);
+                lastDisplayTitle = ScreenManager.customIndexTitle;
             }
 
-            if (isHovered && title != null) {
-                if (ReliableEmiConfig.showCreativeTabNameInSearchbar && !ReliableEmiConfig.showTitleInsteadOfPageNumbers) {
-                    ScreenManager.setCustomIndexTitle(title);
-                    lastDisplayTitle = ScreenManager.customIndexTitle;
-                }
-
-                if (Minecraft.getInstance().screen != null) {
-                    Minecraft.getInstance().screen.setTooltipForNextRenderPass(title);
-                }
-            } else if (!ReliableEmiConfig.showTitleInsteadOfPageNumbers) {
-                ScreenManager.removeCustomIndexTitle(lastDisplayTitle != null ? lastDisplayTitle : title);
+            if (Minecraft.getInstance().screen != null) {
+                Minecraft.getInstance().screen.setTooltipForNextRenderPass(title);
             }
-        } else if (style == ButtonStyle.TOP) {
-            context.drawTexture(TEXTURE_DEFAULT, getX(), getY() + getHeight() - 2, 32, 14, getWidth(), 2);
-            context.fill(getX(), getY() + 2, getWidth(), getHeight() - 4, 0xDB000000);
+        } else if (!ReliableEmiConfig.showTitleInsteadOfPageNumbers) {
+            ScreenManager.removeCustomIndexTitle(lastDisplayTitle != null ? lastDisplayTitle : title);
         }
 
         RenderSystem.disableBlend();
     }
 
     public enum ButtonStyle {TOP, LEFT, RIGHT}
+    public enum TabPosition {FIRST, MIDDLE, LAST}
+
+    public record TabSprites(ResourceLocation middle, ResourceLocation first, ResourceLocation last, ResourceLocation middleSelected, ResourceLocation firstSelected, ResourceLocation lastSelected) {
+        public ResourceLocation get(boolean selected, TabPosition position) {
+            if (selected) {
+                return switch (position) {
+                    case FIRST -> firstSelected;
+                    case MIDDLE -> middleSelected;
+                    case LAST -> lastSelected;
+                };
+            } else {
+                return switch (position) {
+                    case FIRST -> first;
+                    case MIDDLE -> middle;
+                    case LAST -> last;
+                };
+            }
+        }
+    }
 }
