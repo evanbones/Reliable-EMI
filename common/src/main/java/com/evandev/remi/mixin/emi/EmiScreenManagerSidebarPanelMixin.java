@@ -269,7 +269,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     @WrapOperation(method = "drawHeader", at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiDrawContext;drawCenteredText(Lnet/minecraft/network/chat/Component;II)V"))
     private void verticalCenterHeaderText(EmiDrawContext instance, Component text, int x, int y, Operation<Void> original) {
         if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
-            y += 2;
+            y += 1;
         }
         original.call(instance, text, x, y);
     }
@@ -364,6 +364,9 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
     public void moveCycleButton(CallbackInfo ci) {
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
             cycle.setX(space.tx);
+        }
+        if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
+            cycle.setY(cycle.getY() + 1);
         }
     }
 

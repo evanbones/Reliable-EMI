@@ -11,6 +11,7 @@ import com.evandev.remi.integration.emi.ScreenManager;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarTheme;
+import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -109,7 +110,7 @@ public class CreativeModeTabGui {
             int availableWidth = indexScreenSpace.tw * ScreenManager.ENTRY_SIZE + panelTheme.horizontalPadding * 2;
             int availableWidthWhenScrolling = availableWidth - (buttonScrollUp.getHeight() + buttonScrollDown.getHeight() + BUTTON_SCROLL_OFFSET_Y * 2);
 
-            if (panelTheme == SidebarTheme.VANILLA && ReliableEmiConfig.verticalScrollbar) {
+            if (panelTheme == SidebarTheme.VANILLA && ReliableEmiConfig.isVerticalScrollbarEnabled()) {
                 availableWidth += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
                 availableWidthWhenScrolling += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
             }
@@ -154,7 +155,13 @@ public class CreativeModeTabGui {
             int startY = indexScreenSpace.ty - headerHeight;
             int leftX = indexScreenSpace.tx - ReliableEmiConfig.verticalTabsWidth - panelTheme.horizontalPadding;
 
-            int availableHeight = indexScreenSpace.th * ScreenManager.ENTRY_SIZE + headerHeight + panelTheme.verticalPadding;
+            int availableHeight = headerHeight + panelTheme.verticalPadding - 3;
+            if (panel != null) {
+                for (EmiScreenManager.ScreenSpace space : panel.getSpaces()) {
+                    availableHeight += space.th * ScreenManager.ENTRY_SIZE + 3;
+                }
+            }
+
             int availableHeightWhenScrolling = availableHeight - (buttonScrollUp.getHeight() + buttonScrollDown.getHeight() + BUTTON_SCROLL_OFFSET_Y * 2);
 
             if (ReliableEmiConfig.maxSidebarTabs == 0) {
