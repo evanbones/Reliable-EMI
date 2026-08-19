@@ -43,6 +43,12 @@ public class ItemTabNavigationBar extends AbstractWidget {
 
     public void setTabs(List<ItemTab> tabs) {
         this.visibleTabs = new ArrayList<>(tabs);
+        if (tabs.isEmpty()) {
+            this.tabButtons = ImmutableList.of();
+            this.layout = new GridLayout();
+            arrangeElements();
+            return;
+        }
         GridLayout newLayout = new GridLayout();
         newLayout.defaultCellSetting().padding(0);
         EmiScreenManager.SidebarPanel panel = ScreenManager.getTargetCreativeTabPanel();

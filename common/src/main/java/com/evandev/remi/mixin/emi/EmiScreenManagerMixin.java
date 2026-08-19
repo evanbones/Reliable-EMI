@@ -253,6 +253,9 @@ public abstract class EmiScreenManagerMixin {
     @Inject(at = @At("HEAD"), method = "addWidgets")
     private static void addEmiPlusPlusWidgets(Screen screen, CallbackInfo ci) {
         ScreenManager.onScreenInitialized(screen);
+        if (search != null) {
+            search.update();
+        }
     }
 
     @Inject(at = @At("RETURN"), method = "mouseScrolled", cancellable = true)

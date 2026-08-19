@@ -118,6 +118,9 @@ public class CreativeModeTabManager {
     }
 
     public static void initialize() {
+        if (creativeModeTabs.isEmpty()) {
+            reload();
+        }
         indexCreativeModeTab = BuiltInRegistries.CREATIVE_MODE_TAB.get(CreativeModeTabs.SEARCH);
         scrollOffset = 0;
         List<ItemTab> page = updateTabs();

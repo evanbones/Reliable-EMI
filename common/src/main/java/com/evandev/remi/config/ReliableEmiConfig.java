@@ -145,6 +145,12 @@ public class ReliableEmiConfig {
                     enableCreativeModeTabs = data.enableCreativeModeTabs;
                     if (data.creativeTabSidebarTarget != null) creativeTabSidebarTarget = data.creativeTabSidebarTarget;
                     if (data.creativeTabTheme != null) creativeTabTheme = data.creativeTabTheme;
+                    if (data.tabAlignment != null) tabAlignment = data.tabAlignment;
+                    verticalTabsWidth = data.verticalTabsWidth;
+                    verticalTabsHeight = data.verticalTabsHeight;
+                    horizontalTabsWidth = data.horizontalTabsWidth;
+                    horizontalTabsHeight = data.horizontalTabsHeight;
+                    tabIconSize = data.tabIconSize;
                     syncSelectedCreativeModeTab = data.syncSelectedCreativeModeTab;
                     showCreativeTabNameInSearchbar = data.showCreativeTabNameInSearchbar;
                     maxSidebarTabs = data.maxSidebarTabs;
@@ -237,6 +243,12 @@ public class ReliableEmiConfig {
         data.enableCreativeModeTabs = enableCreativeModeTabs;
         data.creativeTabSidebarTarget = creativeTabSidebarTarget;
         data.creativeTabTheme = creativeTabTheme;
+        data.tabAlignment = tabAlignment;
+        data.verticalTabsWidth = verticalTabsWidth;
+        data.verticalTabsHeight = verticalTabsHeight;
+        data.horizontalTabsWidth = horizontalTabsWidth;
+        data.horizontalTabsHeight = horizontalTabsHeight;
+        data.tabIconSize = tabIconSize;
         data.syncSelectedCreativeModeTab = syncSelectedCreativeModeTab;
         data.showCreativeTabNameInSearchbar = showCreativeTabNameInSearchbar;
         data.maxSidebarTabs = maxSidebarTabs;
@@ -305,6 +317,12 @@ public class ReliableEmiConfig {
         boolean enableCreativeModeTabs = true;
         CreativeTabSidebarTarget creativeTabSidebarTarget = CreativeTabSidebarTarget.INDEX;
         CreativeTabTheme creativeTabTheme = CreativeTabTheme.SYNCED;
+        CreativeModeTabGui.TabAlignment tabAlignment = CreativeModeTabGui.TabAlignment.STRETCH;
+        int verticalTabsWidth = 28;
+        int verticalTabsHeight = 24;
+        int horizontalTabsWidth = 22;
+        int horizontalTabsHeight = 24;
+        int tabIconSize = 16;
         boolean syncSelectedCreativeModeTab = true;
         boolean showCreativeTabNameInSearchbar = true;
         int maxSidebarTabs = 0;
