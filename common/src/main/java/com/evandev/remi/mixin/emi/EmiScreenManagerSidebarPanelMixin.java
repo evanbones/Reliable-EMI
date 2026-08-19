@@ -365,7 +365,7 @@ public abstract class EmiScreenManagerSidebarPanelMixin implements SidebarPanelW
         if (ReliableEmiConfig.scrollInsteadOfPagination) {
             cycle.setX(space.tx);
         }
-        if (ReliableEmiConfig.verticalScrollbar) {
+        if (ReliableEmiConfig.isVerticalScrollbarEnabled()) {
             cycle.setY(cycle.getY() + 1);
         }
     }

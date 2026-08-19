@@ -110,7 +110,7 @@ public class CreativeModeTabGui {
             int availableWidth = indexScreenSpace.tw * ScreenManager.ENTRY_SIZE + panelTheme.horizontalPadding * 2;
             int availableWidthWhenScrolling = availableWidth - (buttonScrollUp.getHeight() + buttonScrollDown.getHeight() + BUTTON_SCROLL_OFFSET_Y * 2);
 
-            if (panelTheme == SidebarTheme.VANILLA && ReliableEmiConfig.verticalScrollbar) {
+            if (panelTheme == SidebarTheme.VANILLA && ReliableEmiConfig.isVerticalScrollbarEnabled()) {
                 availableWidth += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
                 availableWidthWhenScrolling += ScrollbarWidget.WIDTH - panelTheme.horizontalPadding;
             }

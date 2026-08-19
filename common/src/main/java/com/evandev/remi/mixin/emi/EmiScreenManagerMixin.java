@@ -178,7 +178,7 @@ public abstract class EmiScreenManagerMixin {
             return false;
         }
 
-        int panelWidth = panel.space.tw * ENTRY_SIZE + (panel.theme.horizontalPadding * 2) + (ReliableEmiConfig.verticalScrollbar && panel.theme == SidebarTheme.VANILLA ? ScrollbarWidget.WIDTH - panel.theme.horizontalPadding : 0);
+        int panelWidth = panel.space.tw * ENTRY_SIZE + (panel.theme.horizontalPadding * 2) + (ReliableEmiConfig.isVerticalScrollbarEnabled() && panel.theme == SidebarTheme.VANILLA ? ScrollbarWidget.WIDTH - panel.theme.horizontalPadding : 0);
         search.setX(panel.space.tx - panel.theme.horizontalPadding + ReliableEmiConfig.searchWidgetLeftOffset + ReliableEmiConfig.searchWidgetHorizontalPadding);
         search.setWidth(Math.max(1, panelWidth + ReliableEmiConfig.searchWidgetWidth - ReliableEmiConfig.searchWidgetHorizontalPadding * 2));
 
