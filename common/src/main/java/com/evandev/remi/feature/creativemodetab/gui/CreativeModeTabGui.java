@@ -101,7 +101,7 @@ public class CreativeModeTabGui {
         tabCount = ReliableEmiConfig.maxSidebarTabs;
         showScrollButtons = false;
 
-        if (indexScreenSpace == null) return;
+        if (indexScreenSpace == null || totalTabCount == 0) return;
 
         if (theme == TabTheme.HORIZONTAL) {
             int startX = indexScreenSpace.tx - panelTheme.horizontalPadding;

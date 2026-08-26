@@ -183,6 +183,13 @@ public class StackGroupManager {
         String lower = query.toLowerCase(Locale.ROOT);
         Set<EmiStack> existing = new HashSet<>(results);
 
+        Set<ResourceLocation> allowedIds = null;
+        List<EmiStack> tabSource = StackManager.sourceStacks;
+        if (tabSource != null && tabSource != StackManager.indexStacks) {
+            allowedIds = new HashSet<>(tabSource.size());
+            for (EmiStack stack : tabSource) allowedIds.add(stack.getId());
+        }
+
         for (StackGroup group : stackGroups) {
             if (!group.isEnabled) continue;
             EmiGroupStack gs = groupToGroupStacks.get(group);
@@ -198,6 +205,7 @@ public class StackGroupManager {
 
             if (match) {
                 for (var item : gs.itemsNew) {
+                    if (allowedIds != null && !allowedIds.contains(item.realStack.getId())) continue;
                     if (existing.add(item.realStack)) results.add(item.realStack);
                 }
             }
