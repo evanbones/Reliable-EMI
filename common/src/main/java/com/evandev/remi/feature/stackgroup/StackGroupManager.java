@@ -6,11 +6,14 @@ import com.evandev.remi.feature.stackgroup.data.EmiStackGroup;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
 import com.evandev.remi.feature.stackgroup.data.groups.*;
 import com.evandev.remi.integration.emi.StackManager;
+import com.evandev.remi.platform.Services;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.TagEmiIngredient;
 import dev.emi.emi.config.SidebarType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -24,6 +27,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.BiFunction;
 
+@SuppressWarnings("UnstableApiUsage")
 public class StackGroupManager {
     public static final List<StackGroup> stackGroups = new ArrayList<>();
     public static final List<EmiStack> groupedEmiStacks = new ArrayList<>();
@@ -45,10 +49,12 @@ public class StackGroupManager {
                     ResourceLocation.parse(tagName));
             String nameKey = json.has("name") ? GsonHelper.getAsString(json, "name") : null;
             Component customName = nameKey != null ? Component.translatable(nameKey) : null;
-            @SuppressWarnings("unchecked")
-            EmiIngredient ingredient = EmiIngredient.of(tagKey);
+            EmiIngredient ingredient = new TagEmiIngredient(tagKey, 1);
+            if (ingredient.getEmiStacks().isEmpty()) {
+                ingredient = EmiIngredient.of(tagKey);
+            }
 
-            return new EmiStackGroup(id, Set.of(ingredient), Set.of(), List.of(), customName);
+            return new EmiStackGroup(id, tagKey, Set.of(ingredient), Set.of(), List.of(), customName);
         };
         registerType("remi:tag", tagFactory);
         registerType("emixx:tag", tagFactory);
@@ -80,6 +86,15 @@ public class StackGroupManager {
         typeRegistry.put(type, factory);
     }
 
+    public static ResourceLocation getTagGroupId(TagKey<?> tagKey) {
+        String registry = tagKey.registry().location().toString();
+        if (registry.equals("minecraft:item")) {
+            return tagKey.location();
+        }
+        String prefix = registry.replace(':', '_') + "_";
+        return ResourceLocation.fromNamespaceAndPath(tagKey.location().getNamespace(), prefix + tagKey.location().getPath());
+    }
+
     public static Path getGroupPath(TagKey<?> tagKey) {
         ResourceLocation tag = tagKey.location();
         String registry = tagKey.registry().location().toString();
@@ -96,19 +111,34 @@ public class StackGroupManager {
     }
 
     private static Path resolveGroupPath(String filename) {
-        Path remiPath = com.evandev.remi.platform.Services.PLATFORM.getConfigDirectory().resolve("remi").resolve("stack_groups").resolve(filename);
+        Path remiPath = Services.PLATFORM.getConfigDirectory().resolve("remi").resolve("stack_groups").resolve(filename);
         if (Files.exists(remiPath)) {
             return remiPath;
         }
-        Path emixxPath = com.evandev.remi.platform.Services.PLATFORM.getConfigDirectory().resolve("emixx").resolve("stack_groups").resolve(filename);
+        Path emixxPath = Services.PLATFORM.getConfigDirectory().resolve("emixx").resolve("stack_groups").resolve(filename);
         if (Files.exists(emixxPath)) {
             return emixxPath;
         }
         return ReliableEmiConfig.getConfigDir().resolve("stack_groups").resolve(filename);
     }
 
+    public static StackGroup getGroup(TagKey<?> tagKey) {
+        for (StackGroup g : stackGroups) {
+            if (g instanceof EmiStackGroup esg && Objects.equals(esg.getTagKey(), tagKey)) {
+                return g;
+            }
+            if (g.getId().equals(getTagGroupId(tagKey))) {
+                return g;
+            }
+            if (tagKey.registry().location().toString().equals("minecraft:item") && g.getId().equals(tagKey.location())) {
+                return g;
+            }
+        }
+        return null;
+    }
+
     public static boolean hasGroup(TagKey<?> tagKey) {
-        return hasGroup(tagKey.location());
+        return getGroup(tagKey) != null;
     }
 
     public static boolean hasGroup(ResourceLocation tag) {
@@ -117,7 +147,8 @@ public class StackGroupManager {
     }
 
     public static boolean isGroupEnabled(TagKey<?> tagKey) {
-        return isGroupEnabled(tagKey.location());
+        StackGroup g = getGroup(tagKey);
+        return g != null && g.isEnabled;
     }
 
     public static boolean isGroupEnabled(ResourceLocation tag) {
@@ -130,7 +161,34 @@ public class StackGroupManager {
     }
 
     public static void toggleTagGroup(TagKey<?> tagKey) {
-        toggleTagGroup(tagKey.location());
+        StackGroup group = getGroup(tagKey);
+        ResourceLocation groupId = group != null ? group.getId() : getTagGroupId(tagKey);
+        boolean currentlyEnabled = isGroupEnabled(tagKey);
+        String idStr = groupId.toString();
+        String altStr = idStr.startsWith("remi:") ? "emixx:" + idStr.substring(5)
+                : idStr.startsWith("emixx:") ? "remi:" + idStr.substring(6) : null;
+        if (currentlyEnabled) {
+            if (!ReliableEmiConfig.disabledStackGroups.contains(idStr)) {
+                ReliableEmiConfig.disabledStackGroups.add(idStr);
+            }
+            Path file = getGroupPath(tagKey);
+            if (Files.exists(file)) {
+                saveGroupConfig(tagKey, false);
+            }
+        } else {
+            ReliableEmiConfig.disabledStackGroups.remove(idStr);
+            if (altStr != null) ReliableEmiConfig.disabledStackGroups.remove(altStr);
+            if (group == null) {
+                saveGroupConfig(tagKey, true);
+            } else {
+                Path file = getGroupPath(tagKey);
+                if (Files.exists(file)) {
+                    saveGroupConfig(tagKey, true);
+                }
+            }
+        }
+        ReliableEmiConfig.save();
+        reload();
     }
 
     public static void toggleTagGroup(ResourceLocation tag) {
@@ -158,11 +216,25 @@ public class StackGroupManager {
         reload();
     }
 
-    private static void saveGroupConfig(TagKey<?> tagKey, boolean enabled) {
-        saveGroupConfig(tagKey.location(), enabled);
+    public static void saveGroupConfig(TagKey<?> tagKey, boolean enabled) {
+        Path file = getGroupPath(tagKey);
+        try {
+            Files.createDirectories(file.getParent());
+            JsonObject json = new JsonObject();
+            json.addProperty("type", "remi:tag");
+            json.addProperty("id", getTagGroupId(tagKey).toString());
+            json.addProperty("tag", tagKey.location().toString());
+            json.addProperty("registry", tagKey.registry().location().toString());
+            json.addProperty("enabled", enabled);
+            try (var writer = Files.newBufferedWriter(file)) {
+                new GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
+            }
+        } catch (Exception e) {
+            ReliableEmi.LOGGER.error("Failed to save stack group", e);
+        }
     }
 
-    private static void saveGroupConfig(ResourceLocation tag, boolean enabled) {
+    public static void saveGroupConfig(ResourceLocation tag, boolean enabled) {
         Path file = getGroupPath(tag);
         try {
             Files.createDirectories(file.getParent());
@@ -170,9 +242,10 @@ public class StackGroupManager {
             json.addProperty("type", "remi:tag");
             json.addProperty("id", tag.toString());
             json.addProperty("tag", tag.toString());
+            json.addProperty("registry", "minecraft:item");
             json.addProperty("enabled", enabled);
             try (var writer = Files.newBufferedWriter(file)) {
-                new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
+                new GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
             }
         } catch (Exception e) {
             ReliableEmi.LOGGER.error("Failed to save stack group", e);
@@ -204,7 +277,7 @@ public class StackGroupManager {
             }
 
             if (match) {
-                for (var item : gs.itemsNew) {
+                for (var item : gs.getItems()) {
                     if (allowedIds != null && !allowedIds.contains(item.realStack.getId())) continue;
                     if (existing.add(item.realStack)) results.add(item.realStack);
                 }
@@ -242,7 +315,7 @@ public class StackGroupManager {
         if (Files.exists(primaryDir)) {
             configDirs.add(primaryDir);
         }
-        Path emixxDir = com.evandev.remi.platform.Services.PLATFORM.getConfigDirectory().resolve("emixx").resolve("stack_groups");
+        Path emixxDir = Services.PLATFORM.getConfigDirectory().resolve("emixx").resolve("stack_groups");
         if (Files.exists(emixxDir) && !configDirs.contains(emixxDir)) {
             configDirs.add(emixxDir);
         }
@@ -253,8 +326,21 @@ public class StackGroupManager {
                 stream.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".json")).forEach(path -> {
                     try (var reader = Files.newBufferedReader(path)) {
                         JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                        String idString = json.has("id") ? json.get("id").getAsString()
-                                : json.has("tag") ? json.get("tag").getAsString() : null;
+                        String idString;
+                        if (json.has("id")) {
+                            idString = json.get("id").getAsString();
+                        } else if (json.has("tag")) {
+                            String tag = json.get("tag").getAsString();
+                            String registry = json.has("registry") ? json.get("registry").getAsString() : "minecraft:item";
+                            if (registry.equals("minecraft:item")) {
+                                idString = tag;
+                            } else {
+                                ResourceLocation tagLoc = ResourceLocation.parse(tag);
+                                idString = ResourceLocation.fromNamespaceAndPath(tagLoc.getNamespace(), registry.replace(':', '_') + "_" + tagLoc.getPath()).toString();
+                            }
+                        } else {
+                            idString = null;
+                        }
                         if (idString != null) {
                             ResourceLocation resId = ResourceLocation.parse(idString);
                             if (userLoadedIds.add(resId)) {

@@ -117,13 +117,17 @@ public class StackManager {
         for (EmiStack s : grouped) {
             if (s instanceof EmiGroupStack gs) {
                 var items = gs.getItems();
-                if (items.size() == 1) {
-                    result.add(items.getFirst().realStack);
-                } else if (gs.isExpanded) {
-                    result.add(gs);
-                    for (var item : items) result.add(item.realStack);
-                } else {
-                    result.add(gs);
+                if (!items.isEmpty()) {
+                    if (items.size() == 1) {
+                        result.add(items.getFirst().realStack);
+                    } else if (gs.isExpanded) {
+                        result.add(gs);
+                        for (var item : items) {
+                            result.add(item.realStack);
+                        }
+                    } else {
+                        result.add(gs);
+                    }
                 }
             } else {
                 result.add(s);

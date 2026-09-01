@@ -186,7 +186,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                 List<EmiIngredient> ungrouped = new ArrayList<>();
                 for (EmiIngredient ing : stacks) {
                     if (ing instanceof EmiGroupStack gs) {
-                        for (var item : gs.itemsNew) ungrouped.add(item.realStack);
+                        for (var item : gs.getItems()) ungrouped.add(item.realStack);
                     } else {
                         ungrouped.add(ing);
                     }

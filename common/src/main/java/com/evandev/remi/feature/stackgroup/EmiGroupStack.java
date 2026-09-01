@@ -1,6 +1,7 @@
 package com.evandev.remi.feature.stackgroup;
 
 import com.evandev.ReliableEmi;
+import com.evandev.remi.feature.stackgroup.data.EmiStackGroup;
 import com.evandev.remi.feature.stackgroup.data.StackGroup;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.sodium.SodiumCompat;
@@ -25,6 +26,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -275,16 +277,49 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     public MutableComponent getName() {
         if (group.name != null) return (MutableComponent) group.name;
 
+        if (group instanceof EmiStackGroup esg && esg.getTagKey() != null) {
+            TagKey<?> tk = esg.getTagKey();
+            String regName = tk.registry().location().getPath().replace('/', '.');
+            String ns = tk.location().getNamespace();
+            String path = tk.location().getPath().replace('/', '.');
+
+            String k1 = "tag." + regName + "." + ns + "." + path;
+            if (Language.getInstance().has(k1)) return Component.translatable(k1);
+
+            String k2 = "tag." + tk.registry().location().getNamespace() + "." + regName + "." + ns + "." + path;
+            if (Language.getInstance().has(k2)) return Component.translatable(k2);
+
+            String k3 = "tag." + ns + "." + path;
+            if (Language.getInstance().has(k3)) return Component.translatable(k3);
+        }
+
         String key = "stackgroup." + ReliableEmi.MOD_ID + "." + group.getId().getPath();
         if (Language.getInstance().has(key)) return Component.translatable(key);
 
         String fallbackKey = "stackgroup.emixx." + group.getId().getPath();
         if (Language.getInstance().has(fallbackKey)) return Component.translatable(fallbackKey);
 
-        String tagKey = "tag.item." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
-        if (Language.getInstance().has(tagKey)) return Component.translatable(tagKey);
+        String itemTagKey = "tag.item." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
+        if (Language.getInstance().has(itemTagKey)) return Component.translatable(itemTagKey);
 
-        String[] parts = group.getId().getPath().split("_");
+        String blockTagKey = "tag.block." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
+        if (Language.getInstance().has(blockTagKey)) return Component.translatable(blockTagKey);
+
+        String entityTagKey = "tag.entity_type." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
+        if (Language.getInstance().has(entityTagKey)) return Component.translatable(entityTagKey);
+
+        String fluidTagKey = "tag.fluid." + group.getId().getNamespace() + "." + group.getId().getPath().replace('/', '.');
+        if (Language.getInstance().has(fluidTagKey)) return Component.translatable(fluidTagKey);
+
+        String path = group.getId().getPath();
+        for (String pfx : List.of("minecraft_item_", "minecraft_block_", "minecraft_entity_type_", "minecraft_fluid_")) {
+            if (path.startsWith(pfx)) {
+                path = path.substring(pfx.length());
+                break;
+            }
+        }
+
+        String[] parts = path.split("[_/]");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
             if (!sb.isEmpty()) sb.append(' ');

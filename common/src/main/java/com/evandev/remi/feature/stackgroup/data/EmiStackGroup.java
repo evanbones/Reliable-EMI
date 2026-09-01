@@ -14,21 +14,27 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
 public class EmiStackGroup extends StackGroup {
+    private final TagKey<?> tagKey;
     private final Map<ResourceLocation, List<EmiIngredient>> targetMap;
     private final Set<ResourceLocation> allTargetIds;
     private final Set<ResourceLocation> excludedIds;
     private final List<Pattern> regexes;
 
-    public EmiStackGroup(ResourceLocation id, Set<EmiIngredient> targets, Set<ResourceLocation> excludedIds, List<Pattern> regexes, Component name) {
+    public EmiStackGroup(ResourceLocation id, @Nullable TagKey<?> tagKey, Set<EmiIngredient> targets, Set<ResourceLocation> excludedIds, List<Pattern> regexes, Component name) {
         super(id, name);
+        this.tagKey = tagKey;
         this.excludedIds = excludedIds;
         this.regexes = regexes != null ? regexes : List.of();
 
@@ -36,7 +42,9 @@ public class EmiStackGroup extends StackGroup {
         Set<ResourceLocation> tempIds = new HashSet<>();
         for (EmiIngredient ingredient : targets) {
             for (EmiStack stack : getIngredientStacks(ingredient)) {
+                if (stack == null || stack.isEmpty()) continue;
                 ResourceLocation stackId = stack.getId();
+                if (stackId == null) continue;
                 tempMap.computeIfAbsent(stackId, k -> new ArrayList<>()).add(ingredient);
                 tempIds.add(stackId);
             }
@@ -45,6 +53,15 @@ public class EmiStackGroup extends StackGroup {
         this.allTargetIds = tempIds;
     }
 
+    public EmiStackGroup(ResourceLocation id, Set<EmiIngredient> targets, Set<ResourceLocation> excludedIds, List<Pattern> regexes, Component name) {
+        this(id, null, targets, excludedIds, regexes, name);
+    }
+
+    public @Nullable TagKey<?> getTagKey() {
+        return tagKey;
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
     public static List<EmiStack> getIngredientStacks(EmiIngredient ingredient) {
         List<EmiStack> stacks = ingredient.getEmiStacks();
         if (stacks.isEmpty() && ingredient instanceof TagEmiIngredient tagIngredient) {
@@ -56,6 +73,27 @@ public class EmiStackGroup extends StackGroup {
                         @SuppressWarnings("unchecked")
                         TagKey<Block> blockTagKey = (TagKey<Block>) rawKey;
                         var tagHolderList = BuiltInRegistries.BLOCK.getTag(blockTagKey);
+                        if (tagHolderList.isPresent()) {
+                            for (var holder : tagHolderList.get()) {
+                                rawStacks.add(EmiStack.of(holder.value()));
+                            }
+                        }
+                    } else if (rawKey.registry().equals(BuiltInRegistries.ENTITY_TYPE.key())) {
+                        @SuppressWarnings("unchecked")
+                        TagKey<EntityType<?>> entityTagKey = (TagKey<EntityType<?>>) rawKey;
+                        var tagHolderList = BuiltInRegistries.ENTITY_TYPE.getTag(entityTagKey);
+                        if (tagHolderList.isPresent()) {
+                            for (var holder : tagHolderList.get()) {
+                                SpawnEggItem egg = SpawnEggItem.byId(holder.value());
+                                if (egg != null) {
+                                    rawStacks.add(EmiStack.of(egg));
+                                }
+                            }
+                        }
+                    } else if (rawKey.registry().equals(BuiltInRegistries.FLUID.key())) {
+                        @SuppressWarnings("unchecked")
+                        TagKey<Fluid> fluidTagKey = (TagKey<Fluid>) rawKey;
+                        var tagHolderList = BuiltInRegistries.FLUID.getTag(fluidTagKey);
                         if (tagHolderList.isPresent()) {
                             for (var holder : tagHolderList.get()) {
                                 rawStacks.add(EmiStack.of(holder.value()));
@@ -74,11 +112,11 @@ public class EmiStackGroup extends StackGroup {
                 } catch (Exception ignored) {
                 }
                 if (!rawStacks.isEmpty()) {
-                    return rawStacks;
+                    return rawStacks.stream().filter(s -> s != null && !s.isEmpty() && s.getId() != null).toList();
                 }
             }
         }
-        return stacks;
+        return stacks.stream().filter(s -> s != null && !s.isEmpty() && s.getId() != null).toList();
     }
 
     private static String normalizeType(String typeStr) {
