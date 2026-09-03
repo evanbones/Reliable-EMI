@@ -1,3 +1,3 @@
-### Fixed
+### Changed
 
-- Fixed entity and block tags not working for in-game stackgroup creation.
+- Scrollbar thumb size is now clamped to a sensible minimum.

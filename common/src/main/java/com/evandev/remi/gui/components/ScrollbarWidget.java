@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ScrollbarWidget extends AbstractWidget {
     public static final int WIDTH = 16;
+    private static final int MIN_THUMB_HEIGHT = 6;
     private static final ResourceLocation TRACK_SPRITES = ReliableEmi.res("widget/scrollbar_track");
     private static final ResourceLocation THUMB_SPRITES = ReliableEmi.res("widget/scrollbar_thumb");
     private static final ResourceLocation VANILLA_TRACK_SPRITES = ReliableEmi.res("widget/scrollbar_track_vanilla");
@@ -67,13 +68,10 @@ public class ScrollbarWidget extends AbstractWidget {
             }
 
             double segment = (double) trackHeight / total;
-            int start = (int) (y + segment * progress) - panelPadding;
-            int end = (int) (start + segment * panel.space.th);
-
-            if (progress == totalScrollRows) {
-                end = y + trackHeight - panelPadding - trackPadding;
-                start = (int) (end - Math.max(segment * panel.space.th, 1)) - panelPadding;
-            }
+            int thumbHeight = Math.min((int) Math.max(Math.round(segment * panel.space.th), MIN_THUMB_HEIGHT), trackHeight);
+            double fraction = (double) progress / totalScrollRows;
+            int start = (int) Math.round(y + fraction * (trackHeight - thumbHeight)) - panelPadding;
+            int end = start + thumbHeight;
 
             if (panel.theme == SidebarTheme.VANILLA) {
                 guiGraphics.blitSprite(VANILLA_THUMB_SPRITES, x, start, width, end - start);
@@ -104,11 +102,13 @@ public class ScrollbarWidget extends AbstractWidget {
         SidebarPanelWithScrollOffset scrollPanel = (SidebarPanelWithScrollOffset) this.panel;
 
         int totalScrollRows = scrollPanel.remi$getTotalScrollRows();
-        int thumbHeight = (int) (((double) height / (totalScrollRows + panel.space.th)) * panel.space.th);
+        int total = totalScrollRows + panel.space.th;
+        int thumbHeight = total == 0 ? height : Math.min((int) Math.max(Math.round(((double) height / total) * panel.space.th), MIN_THUMB_HEIGHT), height);
 
         int localY = (int) mouseY - this.getY() - thumbHeight / 2;
         int trackHeight = height - thumbHeight;
-        double fraction = (double) localY / trackHeight;
+        double fraction = trackHeight == 0 ? 0 : (double) localY / trackHeight;
+        fraction = Math.max(0, Math.min(1, fraction));
         int scrollOffset = (int) Math.round(fraction * totalScrollRows);
 
         scrollPanel.remi$setScrollOffset(scrollOffset);
