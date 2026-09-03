@@ -1,3 +1,3 @@
-### Changed
+### Fixed
 
-- Scrollbar thumb size is now clamped to a sensible minimum.
+- Fixed scrollbar thumb disappearing on tabs with too few items to scroll.

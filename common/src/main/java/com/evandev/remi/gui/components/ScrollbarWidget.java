@@ -63,13 +63,13 @@ public class ScrollbarWidget extends AbstractWidget {
             int totalScrollRows = scrollPanel.remi$getTotalScrollRows();
             int total = totalScrollRows + panel.space.th;
 
-            if (totalScrollRows == 0) {
+            if (total <= 0) {
                 return;
             }
 
             double segment = (double) trackHeight / total;
             int thumbHeight = Math.min((int) Math.max(Math.round(segment * panel.space.th), MIN_THUMB_HEIGHT), trackHeight);
-            double fraction = (double) progress / totalScrollRows;
+            double fraction = totalScrollRows == 0 ? 0 : (double) progress / totalScrollRows;
             int start = (int) Math.round(y + fraction * (trackHeight - thumbHeight)) - panelPadding;
             int end = start + thumbHeight;
 
