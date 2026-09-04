@@ -1,3 +1,3 @@
-### Fixed
+### Changed
 
-- Fixed scrollbar thumb disappearing on tabs with too few items to scroll.
+- Reverted 4.6.6 changes.
