@@ -21,7 +21,8 @@ public class EmiSearchMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/searchtree/SuffixArray;add(Ljava/lang/Object;Ljava/lang/String;)V",
-                    ordinal = 2
+                    ordinal = 2,
+                    remap = true
             )
     )
     private static void wrapAddIdPathToNames(SuffixArray instance, Object object, String contents, Operation<Void> original) {

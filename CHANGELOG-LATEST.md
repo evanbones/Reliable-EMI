@@ -1,1 +1,4 @@
-- Backported REMI 4.x from 1.21.1.
+### Fixed
+
+- Fixed startup crash.
+- Fixed block tag tooltips displaying invisible blocks.
