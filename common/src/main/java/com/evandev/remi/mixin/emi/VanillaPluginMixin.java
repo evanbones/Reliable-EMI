@@ -10,6 +10,7 @@ import dev.emi.emi.api.stack.EmiRegistryAdapter;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +31,12 @@ public class VanillaPluginMixin {
 
     @Inject(method = "initialize", at = @At("TAIL"))
     private void onInitialize(EmiInitRegistry registry, CallbackInfo ci) {
-        registry.addRegistryAdapter(EmiRegistryAdapter.simple(Block.class, EmiPort.getBlockRegistry(), EmiStack::of));
+        registry.addRegistryAdapter(EmiRegistryAdapter.simple(Block.class, EmiPort.getBlockRegistry(), (block, changes, amount) -> {
+            if (block.asItem() == Items.AIR) {
+                return EmiStack.EMPTY;
+            }
+            return EmiStack.of(block, changes, amount);
+        }));
         if (ReliableEmiConfig.enableEntityTags) {
             @SuppressWarnings("unchecked")
             Class<EntityType<?>> entityTypeClass = (Class) EntityType.class;

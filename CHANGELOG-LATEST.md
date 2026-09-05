@@ -1,3 +1,3 @@
-### Changed
+### Fixed
 
-- Reverted 4.6.6 changes.
+- Fixed block tag tooltips displaying invisible blocks.
