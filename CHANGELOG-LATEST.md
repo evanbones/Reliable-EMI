@@ -1,3 +1,1 @@
-### Fixed
-
-- More protection against random crashes.
+- Backported REMI 4.x from 1.21.1.

@@ -1,0 +1,45 @@
+{
+  "required": true,
+  "package": "com.evandev.remi.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "${mod_id}.refmap.json",
+  "client": [
+    "emi.BoMScreenMixin",
+    "emi.EmiFavoritesMixin",
+    "emi.EmiReloadManagerReloadWorkerMixin",
+    "emi.EmiScreenManagerAccessor",
+    "emi.EmiScreenManagerMixin",
+    "emi.EmiScreenManagerScreenSpaceMixin",
+    "emi.EmiScreenManagerSidebarPanelMixin",
+    "emi.EmiSearchMixin",
+    "emi.EmiSearchSearchWorkerMixin",
+    "emi.EmiSearchWidgetMixin",
+    "emi.EmiStackListMixin",
+    "emi.NameQueryMixin",
+    "emi.QueryTypeMixin",
+    "minecraft.AbstractContainerScreenAccessor",
+    "minecraft.CreativeModeInventoryScreenMixin",
+    "minecraft.EditBoxMixin",
+    "minecraft.RecipeBookComponentMixin",
+    "minecraft.ScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "emi.CreateItemC2SPacketMixin",
+    "emi.EmiApiMixin",
+    "emi.EmiIngredientRecipeMixin",
+    "emi.EmiTagRecipeMixin",
+    "emi.RegexTagQueryMixin",
+    "emi.SidebarTypeMixin",
+    "emi.EmiSidebarsMixin",
+    "emi.SidebarButtonWidgetMixin",
+    "emi.SizedButtonWidgetAccessor",
+    "emi.TagEmiIngredientMixin",
+    "emi.TagQueryMixin",
+    "emi.VanillaPluginMixin",
+    "emi.EmiConfigMixin"
+  ]
+}

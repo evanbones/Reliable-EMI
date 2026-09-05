@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "com.evandev.remi.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "refmap": "${mod_id}.refmap.json",
+  "plugin": "com.evandev.remi.mixinplugin.ReliableEmiForgeMixinPlugin",
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "mekanism.GuiElementHandlerMixin"
+  ]
+}

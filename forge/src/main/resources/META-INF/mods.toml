@@ -1,41 +1,47 @@
-modLoader = "kotlinforforge"
-loaderVersion = "[4.10,)"
+modLoader = "javafml"
+loaderVersion = "${forge_loader_version_range}"
+license = "${license}"
 issueTrackerURL = "https://github.com/evanbones/Reliable-EMI/issues"
-license = "MIT"
 
 [[mods]]
-modId = "emixx"
+modId = "${mod_id}"
 version = "${version}"
-displayName = "EMI++"
-authors = "ConcerroX, evanbones"
-description = '''
-Adds many useful features to EMI!
-'''
-logoFile = "icon.png"
+displayName = "${mod_name}"
+logoFile = "${mod_id}.png"
+credits = "${credits}"
+authors = "${mod_author}"
+description = '''${description}'''
 
 [[mixins]]
-config = "emixx.mixins.json"
+config = "${mod_id}.mixins.json"
 
 [[mixins]]
-config = "emixx-common.mixins.json"
+config = "${mod_id}.forge.mixins.json"
 
-[[dependencies.emixx]]
+[[dependencies.${ mod_id }]]
 modId = "forge"
 mandatory = true
-versionRange = "[47,)"
+versionRange = "${forge_loader_version_range}"
 ordering = "NONE"
 side = "CLIENT"
 
-[[dependencies.emixx]]
+[[dependencies.${ mod_id }]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1, 1.21)"
+versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "CLIENT"
 
-[[dependencies.emixx]]
+[[dependencies.${ mod_id }]]
 modId = "emi"
 mandatory = true
-versionRange = "[1.1.22,)"
-ordering = "BEFORE"
-side = "BOTH"
+versionRange = "[1.1.0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.${ mod_id }]]
+modId = "yet_another_config_lib_v3"
+mandatory = true
+versionRange = "[${yacl_version},)"
+ordering = "NONE"
+side = "CLIENT"
