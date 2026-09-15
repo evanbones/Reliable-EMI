@@ -1,3 +1,3 @@
 ### Fixed
 
-- Modulation icons now show in stackgroup previews.
+- Fixed REMI outlines not accounting for exclusion zones.

@@ -59,6 +59,10 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Final
     public boolean search;
 
+    @Shadow
+    @Final
+    public boolean rtl;
+
     @Unique
     private String remi$lastSearchValue;
 
@@ -242,7 +246,8 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                     EmiIngredient stack = stacks.get(i++);
                     EmiStack gridStack = stack instanceof EmiStack es ? es : (stack != null && !stack.getEmiStacks().isEmpty() ? stack.getEmiStacks().getFirst() : null);
                     if (gridStack != null) {
-                        StackManager.stackGrid[yo][xo] = gridStack;
+                        int col = rtl ? xo + tw - getWidth(yo) : xo;
+                        StackManager.stackGrid[yo][col] = gridStack;
                     }
                 }
             }
