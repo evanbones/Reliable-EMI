@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.3] - 2026-09-19
+
+### Fixed
+
+- Reduced search freeze/lag.
+- Note: searching for stackgroups now requires using the `%` prefix.
+
+## [4.7.2] - 2026-09-14
+
+### Fixed
+
+- Fixed REMI outlines not accounting for exclusion zones.
+
+## [4.7.1] - 2026-09-12
+
+### Fixed
+
+- Modulation icons now show in stackgroup previews.
+
+## [4.7.0] - 2026-09-09
+
+### Added
+
+- Added `/remi reload` command.
+
+### Fixed
+
+- Fixed Extended Cursors changing the mouse to the regular pointer on creative tabs.
+- Fixed issues with better cheat mode.
+
+### Changed
+
+- Tag entries without explicit registry names now use block, entity, and fluid fallbacks.
+
 ## [4.6.9] - 2026-09-08
 
 ### Fixed

@@ -1,4 +1,8 @@
+### Changed
+
+- Backported updates from 1.21.1.
+
 ### Fixed
 
-- Fixed Fabric crashes.
-- Improved compatibility with other mods that modify EMI.
+- Reduced search freeze/lag.
+    - Note: searching for stackgroups now requires using the `%` prefix.

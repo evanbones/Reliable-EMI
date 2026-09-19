@@ -73,6 +73,7 @@ public class ItemTabButton extends TabButton {
         this.position = tabPosition;
         this.title = tab.creativeModeTab() != null ? tab.creativeModeTab().getDisplayName() : null;
         this.customIcon = fetchRecreativeIcon(tab.creativeModeTab());
+        this.visible = tab.creativeModeTab() != null;
     }
 
     private static ResourceLocation fetchRecreativeIcon(CreativeModeTab tab) {

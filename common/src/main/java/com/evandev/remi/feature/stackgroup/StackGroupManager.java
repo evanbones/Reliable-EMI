@@ -34,6 +34,8 @@ public class StackGroupManager {
     public static final IdentityHashMap<EmiStack, List<GroupedEmiStack<EmiStack>>> stackToGroupedStacks = new IdentityHashMap<>();
     private static final Map<String, BiFunction<ResourceLocation, JsonObject, StackGroup>> typeRegistry = new HashMap<>();
     private static final Map<ResourceLocation, List<GroupedEmiStack<EmiStack>>> itemToGroupedStacks = new HashMap<>();
+    private static final Map<StackGroup, String> groupLowerIds = new IdentityHashMap<>();
+    private static final Map<StackGroup, String> groupLowerNames = new IdentityHashMap<>();
     public static Map<StackGroup, EmiGroupStack> groupToGroupStacks = new HashMap<>();
 
     static {
@@ -42,7 +44,10 @@ public class StackGroupManager {
 
         BiFunction<ResourceLocation, JsonObject, StackGroup> tagFactory = (id, json) -> {
             String tagName = GsonHelper.getAsString(json, "tag");
-            String registryName = GsonHelper.getAsString(json, "registry", "minecraft:item");
+            String registryName = json.has("registry")
+                    ? GsonHelper.getAsString(json, "registry")
+                    : EmiStackGroup.resolveTagRegistry(ResourceLocation.tryParse(tagName));
+            registryName = EmiStackGroup.normalizeRegistry(registryName);
             @SuppressWarnings("rawtypes")
             TagKey tagKey = TagKey.create(
                     ResourceKey.createRegistryKey(new ResourceLocation(registryName)),
@@ -104,6 +109,18 @@ public class StackGroupManager {
         return resolveGroupPath(filename);
     }
 
+    public static Path getStackGroupsDir() {
+        Path dir = Services.PLATFORM.getConfigDirectory().resolve(ReliableEmi.MOD_ID).resolve("stack_groups");
+        try {
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+        } catch (Exception e) {
+            ReliableEmi.LOGGER.error("Failed to create stack_groups directory", e);
+        }
+        return dir;
+    }
+
     public static Path getGroupPath(ResourceLocation tag) {
         String name = tag.getPath().replace('/', '_');
         String filename = tag.getNamespace() + "_" + name + ".json";
@@ -111,7 +128,8 @@ public class StackGroupManager {
     }
 
     private static Path resolveGroupPath(String filename) {
-        Path remiPath = Services.PLATFORM.getConfigDirectory().resolve("remi").resolve("stack_groups").resolve(filename);
+        Path remiDir = getStackGroupsDir();
+        Path remiPath = remiDir.resolve(filename);
         if (Files.exists(remiPath)) {
             return remiPath;
         }
@@ -119,7 +137,7 @@ public class StackGroupManager {
         if (Files.exists(emixxPath)) {
             return emixxPath;
         }
-        return ReliableEmiConfig.getConfigDir().resolve("stack_groups").resolve(filename);
+        return remiPath;
     }
 
     public static StackGroup getGroup(TagKey<?> tagKey) {
@@ -242,7 +260,7 @@ public class StackGroupManager {
             json.addProperty("type", "remi:tag");
             json.addProperty("id", tag.toString());
             json.addProperty("tag", tag.toString());
-            json.addProperty("registry", "minecraft:item");
+            json.addProperty("registry", EmiStackGroup.resolveTagRegistry(tag));
             json.addProperty("enabled", enabled);
             try (var writer = Files.newBufferedWriter(file)) {
                 new GsonBuilder().setPrettyPrinting().create().toJson(json, writer);
@@ -268,13 +286,21 @@ public class StackGroupManager {
             EmiGroupStack gs = groupToGroupStacks.get(group);
             if (gs == null) continue;
 
-            boolean match = false;
-
-            if (group.getId().toString().toLowerCase(Locale.ROOT).contains(lower)) {
-                match = true;
-            } else if (gs.getName().getString().toLowerCase(Locale.ROOT).contains(lower)) {
-                match = true;
+            String lowerId = groupLowerIds.get(group);
+            if (lowerId == null) {
+                lowerId = group.getId().toString().toLowerCase(Locale.ROOT);
+                groupLowerIds.put(group, lowerId);
             }
+            String lowerName = groupLowerNames.get(group);
+            if (lowerName == null) {
+                Component nameComp = gs.getName();
+                if (nameComp != null) {
+                    lowerName = nameComp.getString().toLowerCase(Locale.ROOT);
+                    groupLowerNames.put(group, lowerName);
+                }
+            }
+
+            boolean match = lowerId.contains(lower) || lowerName != null && lowerName.contains(lower);
 
             if (match) {
                 for (var item : gs.getItems()) {
@@ -288,6 +314,8 @@ public class StackGroupManager {
     public static void reload() {
         StackManager.invalidateStacks();
         stackGroups.clear();
+        groupLowerIds.clear();
+        groupLowerNames.clear();
         if (!ReliableEmiConfig.enableStackGroups) return;
 
         Map<ResourceLocation, StackGroup> loaded = new LinkedHashMap<>();
@@ -311,7 +339,7 @@ public class StackGroupManager {
         }
 
         List<Path> configDirs = new ArrayList<>();
-        Path primaryDir = ReliableEmiConfig.getConfigDir().resolve("stack_groups");
+        Path primaryDir = getStackGroupsDir();
         if (Files.exists(primaryDir)) {
             configDirs.add(primaryDir);
         }
@@ -331,7 +359,10 @@ public class StackGroupManager {
                             idString = json.get("id").getAsString();
                         } else if (json.has("tag")) {
                             String tag = json.get("tag").getAsString();
-                            String registry = json.has("registry") ? json.get("registry").getAsString() : "minecraft:item";
+                            String registry = json.has("registry")
+                                    ? json.get("registry").getAsString()
+                                    : EmiStackGroup.resolveTagRegistry(ResourceLocation.tryParse(tag));
+                            registry = EmiStackGroup.normalizeRegistry(registry);
                             if (registry.equals("minecraft:item")) {
                                 idString = tag;
                             } else {
@@ -577,6 +608,16 @@ public class StackGroupManager {
         }
 
         groupToGroupStacks = localGroupMap;
+
+        groupLowerIds.clear();
+        groupLowerNames.clear();
+        for (StackGroup g : stackGroups) {
+            groupLowerIds.put(g, g.getId().toString().toLowerCase(Locale.ROOT));
+            EmiGroupStack gs = localGroupMap.get(g);
+            if (gs != null && gs.getName() != null) {
+                groupLowerNames.put(g, gs.getName().getString().toLowerCase(Locale.ROOT));
+            }
+        }
 
         for (var entry : localGroupMap.entrySet()) {
             String groupId = entry.getKey().getId().toString();

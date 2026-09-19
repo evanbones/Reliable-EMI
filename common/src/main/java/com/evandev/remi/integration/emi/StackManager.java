@@ -16,6 +16,7 @@ import java.util.*;
 
 public class StackManager {
     public static final Map<SidebarType, Set<ResourceLocation>> expandedStackGroups = new HashMap<>();
+    private static final Map<SidebarType, Integer> sidebarVersions = new EnumMap<>(SidebarType.class);
     public static List<EmiStack> indexStacks = EmiStackList.filteredStacks;
     public static List<EmiStack> sourceStacks = List.of();
     public static List<EmiStack> searchedStacks = List.of();
@@ -27,14 +28,27 @@ public class StackManager {
     private static List<EmiStack> groupedIndexStacks = List.of();
     private static List<EmiStack> lastRepopulatedDisplayedStacks;
     private static List<EmiStack> lastRepopulatedUnsearchedStacks;
-    private static int stacksVersion;
+    private static int globalStacksVersion;
 
     public static int getStacksVersion() {
-        return stacksVersion;
+        return globalStacksVersion;
+    }
+
+    public static int getStacksVersion(SidebarType type) {
+        if (type == null) return globalStacksVersion;
+        return sidebarVersions.getOrDefault(type, 0) + globalStacksVersion;
     }
 
     public static void invalidateStacks() {
-        stacksVersion++;
+        globalStacksVersion++;
+    }
+
+    public static void invalidateStacks(SidebarType type) {
+        if (type == null) {
+            globalStacksVersion++;
+        } else {
+            sidebarVersions.put(type, sidebarVersions.getOrDefault(type, 0) + 1);
+        }
     }
 
     public static boolean isGroupExpanded(SidebarType type, ResourceLocation groupId) {

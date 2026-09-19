@@ -9,23 +9,26 @@ import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.TabButton;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemTabNavigationBar extends AbstractWidget {
+public class ItemTabNavigationBar extends AbstractWidget implements ContainerEventHandler {
     private final ItemTabManager tabManager;
     private final boolean isVertical;
     private final boolean isRightSide;
     public List<ItemTabButton> tabButtons = new ArrayList<>();
     public List<ItemTab> visibleTabs = new ArrayList<>();
     private GridLayout layout = new GridLayout();
-    private GuiEventListener focusedChild;
+    private @Nullable GuiEventListener focused;
+    private boolean isDragging;
 
     public ItemTabNavigationBar(ItemTabManager tabManager, boolean isVertical, boolean isRightSide) {
         super(0, 0, 0, 0, Component.empty());
@@ -125,14 +128,37 @@ public class ItemTabNavigationBar extends AbstractWidget {
         tabButtons.forEach(b -> b.render(raw, mouseX, mouseY, partialTick));
     }
 
-    public void setFocusedChild(GuiEventListener child) {
-        if (focusedChild != null) focusedChild.setFocused(false);
-        focusedChild = child;
+    @Override
+    public List<? extends GuiEventListener> children() {
+        return this.tabButtons;
+    }
+
+    @Override
+    public final boolean isDragging() {
+        return this.isDragging;
+    }
+
+    @Override
+    public final void setDragging(boolean dragging) {
+        this.isDragging = dragging;
+    }
+
+    @Override
+    public @Nullable GuiEventListener getFocused() {
+        return this.focused;
+    }
+
+    @Override
+    public void setFocused(@Nullable GuiEventListener child) {
+        if (this.focused != null) {
+            this.focused.setFocused(false);
+        }
         if (child != null) {
             child.setFocused(true);
-            if (child instanceof TabButton tb) {
-                tabManager.setCurrentTab(tb.tab(), false);
-            }
+        }
+        this.focused = child;
+        if (child instanceof TabButton tb) {
+            tabManager.setCurrentTab(tb.tab(), false);
         }
     }
 
@@ -142,11 +168,15 @@ public class ItemTabNavigationBar extends AbstractWidget {
         if (!focused) setFocusedChild(null);
     }
 
+    public void setFocusedChild(GuiEventListener child) {
+        setFocused(child);
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (TabButton child : tabButtons) {
             if (child.mouseClicked(mouseX, mouseY, button)) {
-                setFocusedChild(child);
+                setFocused(child);
                 return true;
             }
         }

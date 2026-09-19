@@ -1,4 +1,4 @@
-package com.evandev.remi.mixin.emi;
+package com.evandev.remi.mixin.emi.accessor;
 
 import dev.emi.emi.screen.EmiScreenManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,9 +8,8 @@ import java.util.List;
 
 @Mixin(value = EmiScreenManager.class, remap = false)
 public interface EmiScreenManagerAccessor {
-
-    @Accessor("panels")
+    @Accessor(value = "panels", remap = false)
     static List<EmiScreenManager.SidebarPanel> getPanels() {
-        throw new UnsupportedOperationException();
+        throw new AssertionError();
     }
 }

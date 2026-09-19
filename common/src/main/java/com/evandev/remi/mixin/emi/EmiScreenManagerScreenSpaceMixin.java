@@ -55,6 +55,10 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
     @Final
     public boolean search;
 
+    @Shadow
+    @Final
+    public boolean rtl;
+
     @Unique
     private String remi$lastSearchValue;
 
@@ -119,7 +123,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
         boolean editMode = EmiConfig.editMode;
         boolean tabsEnabled = ReliableEmiConfig.isCreativeTabsEnabled(type);
         boolean groupsEnabled = ReliableEmiConfig.isStackGroupsEnabled(type);
-        int version = StackManager.getStacksVersion();
+        int version = StackManager.getStacksVersion(type);
 
         if (remi$cachedStacks != null
                 && remi$cacheVersion == version
@@ -138,7 +142,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
         List<? extends EmiIngredient> stacks = remi$buildStacks(type, source, searchValue, tabsEnabled, groupsEnabled);
 
         remi$cachedStacks = stacks;
-        remi$cacheVersion = StackManager.getStacksVersion();
+        remi$cacheVersion = version;
         remi$cacheSource = source;
         remi$cacheSourceSize = source.size();
         remi$cacheType = type;
@@ -244,7 +248,8 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                     EmiIngredient stack = stacks.get(i++);
                     EmiStack gridStack = stack instanceof EmiStack es ? es : (stack != null && !stack.getEmiStacks().isEmpty() ? stack.getEmiStacks().get(0) : null);
                     if (gridStack != null) {
-                        StackManager.stackGrid[yo][xo] = gridStack;
+                        int col = rtl ? xo + tw - getWidth(yo) : xo;
+                        StackManager.stackGrid[yo][col] = gridStack;
                     }
                 }
             }
