@@ -34,6 +34,8 @@ public class StackGroupManager {
     public static final IdentityHashMap<EmiStack, List<GroupedEmiStack<EmiStack>>> stackToGroupedStacks = new IdentityHashMap<>();
     private static final Map<String, BiFunction<ResourceLocation, JsonObject, StackGroup>> typeRegistry = new HashMap<>();
     private static final Map<ResourceLocation, List<GroupedEmiStack<EmiStack>>> itemToGroupedStacks = new HashMap<>();
+    private static final Map<StackGroup, String> groupLowerIds = new IdentityHashMap<>();
+    private static final Map<StackGroup, String> groupLowerNames = new IdentityHashMap<>();
     public static Map<StackGroup, EmiGroupStack> groupToGroupStacks = new HashMap<>();
 
     static {
@@ -284,13 +286,17 @@ public class StackGroupManager {
             EmiGroupStack gs = groupToGroupStacks.get(group);
             if (gs == null) continue;
 
-            boolean match = false;
-
-            if (group.getId().toString().toLowerCase(Locale.ROOT).contains(lower)) {
-                match = true;
-            } else if (gs.getName().getString().toLowerCase(Locale.ROOT).contains(lower)) {
-                match = true;
+            String lowerId = groupLowerIds.computeIfAbsent(group, g -> g.getId().toString().toLowerCase(Locale.ROOT));
+            String lowerName = groupLowerNames.get(group);
+            if (lowerName == null) {
+                Component nameComp = gs.getName();
+                if (nameComp != null) {
+                    lowerName = nameComp.getString().toLowerCase(Locale.ROOT);
+                    groupLowerNames.put(group, lowerName);
+                }
             }
+
+            boolean match = lowerId.contains(lower) || lowerName != null && lowerName.contains(lower);
 
             if (match) {
                 for (var item : gs.getItems()) {
@@ -304,6 +310,8 @@ public class StackGroupManager {
     public static void reload() {
         StackManager.invalidateStacks();
         stackGroups.clear();
+        groupLowerIds.clear();
+        groupLowerNames.clear();
         if (!ReliableEmiConfig.enableStackGroups) return;
 
         Map<ResourceLocation, StackGroup> loaded = new LinkedHashMap<>();
@@ -596,6 +604,16 @@ public class StackGroupManager {
         }
 
         groupToGroupStacks = localGroupMap;
+
+        groupLowerIds.clear();
+        groupLowerNames.clear();
+        for (StackGroup g : stackGroups) {
+            groupLowerIds.put(g, g.getId().toString().toLowerCase(Locale.ROOT));
+            EmiGroupStack gs = localGroupMap.get(g);
+            if (gs != null && gs.getName() != null) {
+                groupLowerNames.put(g, gs.getName().getString().toLowerCase(Locale.ROOT));
+            }
+        }
 
         for (var entry : localGroupMap.entrySet()) {
             String groupId = entry.getKey().getId().toString();

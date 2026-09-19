@@ -34,30 +34,27 @@ public class EmiSearchSearchWorkerMixin implements SearchWorkerBridge {
     @WrapOperation(method = "run", at = @At(value = "INVOKE",
             target = "Ldev/emi/emi/search/EmiSearch;apply(Ldev/emi/emi/search/EmiSearch$SearchWorker;Ljava/util/List;)V"))
     private void run(@Coerce Object worker, List<? extends EmiIngredient> stacks, Operation<Void> original) {
+        EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
+        boolean isIndex = searchPanel != null && searchPanel.getType() == SidebarType.INDEX;
+        if (isIndex) {
+            List<EmiStack> combinedStacks = new ArrayList<>(stacks.size());
+            for (EmiIngredient stack : stacks) {
+                if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);
+            }
+
+            String query = ((SearchWorkerBridge) worker).remi$getQuery();
+            if (query != null && query.startsWith("%")) {
+                String groupQuery = query.substring(1);
+                if (!groupQuery.isEmpty()) {
+                    StackGroupManager.appendStacksForMatchingGroups(groupQuery, combinedStacks);
+                }
+            }
+
+            StackManager.buildStacks(combinedStacks);
+        }
+
         synchronized (EmiSearch.class) {
             original.call(worker, stacks);
-            if (EmiSearch.stacks != stacks) {
-                return;
-            }
-
-            EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
-            boolean isIndex = searchPanel != null && searchPanel.getType() == SidebarType.INDEX;
-            if (isIndex) {
-                List<EmiStack> combinedStacks = new ArrayList<>();
-                for (EmiIngredient stack : stacks) {
-                    if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);
-                }
-
-                String query = ((SearchWorkerBridge) worker).remi$getQuery();
-                if (query != null && !query.isEmpty()) {
-                    String cleanQuery = query.startsWith("%") ? query.substring(1) : query;
-                    if (!cleanQuery.isEmpty()) {
-                        StackGroupManager.appendStacksForMatchingGroups(cleanQuery, combinedStacks);
-                    }
-                }
-
-                StackManager.buildStacks(combinedStacks);
-            }
         }
     }
 }

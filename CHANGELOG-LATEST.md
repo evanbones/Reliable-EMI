@@ -1,3 +1,4 @@
 ### Fixed
 
-- Fixed REMI outlines not accounting for exclusion zones.
+- Reduced search freeze/lag.
+    - Note: searching for stackgroups now requires using the `%` prefix.

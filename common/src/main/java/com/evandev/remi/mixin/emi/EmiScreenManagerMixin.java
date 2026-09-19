@@ -196,7 +196,7 @@ public abstract class EmiScreenManagerMixin {
 
     @Inject(method = "repopulatePanels", at = @At("HEAD"))
     private static void remi$invalidateStackCache(SidebarType type, CallbackInfo ci) {
-        StackManager.invalidateStacks();
+        StackManager.invalidateStacks(type);
     }
 
     @Inject(method = "recalculate", at = @At("HEAD"))

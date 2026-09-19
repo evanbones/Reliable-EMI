@@ -7,22 +7,20 @@ import com.evandev.remi.feature.stackgroup.StackGroupManager;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.StackManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import dev.emi.emi.EmiPort;
-import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
-import dev.emi.emi.bom.BoM;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.config.SidebarType;
 import dev.emi.emi.runtime.EmiDrawContext;
-import dev.emi.emi.runtime.EmiHidden;
 import dev.emi.emi.runtime.EmiSidebars;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.StackBatcher;
 import dev.emi.emi.search.EmiSearch;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -33,8 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
-
-import static com.evandev.remi.integration.emi.ScreenManager.ENTRY_SIZE;
 
 @Mixin(value = EmiScreenManager.ScreenSpace.class, remap = false)
 public abstract class EmiScreenManagerScreenSpaceMixin {
@@ -121,7 +117,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
         boolean editMode = EmiConfig.editMode;
         boolean tabsEnabled = ReliableEmiConfig.isCreativeTabsEnabled(type);
         boolean groupsEnabled = ReliableEmiConfig.isStackGroupsEnabled(type);
-        int version = StackManager.getStacksVersion();
+        int version = StackManager.getStacksVersion(type);
 
         if (remi$cachedStacks != null
                 && remi$cacheVersion == version
@@ -140,7 +136,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
         List<? extends EmiIngredient> stacks = remi$buildStacks(type, source, searchValue, tabsEnabled, groupsEnabled);
 
         remi$cachedStacks = stacks;
-        remi$cacheVersion = StackManager.getStacksVersion();
+        remi$cacheVersion = version;
         remi$cacheSource = source;
         remi$cacheSourceSize = source.size();
         remi$cacheType = type;
