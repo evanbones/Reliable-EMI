@@ -309,38 +309,6 @@ public class EmiStackGroup extends StackGroup {
 
     private static EmiIngredient deserialize(JsonElement element) {
         JsonElement normalized = normalizeIngredientJson(element);
-        if (normalized instanceof JsonObject obj) {
-            String type = GsonHelper.getAsString(obj, "type", "item");
-            switch (type) {
-                case "item", "emi:item" -> {
-                    String id = GsonHelper.getAsString(obj, "id", null);
-                    if (id != null) {
-                        ResourceLocation loc = ResourceLocation.tryParse(id);
-                        if (loc == null || !BuiltInRegistries.ITEM.containsKey(loc)) {
-                            return EmiStack.EMPTY;
-                        }
-                    }
-                }
-                case "fluid", "emi:fluid" -> {
-                    String id = GsonHelper.getAsString(obj, "id", null);
-                    if (id != null) {
-                        ResourceLocation loc = ResourceLocation.tryParse(id);
-                        if (loc == null || !BuiltInRegistries.FLUID.containsKey(loc)) {
-                            return EmiStack.EMPTY;
-                        }
-                    }
-                }
-                case "mob_effect" -> {
-                    String id = GsonHelper.getAsString(obj, "id", null);
-                    if (id != null) {
-                        ResourceLocation loc = ResourceLocation.tryParse(id);
-                        if (loc == null || !BuiltInRegistries.MOB_EFFECT.containsKey(loc)) {
-                            return EmiStack.EMPTY;
-                        }
-                    }
-                }
-            }
-        }
         EmiIngredient ingredient = EmiIngredientSerializer.getDeserialized(normalized);
         if ((ingredient == null || ingredient.isEmpty()) && normalized instanceof JsonObject obj && "tag".equals(GsonHelper.getAsString(obj, "type", null))) {
             String registryName = GsonHelper.getAsString(obj, "registry", "minecraft:item");

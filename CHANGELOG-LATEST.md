@@ -1,3 +1,3 @@
-### Fixed
+### Changed
 
-- Fixed log error with JEED.
+- Code cleanups.

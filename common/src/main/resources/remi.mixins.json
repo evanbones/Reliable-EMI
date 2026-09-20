@@ -35,6 +35,7 @@
     "emi.EmiIngredientSerializersMixin",
     "emi.EmiSidebarsMixin",
     "emi.EmiTagRecipeMixin",
+    "emi.ItemEmiStackSerializerMixin",
     "emi.RegexTagQueryMixin",
     "emi.SidebarButtonWidgetMixin",
     "emi.SidebarTypeMixin",
