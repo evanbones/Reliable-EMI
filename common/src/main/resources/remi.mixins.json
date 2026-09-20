@@ -32,6 +32,7 @@
     "emi.EmiApiMixin",
     "emi.EmiConfigMixin",
     "emi.EmiIngredientRecipeMixin",
+    "emi.EmiIngredientSerializersMixin",
     "emi.EmiSidebarsMixin",
     "emi.EmiTagRecipeMixin",
     "emi.RegexTagQueryMixin",
