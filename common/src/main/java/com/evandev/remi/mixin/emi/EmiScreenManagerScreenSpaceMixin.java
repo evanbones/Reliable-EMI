@@ -135,6 +135,10 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
 
         List<? extends EmiIngredient> stacks = remi$buildStacks(type, source, searchValue, tabsEnabled, groupsEnabled);
 
+        if (batcher != null) {
+            batcher.repopulate();
+        }
+
         remi$cachedStacks = stacks;
         remi$cacheVersion = version;
         remi$cacheSource = source;
@@ -193,9 +197,6 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
                 if (!Objects.equals(searchValue, remi$lastSearchValue)) {
                     remi$lastSearchValue = searchValue;
                     remi$compiledQuery = searchValue.isEmpty() ? null : new EmiSearch.CompiledQuery(searchValue);
-                    if (batcher != null) {
-                        batcher.repopulate();
-                    }
                 }
                 if (remi$compiledQuery != null && !remi$compiledQuery.isEmpty()) {
                     List<EmiIngredient> searchFiltered = new ArrayList<>();
@@ -252,7 +253,7 @@ public abstract class EmiScreenManagerScreenSpaceMixin {
 
     @Inject(
             method = "render",
-            at = @At(value = "INVOKE", target = "Ldev/emi/emi/screen/StackBatcher;draw()V"))
+            at = @At(value = "INVOKE", target = "Ldev/emi/emi/screen/StackBatcher;begin(III)V", shift = At.Shift.AFTER))
     private void remi$renderLayoutTiles(EmiDrawContext context, int mouseX, int mouseY, float delta, int startIndex, CallbackInfo ci) {
         if (ReliableEmiConfig.isStackGroupsEnabled(getType())) {
             Layout.buildLayoutTiles((EmiScreenManager.ScreenSpace) (Object) this, context);

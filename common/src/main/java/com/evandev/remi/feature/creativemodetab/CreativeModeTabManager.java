@@ -7,6 +7,7 @@ import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.emi.StackManager;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import com.evandev.remi.util.SidebarPanelWithScrollOffset;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -228,6 +229,19 @@ public class CreativeModeTabManager {
             StackManager.search(sourceStacks, EmiScreenManager.search.getValue());
         } else {
             StackManager.updateSourceStacks(sourceStacks);
+        }
+
+        StackManager.invalidateStacks();
+
+        EmiScreenManager.SidebarPanel targetPanel = ScreenManager.getTargetCreativeTabPanel();
+        if (targetPanel != null) {
+            targetPanel.page = 0;
+            if (targetPanel instanceof SidebarPanelWithScrollOffset scrollPanel) {
+                scrollPanel.remi$setScrollOffset(0);
+            }
+            for (EmiScreenManager.ScreenSpace space : targetPanel.getSpaces()) {
+                space.batcher.repopulate();
+            }
         }
 
         EmiScreenManager.recalculate();
