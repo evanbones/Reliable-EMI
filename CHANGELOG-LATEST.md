@@ -1,4 +1,7 @@
+### Added
+
+- Added built-in Create stack groups.
+
 ### Fixed
 
-- Fixed #103.
-- Fixed JEED icons disappearing with Modulation.
+- Fixed #86 regression.

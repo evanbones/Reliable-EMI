@@ -89,6 +89,13 @@
   "stackgroup.remi.banner_patterns": "Banner Patterns",
   "stackgroup.remi.spawn_eggs": "Spawn Eggs",
   "stackgroup.remi.copper_blocks": "Copper Blocks",
+  "stackgroup.remi.toolboxes": "Toolboxes",
+  "stackgroup.remi.seats": "Seats",
+  "stackgroup.remi.valve_handles": "Valve Handles",
+  "stackgroup.remi.casings": "Casings",
+  "stackgroup.remi.postboxes": "Postboxes",
+  "stackgroup.remi.table_cloths": "Table Cloths",
+  "stackgroup.remi.sails": "Sails",
 
   "remi.configuration.stackGroups": "Stack Groups",
   "remi.configuration.search": "Search",
