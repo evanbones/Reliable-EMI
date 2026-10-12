@@ -347,6 +347,7 @@ public class StackGroupManager {
         }
 
         Set<ResourceLocation> userLoadedIds = new HashSet<>();
+        Map<ResourceLocation, JsonObject> overrides = new LinkedHashMap<>();
         for (Path dir : configDirs) {
             try (var stream = Files.walk(dir)) {
                 stream.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".json")).forEach(path -> {
@@ -372,7 +373,9 @@ public class StackGroupManager {
                         }
                         if (idString != null) {
                             ResourceLocation resId = ResourceLocation.parse(idString);
-                            if (userLoadedIds.add(resId)) {
+                            if (isOverrideOnly(json)) {
+                                overrides.putIfAbsent(resId, json);
+                            } else if (userLoadedIds.add(resId)) {
                                 loadGroup(resId, json, loaded);
                             }
                         }
@@ -382,6 +385,18 @@ public class StackGroupManager {
                 });
             } catch (Exception e) {
                 ReliableEmi.LOGGER.error("Failed to list user stack groups in {}", dir, e);
+            }
+        }
+
+        for (var entry : overrides.entrySet()) {
+            StackGroup group = loaded.get(entry.getKey());
+            if (group == null) continue;
+            JsonObject json = entry.getValue();
+            if (!GsonHelper.getAsBoolean(json, "enabled", true)) {
+                group.isEnabled = false;
+            }
+            if (json.has("priority")) {
+                group.priority = GsonHelper.getAsInt(json, "priority", group.priority);
             }
         }
 
@@ -421,6 +436,12 @@ public class StackGroupManager {
         } catch (Exception e) {
             ReliableEmi.LOGGER.error("Failed to parse stack group {}", id, e);
         }
+    }
+
+    // A file with only an id (plus enabled/priority) modifies an existing group rather than defining one
+    private static boolean isOverrideOnly(JsonObject json) {
+        return !json.has("type") && !json.has("tag") && !json.has("contents")
+                && !json.has("regex") && !json.has("regexes");
     }
 
     public static boolean isGroupDisabledInConfig(String idStr) {
