@@ -22,6 +22,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -32,7 +33,7 @@ public class WorkstationSidebarManager {
     private static final Map<Object, List<EmiIngredient>> CRAFTABLE_CACHE = new HashMap<>();
     public static SidebarType WORKSTATION;
     public static List<EmiIngredient> workstationStacks = List.of();
-    private static AbstractContainerScreen<?> lastWorkstationScreen = null;
+    private static WeakReference<AbstractContainerScreen<?>> lastWorkstationScreen = new WeakReference<>(null);
     private static boolean hasLastWorkstationScreen = false;
 
     static {
@@ -72,20 +73,20 @@ public class WorkstationSidebarManager {
 
     public static void reload() {
         CRAFTABLE_CACHE.clear();
-        lastWorkstationScreen = null;
+        lastWorkstationScreen = new WeakReference<>(null);
         hasLastWorkstationScreen = false;
         workstationStacks = List.of();
     }
 
     public static void updateWorkstationCraftables() {
         AbstractContainerScreen<?> screen = EmiApi.getHandledScreen();
-        if (hasLastWorkstationScreen && screen == lastWorkstationScreen) {
+        if (hasLastWorkstationScreen && screen == lastWorkstationScreen.get()) {
             return;
         }
         if (!EmiReloadManager.isLoaded()) {
             return;
         }
-        lastWorkstationScreen = screen;
+        lastWorkstationScreen = new WeakReference<>(screen);
         hasLastWorkstationScreen = true;
 
         List<EmiIngredient> newWorkstationStacks = getCachedWorkstationCraftables(screen);
