@@ -1,3 +1,3 @@
 ### Fixed
 
-- Small memory leak fix.
+- Fixed pressure plate stack group matching.

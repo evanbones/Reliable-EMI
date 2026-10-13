@@ -5,7 +5,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.BasePressurePlateBlock;
 
 public class PressurePlateItemGroup extends StackGroup {
     public PressurePlateItemGroup() {
@@ -16,6 +16,6 @@ public class PressurePlateItemGroup extends StackGroup {
     public boolean match(EmiIngredient stack) {
         if (!(stack instanceof EmiStack s)) return false;
         var item = s.getItemStack().getItem();
-        return item instanceof BlockItem bi && bi.getBlock() instanceof PressurePlateBlock;
+        return item instanceof BlockItem bi && bi.getBlock() instanceof BasePressurePlateBlock;
     }
 }
