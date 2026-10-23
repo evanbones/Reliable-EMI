@@ -1,3 +1,3 @@
-### Fixed
+### Changed 
 
-- Fixed pressure plate stack group matching.
+- Switched to unified 1.21/1.20 source code.

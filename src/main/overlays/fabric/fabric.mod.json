@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "https://github.com/evanbones/Reliable-EMI/",
+    "sources": "https://github.com/evanbones/Reliable-EMI/"
+  },
+  "license": "${license}",
+  "icon": "${mod_id}.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.evandev.remi.ReliableEmiFabric"
+    ],
+    "client": [
+      "com.evandev.remi.ReliableEmiClientFabric"
+    ],
+    "modmenu": [
+      "com.evandev.remi.integration.modmenu.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}",
+    "emi": ">=1.1.0",
+    "yet_another_config_lib_v3": ">=${yacl_version}"
+  },
+  "accessWidener": "${mod_id}.accesswidener"
+}
