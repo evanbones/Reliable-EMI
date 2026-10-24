@@ -3,7 +3,9 @@
   "package": "com.evandev.remi.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
   "minVersion": "0.8",
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
   "client": [
+    "controlify.VirtualMouseHandlerMixin",
     "emi.BoMScreenMixin",
     "emi.EmiFavoritesMixin",
     "emi.EmiReloadManagerReloadWorkerMixin",
@@ -16,6 +18,7 @@
     "emi.EmiStackListMixin",
     "emi.NameQueryMixin",
     "emi.QueryTypeMixin",
+    "emi.StackBatcherMixin",
     "emi.accessor.EmiScreenManagerAccessor",
     "minecraft.CreativeModeInventoryScreenMixin",
     "minecraft.EditBoxMixin",

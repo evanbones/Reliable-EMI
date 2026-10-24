@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 
 public class StackManager {
     public static final Map<SidebarType, Set<ResourceLocation>> expandedStackGroups = new ConcurrentHashMap<>();
@@ -102,11 +103,12 @@ public class StackManager {
         EmiSearch.search(keyword);
     }
 
-    public static void buildStacks(List<EmiStack> searched) {
+    public static void buildStacks(List<EmiStack> searched, BooleanSupplier isCurrent) {
         List<EmiStack> filtered = filterHidden(searched);
         List<EmiStack> grouped = buildGroupedStacks(filtered);
         List<EmiStack> displayed = buildDisplayedStacks(grouped);
         synchronized (LOCK) {
+            if (!isCurrent.getAsBoolean()) return;
             searchedStacks = filtered;
             groupedStacks = grouped;
             displayedStacks = displayed;

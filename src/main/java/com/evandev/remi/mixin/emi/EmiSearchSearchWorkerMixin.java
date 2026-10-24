@@ -34,30 +34,28 @@ public class EmiSearchSearchWorkerMixin implements SearchWorkerBridge {
     @WrapOperation(method = "run", at = @At(value = "INVOKE",
             target = "Ldev/emi/emi/search/EmiSearch;apply(Ldev/emi/emi/search/EmiSearch$SearchWorker;Ljava/util/List;)V"))
     private void run(@Coerce Object worker, List<? extends EmiIngredient> stacks, Operation<Void> original) {
-        synchronized (EmiSearch.class) {
-            original.call(worker, stacks);
-            if (EmiSearch.stacks != stacks) {
-                return;
+        original.call(worker, stacks);
+        if (EmiSearch.stacks != stacks) {
+            return;
+        }
+
+        EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
+        boolean isIndex = searchPanel != null && searchPanel.getType() == SidebarType.INDEX;
+        if (isIndex) {
+            List<EmiStack> combinedStacks = new ArrayList<>(stacks.size());
+            for (EmiIngredient stack : stacks) {
+                if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);
             }
 
-            EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
-            boolean isIndex = searchPanel != null && searchPanel.getType() == SidebarType.INDEX;
-            if (isIndex) {
-                List<EmiStack> combinedStacks = new ArrayList<>(stacks.size());
-                for (EmiIngredient stack : stacks) {
-                    if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);
+            String query = ((SearchWorkerBridge) worker).remi$getQuery();
+            if (query != null && query.startsWith("%")) {
+                String groupQuery = query.substring(1);
+                if (!groupQuery.isEmpty()) {
+                    StackGroupManager.appendStacksForMatchingGroups(groupQuery, combinedStacks);
                 }
-
-                String query = ((SearchWorkerBridge) worker).remi$getQuery();
-                if (query != null && query.startsWith("%")) {
-                    String groupQuery = query.substring(1);
-                    if (!groupQuery.isEmpty()) {
-                        StackGroupManager.appendStacksForMatchingGroups(groupQuery, combinedStacks);
-                    }
-                }
-
-                StackManager.buildStacks(combinedStacks);
             }
+
+            StackManager.buildStacks(combinedStacks, () -> EmiSearch.stacks == stacks);
         }
     }
 }

@@ -3,7 +3,7 @@
   "package": "com.evandev.remi.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
   "minVersion": "0.8",
-  "plugin": "com.evandev.remi.mixinplugin.ReliableEmiNeoForgeMixinPlugin",
+  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
   "client": [],
   "injectors": {
     "defaultRequire": 1

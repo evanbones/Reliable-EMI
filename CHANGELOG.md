@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.8.0] - 2026-10-23
+
+### Added
+
+- Stack group `name` can now be a text component instead of just a translation key.
+
+### Changed
+
+- Stack group files created with the Stack Group Button are now saved in a subfolder per tag namespace.
+
+### Fixed
+
+- Performance improvements.
+- Fixed the stack group indicator's semi-transparent pixels rendering as solid dark pixels.
+- Fixed Controlify snapping the cursor to hidden creative tab widgets, the tab scroll arrows and the middle of the tab
+  bar.
+
 ## [4.7.13] - 2026-10-23
 
 ### Changed

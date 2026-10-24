@@ -13,10 +13,13 @@ import dev.emi.emi.config.SidebarSide;
 import dev.emi.emi.config.SidebarTheme;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+
+import java.util.List;
 
 import static com.evandev.remi.feature.creativemodetab.CreativeModeTabManager.getTotalTabCount;
 
@@ -207,22 +210,16 @@ public class CreativeModeTabGui {
 
     public static void initialize(Screen s) {
         screen = s;
-        screen.removeWidget(buttonPrevious);
-        screen.removeWidget(buttonNext);
-        screen.removeWidget(buttonScrollDown);
-        screen.removeWidget(buttonScrollUp);
-        screen.removeWidget(topTabNavigationBar);
-        screen.removeWidget(leftTabNavigationBar);
-        screen.removeWidget(rightTabNavigationBar);
-
-        screen.addRenderableWidget(buttonPrevious);
-        screen.addRenderableWidget(buttonNext);
-        screen.addRenderableWidget(buttonScrollDown);
-        screen.addRenderableWidget(buttonScrollUp);
-        screen.addRenderableWidget(topTabNavigationBar);
-        screen.addRenderableWidget(leftTabNavigationBar);
-        screen.addRenderableWidget(rightTabNavigationBar);
+        for (AbstractWidget widget : getWidgets()) {
+            screen.removeWidget(widget);
+            screen.addRenderableWidget(widget);
+        }
         onLayout();
+    }
+
+    public static List<AbstractWidget> getWidgets() {
+        return List.of(buttonPrevious, buttonNext, buttonScrollDown, buttonScrollUp,
+                topTabNavigationBar, leftTabNavigationBar, rightTabNavigationBar);
     }
 
     public static boolean contains(double mouseX, double mouseY) {

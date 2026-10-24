@@ -9,6 +9,8 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.TagEmiIngredient;
 import dev.emi.emi.api.stack.serializer.EmiIngredientSerializer;
 import net.minecraft.core.Holder;
+//? if >=1.21
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -342,6 +344,16 @@ public class EmiStackGroup extends StackGroup {
         }
     }
 
+    public static @Nullable Component parseName(JsonObject obj) {
+        JsonElement name = obj.get("name");
+        if (name == null || name.isJsonNull()) return null;
+        if (name.isJsonPrimitive()) return Component.translatable(name.getAsString());
+        //? if >=1.21 {
+        return Component.Serializer.fromJson(name, RegistryAccess.EMPTY);
+        //?} else
+        //return Component.Serializer.fromJson(name);
+    }
+
     public static EmiStackGroup parse(JsonElement json, ResourceLocation filenameId) {
         try {
             if (!(json instanceof JsonObject obj)) throw new IllegalArgumentException("Not a JSON object");
@@ -350,8 +362,7 @@ public class EmiStackGroup extends StackGroup {
                     ? ReliableEmi.parseId(GsonHelper.getAsString(obj, "id"))
                     : filenameId;
 
-            String nameKey = obj.has("name") ? GsonHelper.getAsString(obj, "name") : null;
-            Component customName = nameKey != null ? Component.translatable(nameKey) : null;
+            Component customName = parseName(obj);
 
             Set<EmiIngredient> targets = Sets.newHashSet();
             if (GsonHelper.isArrayNode(obj, "contents")) {

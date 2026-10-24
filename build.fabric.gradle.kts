@@ -45,11 +45,18 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${prop("deps.fabric_loader")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${prop("deps.fabric_api")}")
 
+    // MixinConstraints
+    implementation("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+    include("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+
     // EMI
     modImplementation("dev.emi:emi-fabric:${prop("deps.emi")}")
 
     // Mod Menu
     modImplementation("maven.modrinth:modmenu:${prop("deps.modmenu")}")
+
+    // Controlify
+    modCompileOnly("maven.modrinth:controlify:${prop("deps.controlify")}")
 
     // YACL
     modImplementation("maven.modrinth:yacl:${prop("deps.yacl")}-fabric")

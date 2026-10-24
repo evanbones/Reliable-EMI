@@ -63,6 +63,13 @@ dependencies {
     // YACL
     implementation("maven.modrinth:yacl:${prop("deps.yacl")}-neoforge")
 
+    // MixinConstraints
+    implementation("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+    jarJar("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+
+    // Controlify
+    compileOnly("maven.modrinth:controlify:${prop("deps.controlify")}")
+
     // Mekanism
     compileOnly("maven.modrinth:mekanism:${prop("deps.mekanism")}")
 }

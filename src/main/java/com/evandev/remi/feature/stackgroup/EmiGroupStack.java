@@ -31,6 +31,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4f;
 
 import java.util.*;
 
@@ -43,6 +44,8 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     //?} else
     //private static final int OFFSET_Y = -1;
     private static int visibilityVersion = 0;
+    public static boolean deferIndicators = false;
+    private static final List<Runnable> deferredIndicators = new ArrayList<>();
 
     public final StackGroup group;
     public boolean isExpanded = false;
@@ -205,9 +208,31 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
             context.pop();
         }
 
+        ResourceLocation indicator = isExpanded ? EXPANDED_INDICATOR_TEXTURE : COLLAPSED_INDICATOR_TEXTURE;
+        if (deferIndicators && (flags & RENDER_ICON) == 0) {
+            Matrix4f pose = new Matrix4f(context.matrices().last().pose());
+            deferredIndicators.add(() -> {
+                context.push();
+                context.matrices().last().pose().set(pose);
+                drawIndicator(context, indicator, x, y);
+                context.pop();
+            });
+        } else {
+            drawIndicator(context, indicator, x, y);
+        }
+    }
+
+    private static void drawIndicator(EmiDrawContext context, ResourceLocation indicator, int x, int y) {
+        int es = ScreenManager.ENTRY_SIZE;
         RenderSystem.enableBlend();
-        context.drawTexture(isExpanded ? EXPANDED_INDICATOR_TEXTURE : COLLAPSED_INDICATOR_TEXTURE, x - 1, y - 1, 200, 0, 0, es, es, es, es);
+        context.drawTexture(indicator, x - 1, y - 1, 200, 0, 0, es, es, es, es);
         RenderSystem.disableBlend();
+    }
+
+    public static void drawDeferredIndicators() {
+        if (deferredIndicators.isEmpty()) return;
+        for (Runnable draw : deferredIndicators) draw.run();
+        deferredIndicators.clear();
     }
 
     @Override

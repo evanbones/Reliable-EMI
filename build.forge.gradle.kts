@@ -71,11 +71,18 @@ dependencies {
     implementation("io.github.llamalad7:mixinextras-forge:${prop("deps.mixinextras")}")
     "jarJar"("io.github.llamalad7:mixinextras-forge:${prop("deps.mixinextras")}")
 
+    // MixinConstraints
+    implementation("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+    "jarJar"("com.moulberry:mixinconstraints:${prop("deps.mixinconstraints")}")
+
     // EMI
     modImplementation("dev.emi:emi-forge:${prop("deps.emi")}")
 
     // YACL
     modImplementation("maven.modrinth:yacl:${prop("deps.yacl")}-forge")
+
+    // Controlify
+    modCompileOnly("maven.modrinth:controlify-forgified:${prop("deps.controlify")}")
 
     // Mekanism
     modCompileOnly("maven.modrinth:mekanism:${prop("deps.mekanism")}")

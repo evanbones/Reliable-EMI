@@ -47,8 +47,7 @@ public class StackGroupManager {
             TagKey tagKey = TagKey.create(
                     ResourceKey.createRegistryKey(ReliableEmi.parseId(registryName)),
                     ReliableEmi.parseId(tagName));
-            String nameKey = json.has("name") ? GsonHelper.getAsString(json, "name") : null;
-            Component customName = nameKey != null ? Component.translatable(nameKey) : null;
+            Component customName = EmiStackGroup.parseName(json);
             EmiIngredient ingredient = new TagEmiIngredient(tagKey, 1);
             if (ingredient.getEmiStacks().isEmpty()) {
                 ingredient = EmiIngredient.of(tagKey);
@@ -108,8 +107,7 @@ public class StackGroupManager {
         String registry = tagKey.registry().location().toString();
         String name = tag.getPath().replace('/', '_');
         String prefix = registry.equals("minecraft:item") ? "" : registry.replace(':', '_') + "_";
-        String filename = tag.getNamespace() + "_" + prefix + name + ".json";
-        return resolveGroupPath(filename);
+        return resolveGroupPath(tag.getNamespace(), prefix + name);
     }
 
     public static Path getStackGroupsDir() {
@@ -125,18 +123,21 @@ public class StackGroupManager {
     }
 
     public static Path getGroupPath(ResourceLocation tag) {
-        String name = tag.getPath().replace('/', '_');
-        String filename = tag.getNamespace() + "_" + name + ".json";
-        return resolveGroupPath(filename);
+        return resolveGroupPath(tag.getNamespace(), tag.getPath().replace('/', '_'));
     }
 
-    private static Path resolveGroupPath(String filename) {
+    private static Path resolveGroupPath(String namespace, String name) {
         Path remiDir = getStackGroupsDir();
-        Path remiPath = remiDir.resolve(filename);
+        Path remiPath = remiDir.resolve(namespace).resolve(name + ".json");
         if (Files.exists(remiPath)) {
             return remiPath;
         }
-        Path emixxPath = Platform.getConfigDirectory().resolve("emixx").resolve("stack_groups").resolve(filename);
+        String legacyFilename = namespace + "_" + name + ".json";
+        Path legacyPath = remiDir.resolve(legacyFilename);
+        if (Files.exists(legacyPath)) {
+            return legacyPath;
+        }
+        Path emixxPath = Platform.getConfigDirectory().resolve("emixx").resolve("stack_groups").resolve(legacyFilename);
         if (Files.exists(emixxPath)) {
             return emixxPath;
         }

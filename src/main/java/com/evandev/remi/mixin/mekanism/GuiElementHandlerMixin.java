@@ -5,6 +5,7 @@ import com.evandev.remi.feature.creativemodetab.gui.itemtab.ItemTabNavigationBar
 import com.evandev.remi.gui.components.ImageButton;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.moulberry.mixinconstraints.annotations.IfModLoaded;
 //? if neoforge {
 import mekanism.client.recipe_viewer.GuiElementHandler;
 //?} else
@@ -14,6 +15,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+@IfModLoaded("mekanism")
 @Mixin(value = GuiElementHandler.class, remap = false)
 public class GuiElementHandlerMixin {
 
