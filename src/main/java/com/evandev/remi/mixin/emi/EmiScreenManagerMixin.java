@@ -5,9 +5,11 @@ import com.evandev.remi.feature.creativemodetab.gui.CreativeModeTabGui;
 import com.evandev.remi.feature.stackgroup.EmiGroupStack;
 import com.evandev.remi.feature.workstation.WorkstationSidebarManager;
 import com.evandev.remi.gui.components.ScrollbarWidget;
+import com.evandev.remi.integration.controlify.ControlifyCompat;
 import com.evandev.remi.integration.emi.Layout;
 import com.evandev.remi.integration.emi.ScreenManager;
 import com.evandev.remi.integration.emi.StackManager;
+import com.evandev.remi.mixin.emi.accessor.EmiScreenManagerAccessor;
 import com.evandev.remi.mixin.minecraft.accessor.AbstractContainerScreenAccessor;
 import com.evandev.remi.mixin.minecraft.accessor.SlotWrapperAccessor;
 import com.evandev.remi.util.SidebarPanelWithScrollOffset;
@@ -18,15 +20,21 @@ import com.llamalad7.mixinextras.sugar.Local;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.config.*;
+import dev.emi.emi.network.CreateItemC2SPacket;
+import dev.emi.emi.network.EmiNetwork;
+import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.widget.EmiSearchWidget;
 import dev.emi.emi.search.EmiSearch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
@@ -263,6 +271,43 @@ public abstract class EmiScreenManagerMixin {
         cir.setReturnValue(cir.getReturnValueZ() || ScreenManager.onMouseScrolled(mouseX, mouseY, amount));
     }
 
+    @Unique
+    private static boolean remi$swallowRelease;
+
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private static void remi$controllerCheatToCursor(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (button != 0 || !EmiApi.isCheatMode() || !ControlifyCompat.isControllerActive()) {
+            return;
+        }
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || !client.player.containerMenu.getCarried().isEmpty()) {
+            return;
+        }
+        EmiStackInteraction hovered = EmiScreenManager.getHoveredStack((int) mouseX, (int) mouseY, false);
+        EmiIngredient ingredient = hovered.getStack();
+        if (ingredient.isEmpty() || ingredient instanceof EmiGroupStack) {
+            return;
+        }
+        List<EmiStack> stacks = ingredient.getEmiStacks();
+        if (stacks.isEmpty() || stacks.get(0).getItemStack().isEmpty()) {
+            return;
+        }
+        EmiStack stack = stacks.get(0);
+        int amount = Screen.hasShiftDown() ? stack.getItemStack().getMaxStackSize() : 1;
+        if (EmiScreenManagerAccessor.remi$give(stack, amount, 1)) {
+            remi$swallowRelease = true;
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
+    private static void remi$swallowControllerCheatRelease(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (button == 0 && remi$swallowRelease) {
+            remi$swallowRelease = false;
+            cir.setReturnValue(true);
+        }
+    }
+
     @WrapOperation(at = @At(value = "INVOKE", target = "Ldev/emi/emi/api/stack/EmiIngredient;isEmpty()Z", ordinal = 0),
             method = "mouseReleased")
     private static boolean modifyMouseReleased(EmiIngredient instance, Operation<Boolean> original, @Local(name = "mouseX") double mouseX, @Local(name = "mouseY") double mouseY) {
@@ -382,7 +427,7 @@ public abstract class EmiScreenManagerMixin {
         }
 
         Slot effectiveSlot = remi$unwrapSlot(targetSlot);
-        if (effectiveSlot == null || effectiveSlot.container != client.player.getInventory()) {
+        if (effectiveSlot == null) {
             return false;
         }
 
@@ -396,6 +441,10 @@ public abstract class EmiScreenManagerMixin {
 
         if (!targetSlot.mayPlace(toGive) || !effectiveSlot.mayPlace(toGive)) {
             return false;
+        }
+
+        if (effectiveSlot.container != client.player.getInventory()) {
+            return remi$giveThroughCursor(screen, targetSlot, current, toGive);
         }
 
         if (client.player.isCreative() && client.gameMode != null) {
@@ -432,6 +481,28 @@ public abstract class EmiScreenManagerMixin {
             }
         }
         return false;
+    }
+
+    @Unique
+    private static boolean remi$giveThroughCursor(AbstractContainerScreen<?> screen, Slot slot, ItemStack current, ItemStack toGive) {
+        Minecraft client = Minecraft.getInstance();
+        if (!EmiClient.onServer || client.gameMode == null || client.player == null
+                || screen instanceof CreativeModeInventoryScreen || !screen.getMenu().getCarried().isEmpty()) {
+            return false;
+        }
+        int count = toGive.getCount();
+        if (!current.isEmpty()) {
+            if (!ItemStack.isSameItemSameComponents(current, toGive)) {
+                return false;
+            }
+            count -= current.getCount();
+        }
+        if (count <= 0) {
+            return true;
+        }
+        EmiNetwork.sendToServer(new CreateItemC2SPacket(1, toGive.copyWithCount(count)));
+        client.gameMode.handleInventoryMouseClick(screen.getMenu().containerId, slot.index, 0, ClickType.PICKUP, client.player);
+        return true;
     }
 
     @ModifyVariable(at = @At("HEAD"), method = "createScreenSpace", argsOnly = true)
