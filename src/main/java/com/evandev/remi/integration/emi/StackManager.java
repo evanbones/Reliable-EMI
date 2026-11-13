@@ -30,6 +30,11 @@ public class StackManager {
     private static volatile List<EmiStack> groupedStacks = List.of();
     private static volatile List<EmiStack> groupedUnsearchedStacks = List.of();
     private static volatile List<EmiStack> groupedIndexStacks = List.of();
+    private static volatile int groupedIndexVisibility = -1;
+    private static volatile boolean groupedIndexEditMode;
+    private static volatile List<EmiStack> filteredSourceStacks = List.of();
+    private static volatile int unsearchedVisibility = -1;
+    private static volatile boolean unsearchedEditMode;
     private static List<EmiStack> lastRepopulatedDisplayedStacks;
     private static List<EmiStack> lastRepopulatedUnsearchedStacks;
     private static final AtomicInteger globalStacksVersion = new AtomicInteger();
@@ -79,33 +84,59 @@ public class StackManager {
     }
 
     public static void updateSourceStacks(List<EmiStack> src) {
+        int visibility = EmiGroupStack.getVisibilityVersion();
+        boolean editMode = EmiConfig.editMode;
         List<EmiStack> searched = filterHidden(src);
-        List<EmiStack> grouped = buildGroupedStacks(searched);
+        List<EmiStack> grouped = buildGroupedStacks(searched, src == indexStacks);
         List<EmiStack> displayed = buildDisplayedStacks(grouped);
         synchronized (LOCK) {
             sourceStacks = src;
             searchedStacks = searched;
             groupedStacks = grouped;
             displayedStacks = displayed;
-            groupedUnsearchedStacks = grouped;
-            unsearchedStacks = displayed;
+            setUnsearched(searched, grouped, displayed, visibility, editMode);
         }
     }
 
     public static void search(List<EmiStack> src, String keyword) {
-        List<EmiStack> grouped = buildGroupedStacks(filterHidden(src));
+        int visibility = EmiGroupStack.getVisibilityVersion();
+        boolean editMode = EmiConfig.editMode;
+        List<EmiStack> filtered = filterHidden(src);
+        List<EmiStack> grouped = buildGroupedStacks(filtered, src == indexStacks);
         List<EmiStack> displayed = buildDisplayedStacks(grouped);
         synchronized (LOCK) {
             sourceStacks = src;
-            groupedUnsearchedStacks = grouped;
-            unsearchedStacks = displayed;
+            setUnsearched(filtered, grouped, displayed, visibility, editMode);
         }
         EmiSearch.search(keyword);
     }
 
+    private static void setUnsearched(List<EmiStack> filtered, List<EmiStack> grouped, List<EmiStack> displayed,
+                                      int visibility, boolean editMode) {
+        filteredSourceStacks = filtered;
+        groupedUnsearchedStacks = grouped;
+        unsearchedStacks = displayed;
+        unsearchedVisibility = visibility;
+        unsearchedEditMode = editMode;
+    }
+
     public static void buildStacks(List<EmiStack> searched, BooleanSupplier isCurrent) {
+        synchronized (LOCK) {
+            if (!isCurrent.getAsBoolean()) return;
+            if (searched == sourceStacks
+                    && unsearchedVisibility == EmiGroupStack.getVisibilityVersion()
+                    && unsearchedEditMode == EmiConfig.editMode) {
+                searchedStacks = filteredSourceStacks;
+                groupedStacks = groupedUnsearchedStacks;
+                displayedStacks = unsearchedStacks;
+                return;
+            }
+        }
+
         List<EmiStack> filtered = filterHidden(searched);
-        List<EmiStack> grouped = buildGroupedStacks(filtered);
+        if (!isCurrent.getAsBoolean()) return;
+        List<EmiStack> grouped = buildGroupedStacks(filtered, searched == indexStacks);
+        if (!isCurrent.getAsBoolean()) return;
         List<EmiStack> displayed = buildDisplayedStacks(grouped);
         synchronized (LOCK) {
             if (!isCurrent.getAsBoolean()) return;
@@ -126,15 +157,19 @@ public class StackManager {
         return filtered;
     }
 
-    private static List<EmiStack> buildGroupedStacks(List<EmiStack> stacks) {
-        boolean isFullIndex = stacks.size() == indexStacks.size();
+    private static List<EmiStack> buildGroupedStacks(List<EmiStack> stacks, boolean isFullIndex) {
+        int visibility = EmiGroupStack.getVisibilityVersion();
+        boolean editMode = EmiConfig.editMode;
         List<EmiStack> grouped;
-        if (isFullIndex && !groupedIndexStacks.isEmpty()) {
+        if (isFullIndex && !groupedIndexStacks.isEmpty()
+                && groupedIndexVisibility == visibility && groupedIndexEditMode == editMode) {
             grouped = groupedIndexStacks;
         } else {
             grouped = StackGroupManager.buildGroupedStacks(stacks);
             if (isFullIndex) {
                 groupedIndexStacks = grouped;
+                groupedIndexVisibility = visibility;
+                groupedIndexEditMode = editMode;
             }
         }
 

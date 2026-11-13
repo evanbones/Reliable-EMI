@@ -42,17 +42,21 @@ public class EmiSearchSearchWorkerMixin implements SearchWorkerBridge {
         EmiScreenManager.SidebarPanel searchPanel = EmiScreenManager.getSearchPanel();
         boolean isIndex = searchPanel != null && searchPanel.getType() == SidebarType.INDEX;
         if (isIndex) {
+            List<EmiStack> source = StackManager.sourceStacks;
+            String query = ((SearchWorkerBridge) worker).remi$getQuery();
+            boolean groupQuery = query != null && query.length() > 1 && query.startsWith("%");
+            if (stacks == source && !groupQuery) {
+                StackManager.buildStacks(source, () -> EmiSearch.stacks == stacks);
+                return;
+            }
+
             List<EmiStack> combinedStacks = new ArrayList<>(stacks.size());
             for (EmiIngredient stack : stacks) {
                 if (stack instanceof EmiStack emiStack) combinedStacks.add(emiStack);
             }
 
-            String query = ((SearchWorkerBridge) worker).remi$getQuery();
-            if (query != null && query.startsWith("%")) {
-                String groupQuery = query.substring(1);
-                if (!groupQuery.isEmpty()) {
-                    StackGroupManager.appendStacksForMatchingGroups(groupQuery, combinedStacks);
-                }
+            if (groupQuery) {
+                StackGroupManager.appendStacksForMatchingGroups(query.substring(1), combinedStacks);
             }
 
             StackManager.buildStacks(combinedStacks, () -> EmiSearch.stacks == stacks);

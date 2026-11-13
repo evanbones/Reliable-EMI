@@ -34,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     private static final ResourceLocation EXPANDED_TEXTURE = ReliableEmi.res("textures/gui/stack_group_expanded.png");
@@ -43,7 +44,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     private static final int OFFSET_Y = 1;
     //?} else
     //private static final int OFFSET_Y = -1;
-    private static int visibilityVersion = 0;
+    private static final AtomicInteger visibilityVersion = new AtomicInteger();
     public static boolean deferIndicators = false;
     private static final List<Runnable> deferredIndicators = new ArrayList<>();
 
@@ -69,7 +70,11 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     }
 
     public static void onStackFilterChanged() {
-        visibilityVersion++;
+        visibilityVersion.incrementAndGet();
+    }
+
+    public static int getVisibilityVersion() {
+        return visibilityVersion.get();
     }
 
     private static void collectSprites(EmiStack stack, Set<TextureAtlasSprite> out) {
@@ -107,13 +112,14 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
      */
     public List<GroupedEmiStack<EmiStack>> getItems() {
         if (EmiConfig.editMode) return itemsNew;
-        if (visibleItems == null || visibleItemsVersion != visibilityVersion) {
+        int version = visibilityVersion.get();
+        if (visibleItems == null || visibleItemsVersion != version) {
             List<GroupedEmiStack<EmiStack>> result = new ArrayList<>(itemsNew.size());
             for (var item : itemsNew) {
                 if (!EmiHidden.isHidden(item.realStack)) result.add(item);
             }
             visibleItems = result;
-            visibleItemsVersion = visibilityVersion;
+            visibleItemsVersion = version;
         }
         return visibleItems;
     }
@@ -286,9 +292,10 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
     }
 
     private void refreshBatchState() {
-        if (!batchStateDirty && batchStateVersion == visibilityVersion && batchEditMode == EmiConfig.editMode) return;
+        int version = visibilityVersion.get();
+        if (!batchStateDirty && batchStateVersion == version && batchEditMode == EmiConfig.editMode) return;
         batchStateDirty = false;
-        batchStateVersion = visibilityVersion;
+        batchStateVersion = version;
         batchEditMode = EmiConfig.editMode;
         batchable = false;
         sideLit = false;

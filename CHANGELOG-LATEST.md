@@ -1,8 +1,3 @@
-### Added
-
-- In cheat mode on a controller (Controlify), pressing A on a sidebar stack takes one to the cursor and a shift-click
-  takes a full stack, like the vanilla creative inventory.
-
 ### Fixed
 
-- Fixed dragging cheated stacks onto slots outside the player inventory.
+- Fixed the index taking a few seconds to update after clearing or editing the search in large modpacks.
