@@ -302,7 +302,7 @@ public class StackGroupManager {
             boolean match = lowerId.contains(lower) || lowerName != null && lowerName.contains(lower);
 
             if (match) {
-                for (var item : gs.getVisibleItems()) {
+                for (var item : gs.getItems()) {
                     if (allowedIds != null && !allowedIds.contains(item.realStack.getId())) continue;
                     if (existing.add(item.realStack)) results.add(item.realStack);
                 }
