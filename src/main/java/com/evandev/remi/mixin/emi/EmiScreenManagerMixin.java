@@ -17,6 +17,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
@@ -29,12 +30,16 @@ import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.screen.EmiScreenManager;
 import dev.emi.emi.screen.widget.EmiSearchWidget;
 import dev.emi.emi.search.EmiSearch;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
@@ -60,6 +65,10 @@ public abstract class EmiScreenManagerMixin {
     private static final int REMI_VANILLA_BACKGROUND_OFFSET = 11;
     @Unique
     private static final int REMI_CORNER_BUTTON_SPACE = 22;
+    @Unique
+    private static final EquipmentSlot[] REMI_ARMOR_SLOTS_IN_INVENTORY_ORDER = {
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+    };
     @Shadow
     public static EmiSearchWidget search;
     @Shadow
@@ -357,43 +366,49 @@ public abstract class EmiScreenManagerMixin {
     }
 
     @Unique
-    private static String remi$getCommandSlotName(int containerSlot) {
-        if (containerSlot >= 0 && containerSlot <= 8) {
-            return "hotbar." + containerSlot;
-        } else if (containerSlot >= 9 && containerSlot <= 35) {
-            return "inventory." + (containerSlot - 9);
-        } else if (containerSlot == 36) {
-            return "armor.feet";
-        } else if (containerSlot == 37) {
-            return "armor.legs";
-        } else if (containerSlot == 38) {
-            return "armor.chest";
-        } else if (containerSlot == 39) {
-            return "armor.head";
-        } else if (containerSlot == 40) {
-            return "weapon.offhand";
+    private static String remi$getCommandSlotName(int inventorySlot) {
+        if (inventorySlot < 0) {
+            return null;
+        }
+        if (Inventory.isHotbarSlot(inventorySlot)) {
+            return "hotbar." + inventorySlot;
+        }
+        if (inventorySlot < Inventory.INVENTORY_SIZE) {
+            return "inventory." + (inventorySlot - Inventory.getSelectionSize());
+        }
+        if (remi$isArmorSlot(inventorySlot)) {
+            return "armor." + REMI_ARMOR_SLOTS_IN_INVENTORY_ORDER[inventorySlot - Inventory.INVENTORY_SIZE].getName();
+        }
+        if (inventorySlot == Inventory.SLOT_OFFHAND) {
+            return "weapon." + EquipmentSlot.OFFHAND.getName();
         }
         return null;
     }
 
     @Unique
-    private static int remi$getCreativeSlotId(int containerSlot) {
-        if (containerSlot >= 0 && containerSlot <= 8) {
-            return containerSlot + 36;
-        } else if (containerSlot >= 9 && containerSlot <= 35) {
-            return containerSlot;
-        } else if (containerSlot == 36) {
-            return 8;
-        } else if (containerSlot == 37) {
-            return 7;
-        } else if (containerSlot == 38) {
-            return 6;
-        } else if (containerSlot == 39) {
-            return 5;
-        } else if (containerSlot == 40) {
-            return 45;
+    private static int remi$getCreativeSlotId(int inventorySlot) {
+        if (inventorySlot < 0) {
+            return -1;
+        }
+        if (Inventory.isHotbarSlot(inventorySlot)) {
+            return InventoryMenu.USE_ROW_SLOT_START + inventorySlot;
+        }
+        if (inventorySlot < Inventory.INVENTORY_SIZE) {
+            return InventoryMenu.INV_SLOT_START + inventorySlot - Inventory.getSelectionSize();
+        }
+        if (remi$isArmorSlot(inventorySlot)) {
+            return InventoryMenu.ARMOR_SLOT_END - 1 - (inventorySlot - Inventory.INVENTORY_SIZE);
+        }
+        if (inventorySlot == Inventory.SLOT_OFFHAND) {
+            return InventoryMenu.SHIELD_SLOT;
         }
         return -1;
+    }
+
+    @Unique
+    private static boolean remi$isArmorSlot(int inventorySlot) {
+        return inventorySlot >= Inventory.INVENTORY_SIZE
+                && inventorySlot < Inventory.INVENTORY_SIZE + REMI_ARMOR_SLOTS_IN_INVENTORY_ORDER.length;
     }
 
     @Unique
@@ -466,21 +481,98 @@ public abstract class EmiScreenManagerMixin {
             }
         } else {
             String slotName = remi$getCommandSlotName(effectiveSlot.getContainerSlot());
-            if (slotName != null && client.level != null) {
-                //? if >=1.21 {
-                ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getComponentsPatch());
-                String command = "item replace entity @s " + slotName + " with " + argument.serialize(client.level.registryAccess()) + " " + amount;
-                //?} else {
-                /*ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getTag());
-                String command = "item replace entity @s " + slotName + " with " + argument.serialize() + " " + amount;
-                *///?}
-                if (command.length() < 256) {
-                    client.player.connection.sendUnsignedCommand(command);
-                    return true;
-                }
+            if (slotName != null) {
+                return remi$replaceSlotViaCommand(slotName, toGive);
             }
         }
         return false;
+    }
+
+    @Unique
+    private static boolean remi$replaceSlotViaCommand(String slotName, ItemStack toGive) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.level == null) {
+            return false;
+        }
+        //? if >=1.21 {
+        ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getComponentsPatch());
+        String command = "item replace entity @s " + slotName + " with " + argument.serialize(client.level.registryAccess()) + " " + toGive.getCount();
+        //?} else {
+        /*ItemInput argument = new ItemInput(toGive.getItemHolder(), toGive.getTag());
+        String command = "item replace entity @s " + slotName + " with " + argument.serialize() + " " + toGive.getCount();
+        *///?}
+        if (command.length() >= 256) {
+            return false;
+        }
+        client.player.connection.sendUnsignedCommand(command);
+        return true;
+    }
+
+    @Inject(method = "keyPressed",
+            at = @At(value = "INVOKE", target = "Ldev/emi/emi/api/EmiApi;isCheatMode()Z", ordinal = 0),
+            cancellable = true)
+    private static void remi$cheatToHotbarKey(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+        if (!ReliableEmiConfig.dragCheatToInventory || !EmiApi.isCheatMode()) {
+            return;
+        }
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || !(client.screen instanceof AbstractContainerScreen<?>)
+                || !client.player.containerMenu.getCarried().isEmpty()
+                || (!client.player.hasPermissions(2) && !client.player.isCreative())) {
+            return;
+        }
+        int inventorySlot = remi$getSwapKeyInventorySlot(client, keyCode, scanCode);
+        if (inventorySlot == -1) {
+            return;
+        }
+        EmiIngredient ingredient = EmiScreenManager.getHoveredStack(EmiScreenManager.lastMouseX, EmiScreenManager.lastMouseY, true).getStack();
+        if (ingredient.isEmpty() || ingredient instanceof EmiGroupStack) {
+            return;
+        }
+        List<EmiStack> stacks = ingredient.getEmiStacks();
+        if (stacks.isEmpty() || stacks.get(0).getItemStack().isEmpty()) {
+            return;
+        }
+        ItemStack fullStack = stacks.get(0).getItemStack().copy();
+        fullStack.setCount(fullStack.getMaxStackSize());
+        if (remi$replacePlayerSlot(inventorySlot, fullStack)) {
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Unique
+    private static int remi$getSwapKeyInventorySlot(Minecraft client, int keyCode, int scanCode) {
+        if (remi$keyMatches(client.options.keySwapOffhand, keyCode, scanCode)) {
+            return Inventory.SLOT_OFFHAND;
+        }
+        for (int hotbarSlot = 0; hotbarSlot < Inventory.getSelectionSize(); hotbarSlot++) {
+            if (remi$keyMatches(client.options.keyHotbarSlots[hotbarSlot], keyCode, scanCode)) {
+                return hotbarSlot;
+            }
+        }
+        return -1;
+    }
+
+    @Unique
+    private static boolean remi$keyMatches(KeyMapping key, int keyCode, int scanCode) {
+        //? if forgelike {
+        return key.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode));
+        //?} else
+        //return key.matches(keyCode, scanCode);
+    }
+
+    @Unique
+    private static boolean remi$replacePlayerSlot(int inventorySlot, ItemStack toGive) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.gameMode == null) {
+            return false;
+        }
+        if (client.player.isCreative()) {
+            client.player.getInventory().setItem(inventorySlot, toGive.copy());
+            client.gameMode.handleCreativeModeItemAdd(toGive, remi$getCreativeSlotId(inventorySlot));
+            return true;
+        }
+        return remi$replaceSlotViaCommand(remi$getCommandSlotName(inventorySlot), toGive);
     }
 
     @Unique

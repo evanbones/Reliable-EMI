@@ -185,7 +185,7 @@ public class StackManager {
         List<EmiStack> result = new ArrayList<>(grouped.size());
         for (EmiStack s : grouped) {
             if (s instanceof EmiGroupStack gs) {
-                var items = gs.getItems();
+                var items = gs.getVisibleItems();
                 if (!items.isEmpty()) {
                     if (items.size() == 1) {
                         result.add(items.get(0).realStack);

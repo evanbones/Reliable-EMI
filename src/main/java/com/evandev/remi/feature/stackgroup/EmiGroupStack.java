@@ -86,9 +86,6 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
         }
     }
 
-    /**
-     * Must be called after any direct mutation of {@link #itemsNew}.
-     */
     public void invalidateCaches() {
         visibleItems = null;
         batchStateDirty = true;
@@ -107,10 +104,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
         return false;
     }
 
-    /**
-     * Returns the non-hidden items. Callers must not mutate the returned list
-     */
-    public List<GroupedEmiStack<EmiStack>> getItems() {
+    public List<GroupedEmiStack<EmiStack>> getVisibleItems() {
         if (EmiConfig.editMode) return itemsNew;
         int version = visibilityVersion.get();
         if (visibleItems == null || visibleItemsVersion != version) {
@@ -126,7 +120,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
 
     @Override
     public boolean isEmpty() {
-        return getItems().isEmpty();
+        return getVisibleItems().isEmpty();
     }
 
     @Override
@@ -154,7 +148,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
         return List.of(
                 ClientTooltipComponent.create(getName().getVisualOrderText()),
                 ClientTooltipComponent.create(
-                        Component.literal(String.valueOf(getItems().size()))
+                        Component.literal(String.valueOf(getVisibleItems().size()))
                                 .withStyle(ChatFormatting.DARK_GRAY)
                                 .append(ReliableEmi.text("stackgroup", "tooltip").withStyle(ChatFormatting.DARK_GRAY))
                                 .getVisualOrderText()
@@ -191,7 +185,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
             }
         }
 
-        List<GroupedEmiStack<EmiStack>> items = getItems();
+        List<GroupedEmiStack<EmiStack>> items = getVisibleItems();
         if (!items.isEmpty()) {
             context.push();
             context.matrices().translate(x + 1.6F, y + 1.6F, 0F);
@@ -261,7 +255,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
 
     @Override
     public void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta) {
-        List<GroupedEmiStack<EmiStack>> items = getItems();
+        List<GroupedEmiStack<EmiStack>> items = getVisibleItems();
         if (items.isEmpty()) return;
         EmiDrawContext context = EmiDrawContext.wrap(draw);
         context.push();
@@ -300,7 +294,7 @@ public class EmiGroupStack extends EmiStack implements StackBatcher.Batchable {
         batchable = false;
         sideLit = false;
 
-        List<GroupedEmiStack<EmiStack>> items = getItems();
+        List<GroupedEmiStack<EmiStack>> items = getVisibleItems();
         int count = Math.min(3, items.size());
         for (int i = 0; i < count; i++) {
             GroupedEmiStack<EmiStack> item = items.get(i);

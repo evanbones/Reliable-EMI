@@ -6,16 +6,11 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-/**
- * Sodium skips animating sprites that were not marked active during the frame.
- * Stacks baked into EMI's batch VBOs bypass the item renderer Sodium hooks into,
- * so anything we batch ourselves has to mark its sprites explicitly each frame.
- */
 public final class SodiumCompat {
-    private static final MethodHandle MARK_SPRITE_ACTIVE = locate();
-
-    private SodiumCompat() {
-    }
+    private static final String MODERN_SPRITE_UTIL = "net.caffeinemc.mods.sodium.api.texture.SpriteUtil";
+    private static final String LEGACY_SPRITE_UTIL = "me.jellysquid.mods.sodium.client.render.texture.SpriteUtil";
+    private static final MethodType MARK_SPRITE_ACTIVE_TYPE = MethodType.methodType(void.class, TextureAtlasSprite.class);
+    private static final MethodHandle MARK_SPRITE_ACTIVE = findMarkSpriteActive();
 
     public static boolean isLoaded() {
         return MARK_SPRITE_ACTIVE != null;
@@ -29,23 +24,29 @@ public final class SodiumCompat {
         }
     }
 
-    private static MethodHandle locate() {
+    private static MethodHandle findMarkSpriteActive() {
+        MethodHandle modern = findModernMarkSpriteActive();
+        return modern != null ? modern : findLegacyMarkSpriteActive();
+    }
+
+    private static MethodHandle findModernMarkSpriteActive() {
         try {
-            // Sodium 0.6+
-            Class<?> clazz = Class.forName("net.caffeinemc.mods.sodium.api.texture.SpriteUtil");
-            Object instance = clazz.getField("INSTANCE").get(null);
+            Class<?> spriteUtil = Class.forName(MODERN_SPRITE_UTIL);
+            Object instance = spriteUtil.getField("INSTANCE").get(null);
             return MethodHandles.lookup()
-                    .findVirtual(clazz, "markSpriteActive", MethodType.methodType(void.class, TextureAtlasSprite.class))
+                    .findVirtual(spriteUtil, "markSpriteActive", MARK_SPRITE_ACTIVE_TYPE)
                     .bindTo(instance);
         } catch (Throwable ignored) {
+            return null;
         }
+    }
+
+    private static MethodHandle findLegacyMarkSpriteActive() {
         try {
-            // Sodium 0.5
-            Class<?> clazz = Class.forName("me.jellysquid.mods.sodium.client.render.texture.SpriteUtil");
-            return MethodHandles.lookup()
-                    .findStatic(clazz, "markSpriteActive", MethodType.methodType(void.class, TextureAtlasSprite.class));
+            Class<?> spriteUtil = Class.forName(LEGACY_SPRITE_UTIL);
+            return MethodHandles.lookup().findStatic(spriteUtil, "markSpriteActive", MARK_SPRITE_ACTIVE_TYPE);
         } catch (Throwable ignored) {
+            return null;
         }
-        return null;
     }
 }
