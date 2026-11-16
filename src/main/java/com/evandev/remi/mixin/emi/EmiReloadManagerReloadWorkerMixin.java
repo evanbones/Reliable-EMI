@@ -29,4 +29,10 @@ public class EmiReloadManagerReloadWorkerMixin {
         CreativeModeTabManager.reload();
         WorkstationSidebarManager.reload();
     }
+
+    @Inject(method = "run",
+            at = @At(value = "INVOKE", target = "Ldev/emi/emi/runtime/EmiPersistentData;load()V", shift = At.Shift.AFTER))
+    public void remi$refreshAfterHiddenStacksLoaded(CallbackInfo ci) {
+        StackManager.onFilteredStacksChanged();
+    }
 }

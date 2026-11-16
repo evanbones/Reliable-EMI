@@ -32,7 +32,7 @@ public class StackManager {
     private static volatile List<EmiStack> groupedIndexStacks = List.of();
     private static volatile int groupedIndexVisibility = -1;
     private static volatile boolean groupedIndexEditMode;
-    private static volatile List<EmiStack> filteredSourceStacks = List.of();
+    public static volatile List<EmiStack> searchSourceStacks = List.of();
     private static volatile int unsearchedVisibility = -1;
     private static volatile boolean unsearchedEditMode;
     private static List<EmiStack> lastRepopulatedDisplayedStacks;
@@ -111,9 +111,25 @@ public class StackManager {
         EmiSearch.search(keyword);
     }
 
+    public static void onFilteredStacksChanged() {
+        List<EmiStack> index = EmiStackList.filteredStacks;
+        boolean wasIndexSource;
+        synchronized (LOCK) {
+            if (index == indexStacks) return;
+            wasIndexSource = sourceStacks == indexStacks;
+            indexStacks = index;
+            groupedIndexStacks = List.of();
+        }
+        if (!wasIndexSource) return;
+        updateSourceStacks(index);
+        if (EmiScreenManager.search != null && !EmiScreenManager.search.getValue().isEmpty()) {
+            EmiSearch.update();
+        }
+    }
+
     private static void setUnsearched(List<EmiStack> filtered, List<EmiStack> grouped, List<EmiStack> displayed,
                                       int visibility, boolean editMode) {
-        filteredSourceStacks = filtered;
+        searchSourceStacks = filtered;
         groupedUnsearchedStacks = grouped;
         unsearchedStacks = displayed;
         unsearchedVisibility = visibility;
@@ -121,19 +137,41 @@ public class StackManager {
     }
 
     public static void buildStacks(List<EmiStack> searched, BooleanSupplier isCurrent) {
+        int visibility = EmiGroupStack.getVisibilityVersion();
+        boolean editMode = EmiConfig.editMode;
+        boolean unsearched;
+        List<EmiStack> source;
         synchronized (LOCK) {
             if (!isCurrent.getAsBoolean()) return;
-            if (searched == sourceStacks
-                    && unsearchedVisibility == EmiGroupStack.getVisibilityVersion()
-                    && unsearchedEditMode == EmiConfig.editMode) {
-                searchedStacks = filteredSourceStacks;
+            unsearched = searched == searchSourceStacks;
+            boolean fresh = unsearchedVisibility == visibility && unsearchedEditMode == editMode;
+            if (unsearched && fresh) {
+                searchedStacks = searchSourceStacks;
                 groupedStacks = groupedUnsearchedStacks;
                 displayedStacks = unsearchedStacks;
                 return;
             }
+            source = sourceStacks;
         }
 
-        List<EmiStack> filtered = filterHidden(searched);
+        if (unsearched) {
+            List<EmiStack> filtered = filterHidden(source);
+            if (!isCurrent.getAsBoolean()) return;
+            List<EmiStack> grouped = buildGroupedStacks(filtered, source == indexStacks);
+            if (!isCurrent.getAsBoolean()) return;
+            List<EmiStack> displayed = buildDisplayedStacks(grouped);
+            synchronized (LOCK) {
+                if (!isCurrent.getAsBoolean() || sourceStacks != source) return;
+                setUnsearched(filtered, grouped, displayed, visibility, editMode);
+                searchedStacks = filtered;
+                groupedStacks = grouped;
+                displayedStacks = displayed;
+            }
+            return;
+        }
+
+        boolean fresh = unsearchedVisibility == visibility && unsearchedEditMode == editMode;
+        List<EmiStack> filtered = fresh ? searched : filterHidden(searched);
         if (!isCurrent.getAsBoolean()) return;
         List<EmiStack> grouped = buildGroupedStacks(filtered, searched == indexStacks);
         if (!isCurrent.getAsBoolean()) return;
@@ -147,7 +185,7 @@ public class StackManager {
     }
 
     private static List<EmiStack> filterHidden(List<EmiStack> stacks) {
-        if (EmiConfig.editMode) {
+        if (EmiConfig.editMode || stacks == EmiStackList.filteredStacks) {
             return stacks;
         }
         List<EmiStack> filtered = new ArrayList<>(stacks.size());

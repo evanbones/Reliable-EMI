@@ -263,7 +263,7 @@ public abstract class EmiScreenManagerMixin {
     private static void redirectSearchSourceToEmixx(CallbackInfoReturnable<List<? extends EmiIngredient>> cir) {
         EmiScreenManager.SidebarPanel searchPanel = remi$getEffectiveSearchPanel();
         if (searchPanel != null && searchPanel.getType() == SidebarType.INDEX)
-            cir.setReturnValue(StackManager.sourceStacks);
+            cir.setReturnValue(StackManager.searchSourceStacks);
     }
 
     @Inject(at = @At("HEAD"), method = "addWidgets")
@@ -293,6 +293,9 @@ public abstract class EmiScreenManagerMixin {
             return;
         }
         EmiStackInteraction hovered = EmiScreenManager.getHoveredStack((int) mouseX, (int) mouseY, false);
+        if (!(hovered instanceof EmiScreenManager.SidebarEmiStackInteraction)) {
+            return;
+        }
         EmiIngredient ingredient = hovered.getStack();
         if (ingredient.isEmpty() || ingredient instanceof EmiGroupStack) {
             return;
@@ -525,7 +528,11 @@ public abstract class EmiScreenManagerMixin {
         if (inventorySlot == -1) {
             return;
         }
-        EmiIngredient ingredient = EmiScreenManager.getHoveredStack(EmiScreenManager.lastMouseX, EmiScreenManager.lastMouseY, true).getStack();
+        EmiStackInteraction hovered = EmiScreenManager.getHoveredStack(EmiScreenManager.lastMouseX, EmiScreenManager.lastMouseY, true);
+        if (!(hovered instanceof EmiScreenManager.SidebarEmiStackInteraction)) {
+            return;
+        }
+        EmiIngredient ingredient = hovered.getStack();
         if (ingredient.isEmpty() || ingredient instanceof EmiGroupStack) {
             return;
         }
