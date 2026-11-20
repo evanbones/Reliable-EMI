@@ -108,6 +108,12 @@ public class ItemTabButton extends TabButton {
     }
 
     @Override
+    public boolean isSelected() {
+        return tabManager.getCurrentTab() instanceof ItemTab current
+                && current.creativeModeTab() == tab.creativeModeTab();
+    }
+
+    @Override
     public void onClick(double mouseX, double mouseY) {
         if (!isVisible()) return;
         super.onClick(mouseX, mouseY);

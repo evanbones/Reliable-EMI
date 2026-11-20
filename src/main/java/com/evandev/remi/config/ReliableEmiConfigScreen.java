@@ -53,6 +53,8 @@ public class ReliableEmiConfigScreen {
                         () -> ReliableEmiConfig.showCreativeTabNameInSearchbar, v -> ReliableEmiConfig.showCreativeTabNameInSearchbar = v))
                 .option(createBoolOption("switchToSearchTabWhenSearching", true,
                         () -> ReliableEmiConfig.switchToSearchTabWhenSearching, v -> ReliableEmiConfig.switchToSearchTabWhenSearching = v))
+                .option(createBoolOption("rememberCreativeTabPosition", true,
+                        () -> ReliableEmiConfig.rememberCreativeTabPosition, v -> ReliableEmiConfig.rememberCreativeTabPosition = v))
                 .option(createIntegerOption("maxSidebarTabs", 0,
                         () -> ReliableEmiConfig.maxSidebarTabs, v -> ReliableEmiConfig.maxSidebarTabs = v))
                 .option(ButtonOption.createBuilder()

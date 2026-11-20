@@ -111,6 +111,8 @@
   "remi.configuration.showCreativeTabNameInSearchbar.tooltip": "Displays the name of the currently selected creative mode tab in the EMI search bar when hovered.",
   "remi.configuration.switchToSearchTabWhenSearching": "Switch to Search Tab When Searching",
   "remi.configuration.switchToSearchTabWhenSearching.tooltip": "If enabled, typing in the search bar switches to the Search Items tab, and clearing the search bar switches back to the previously selected tab.",
+  "remi.configuration.rememberCreativeTabPosition": "Remember Creative Tab Position",
+  "remi.configuration.rememberCreativeTabPosition.tooltip": "If enabled, the creative mode tab bar keeps its scroll position when the screen is closed and reopened, like the vanilla creative inventory. If disabled, it scrolls back to the first tab.",
   "remi.configuration.maxSidebarTabs": "Sidebar Tab Count",
   "remi.configuration.maxSidebarTabs.tooltip": "Number of creative mode tabs to show on the sidebar per page (0 = auto based on available space).",
   "remi.configuration.enableCreativeModeTabs.tooltip": "Enable or disable the Creative Mode Tabs sidebar entirely.",

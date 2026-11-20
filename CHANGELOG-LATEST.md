@@ -1,7 +1,10 @@
+### Added
+
+- Added an option to remember creative tab position (on by default)
+    - The creative mode tab bar keeps its scroll position when the screen is closed and reopened, like the vanilla
+      creative inventory.
+
 ### Fixed
 
-- Fixed hotbar keys (1-9) and the offhand swap key replacing hovered inventory items with full stacks when Better Cheat
-  Mode is on.
-- Fixed controller cheat mode giving a copy of a hovered inventory item instead of picking it up.
-- Fixed the index taking a few seconds to update after searching or clearing the search, especially alongside Reliable
-  Remover.
+- Fixed no creative mode tab being highlighted after an EMI reload.
+- Fixed "Switch to Search Tab When Searching" defaulting to off.

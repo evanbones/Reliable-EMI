@@ -35,6 +35,7 @@ public class ReliableEmiConfig {
     public static boolean syncSelectedCreativeModeTab = true;
     public static boolean showCreativeTabNameInSearchbar = true;
     public static boolean switchToSearchTabWhenSearching = true;
+    public static boolean rememberCreativeTabPosition = true;
     public static int maxSidebarTabs = 0;
     public static int verticalTabsWidth = 28;
     public static int verticalTabsHeight = 24;
@@ -157,6 +158,7 @@ public class ReliableEmiConfig {
                     syncSelectedCreativeModeTab = data.syncSelectedCreativeModeTab;
                     showCreativeTabNameInSearchbar = data.showCreativeTabNameInSearchbar;
                     switchToSearchTabWhenSearching = data.switchToSearchTabWhenSearching;
+                    rememberCreativeTabPosition = data.rememberCreativeTabPosition;
                     maxSidebarTabs = data.maxSidebarTabs;
                     if (data.disabledCreativeModeTabs != null) {
                         disabledCreativeModeTabs = new ArrayList<>(data.disabledCreativeModeTabs);
@@ -281,6 +283,7 @@ public class ReliableEmiConfig {
         data.syncSelectedCreativeModeTab = syncSelectedCreativeModeTab;
         data.showCreativeTabNameInSearchbar = showCreativeTabNameInSearchbar;
         data.switchToSearchTabWhenSearching = switchToSearchTabWhenSearching;
+        data.rememberCreativeTabPosition = rememberCreativeTabPosition;
         data.maxSidebarTabs = maxSidebarTabs;
         data.disabledCreativeModeTabs = new ArrayList<>(disabledCreativeModeTabs);
         data.enableStackGroups = enableStackGroups;
@@ -355,7 +358,8 @@ public class ReliableEmiConfig {
         int tabIconSize = 16;
         boolean syncSelectedCreativeModeTab = true;
         boolean showCreativeTabNameInSearchbar = true;
-        boolean switchToSearchTabWhenSearching = false;
+        boolean switchToSearchTabWhenSearching = true;
+        boolean rememberCreativeTabPosition = true;
         int maxSidebarTabs = 0;
         List<String> disabledCreativeModeTabs = new ArrayList<>(List.of("minecraft:op_blocks"));
         boolean enableStackGroups = true;
